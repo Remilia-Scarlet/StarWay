@@ -30,9 +30,6 @@
     <ProjectReference Include="..\..\..\StarWay\project\StarWay.vcxproj">
       <Project>{5b406d90-1356-43b0-8322-1aea0e86f3f1}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Math\project\Math.vcxproj">
-      <Project>{02717faa-d141-439d-86f3-9a01f194a284}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Graphic", "Engine\Graphic\project\Graphic.vcxproj", "{7070F552-7801-44E1-923F-5FDD391906BB}"
 EndProject
@@ -13,9 +13,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StarWay", "StarWay\project\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DurangoLancher", "Engine\DurangoLancher\DurangoLancher.vcxproj", "{EFC32A3A-DFE0-40FA-9D34-A27ACD27F8B9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "Engine\Math\project\Math.vcxproj", "{02717FAA-D141-439D-86F3-9A01F194A284}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ash", "Engine\Ash\project\Ash.vcxproj", "{C138A5EE-B50E-470F-BDBE-9600431B27E7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "Engine\Math\project\Math.vcxproj", "{02717FAA-D141-439D-86F3-9A01F194A284}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,24 +114,6 @@ Global
 		{EFC32A3A-DFE0-40FA-9D34-A27ACD27F8B9}.Release|Durango.Deploy.0 = Release|Durango
 		{EFC32A3A-DFE0-40FA-9D34-A27ACD27F8B9}.Release|x64.ActiveCfg = Release|Durango
 		{EFC32A3A-DFE0-40FA-9D34-A27ACD27F8B9}.Release|x86.ActiveCfg = Release|Durango
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|Durango.ActiveCfg = Debug|Durango
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|Durango.Build.0 = Debug|Durango
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|x64.ActiveCfg = Debug|x64
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|x64.Build.0 = Debug|x64
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|x86.ActiveCfg = Debug|Win32
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|x86.Build.0 = Debug|Win32
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|Durango.ActiveCfg = Release|Durango
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|Durango.Build.0 = Release|Durango
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|x64.ActiveCfg = Release|x64
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|x64.Build.0 = Release|x64
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|x86.ActiveCfg = Release|Win32
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|x86.Build.0 = Release|Win32
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|Durango.ActiveCfg = Release|Durango
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|Durango.Build.0 = Release|Durango
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|x64.ActiveCfg = Release|x64
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|x64.Build.0 = Release|x64
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|x86.ActiveCfg = Release|Win32
-		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|x86.Build.0 = Release|Win32
 		{C138A5EE-B50E-470F-BDBE-9600431B27E7}.Debug|Durango.ActiveCfg = Debug|Durango
 		{C138A5EE-B50E-470F-BDBE-9600431B27E7}.Debug|Durango.Build.0 = Debug|Durango
 		{C138A5EE-B50E-470F-BDBE-9600431B27E7}.Debug|x64.ActiveCfg = Debug|x64
@@ -150,6 +132,24 @@ Global
 		{C138A5EE-B50E-470F-BDBE-9600431B27E7}.Release|x64.Build.0 = Release|x64
 		{C138A5EE-B50E-470F-BDBE-9600431B27E7}.Release|x86.ActiveCfg = Release|Win32
 		{C138A5EE-B50E-470F-BDBE-9600431B27E7}.Release|x86.Build.0 = Release|Win32
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|Durango.ActiveCfg = Debug|Durango
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|Durango.Build.0 = Debug|Durango
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|x64.ActiveCfg = Debug|x64
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|x64.Build.0 = Debug|x64
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|x86.ActiveCfg = Debug|Win32
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Debug|x86.Build.0 = Debug|Win32
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|Durango.ActiveCfg = Release|Durango
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|Durango.Build.0 = Release|Durango
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|x64.ActiveCfg = Release|x64
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|x64.Build.0 = Release|x64
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|x86.ActiveCfg = Release|Win32
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Profile|x86.Build.0 = Release|Win32
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|Durango.ActiveCfg = Release|Durango
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|Durango.Build.0 = Release|Durango
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|x64.ActiveCfg = Release|x64
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|x64.Build.0 = Release|x64
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|x86.ActiveCfg = Release|Win32
+		{02717FAA-D141-439D-86F3-9A01F194A284}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

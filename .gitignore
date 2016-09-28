@@ -4,3 +4,4 @@ output/*
 *.opensdf
 *.sdf
 ipch/*
+*.opendb

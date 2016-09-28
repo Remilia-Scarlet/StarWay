@@ -44,9 +44,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\quaternion\Quaternion.cpp" />
-    <None Include="..\vector\Vector.cpp">
-      <FileType>CppCode</FileType>
-    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{02717FAA-D141-439D-86F3-9A01F194A284}</ProjectGuid>

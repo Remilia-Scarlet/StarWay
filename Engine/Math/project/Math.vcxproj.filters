@@ -33,9 +33,4 @@
     </ClCompile>
     <ClCompile Include="..\precomp.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\vector\Vector.cpp">
-      <Filter>vector</Filter>
-    </None>
-  </ItemGroup>
 </Project>
