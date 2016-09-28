@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\precomp.cpp" />
+    <ClCompile Include="..\DX11\DX11GraphicMgr.cpp">
+      <Filter>DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Manager\GraphicMgr.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Manager\ShaderMgr.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\GfxMesh.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\GfxTexture.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\GfxShaderPixel.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\GfxShaderVertex.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Manager\ConstantBufferManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\GfxIndexBuffer.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\GfxVertexBuffer.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DX11\DX11ConstantBufferManager.cpp">
+      <Filter>DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DX11\DXStaticFunctions.cpp">
+      <Filter>DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DX11\DX11Texture.cpp">
+      <Filter>DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DX11\DDSTextureLoader.cpp">
+      <Filter>DX11</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\precomp.h" />
+    <ClInclude Include="..\DX11\DX11GraphicMgr.h">
+      <Filter>DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Manager\GraphicMgr.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Manager\ShaderMgr.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\GfxMesh.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\GfxTexture.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GfxDefines.h" />
+    <ClInclude Include="..\gfx\GfxShaderPixel.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\GfxShaderVertex.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Manager\ConstantBufferManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\GfxIndexBuffer.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\GfxVertexBuffer.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DX11\DX11ConstantBufferManager.h">
+      <Filter>DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Manager\InputLayoutDefine.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DX11\DXStaticFunctions.h">
+      <Filter>DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DX11\DX11Texture.h">
+      <Filter>DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DX11\DDSTextureLoader.h">
+      <Filter>DX11</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DX11">
+      <UniqueIdentifier>{e14230ff-6984-4e53-9791-fd8fc754acbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gfx">
+      <UniqueIdentifier>{cee344ab-7b34-41c1-b846-2a2b22daee6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager">
+      <UniqueIdentifier>{3af4344e-ff5c-40aa-b6aa-0c136bb80327}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

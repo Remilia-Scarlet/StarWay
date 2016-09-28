@@ -1,0 +1,49 @@
+#pragma once
+
+//set PLATFORM_WINDOWS_TARGET
+enum Platforms
+{
+	TINY_PLATFORM_WINDOWS = 1,
+	TINY_PLATFORM_DURANGO,
+	TINY_PLATFORM_ORBITS
+};
+#if defined(PLATFORM_WIN64) || defined(PLATFORM_WIN32)
+	const static int  TINY_PLATFORM_TARGET	= TINY_PLATFORM_WINDOWS;
+#elif defined(PLATFORM_DURANGO)
+	const static int  TINY_PLATFORM_TARGET	= TINY_PLATFORM_DURANGO;
+#elif defined(PLATFORM_ORBITS)
+	const static int  TINY_PLATFORM_TARGET	= TINY_PLATFORM_ORBITS;
+#else
+	#error Unknown Platform
+#endif
+
+
+//set TINY_GRAPHIC_ENGINE_TARGET
+enum GraphicEngine
+{
+	TINY_GRAPHIC_ENGINE_DX11 = 1,
+	TINY_GRAPHIC_ENGINE_OPENGL
+};
+#if PLATFORM_WINDOWS_TARGET == TINY_PLATFORM_WINDOWS
+	const static int TINY_GRAPHIC_ENGINE_TARGET = TINY_GRAPHIC_ENGINE_DX11;
+#elif PLATFORM_WINDOWS_TARGET == TINY_PLATFORM_DURANGO
+	const static int TINY_GRAPHIC_ENGINE_TARGET = TINY_GRAPHIC_ENGINE_DX11;
+#elif PLATFORM_WINDOWS_TARGET == TINY_PLATFORM_ORBITS
+	const static int TINY_GRAPHIC_ENGINE_TARGET
+#else
+#error Unsupport platform
+#endif
+
+//set  BitWide
+enum BitWide
+{
+	TINY_BITWIDE_X86 = 1,
+	TINY_BITWIDE_X64
+};
+#if defined(PLATFORM_WIN64) || defined(PLATFORM_DURANGO) || defined(PLATFORM_ORBITS)
+	const static int TINY_BITWIDE_TARGET = TINY_BITWIDE_X64;
+#elif defined(PLATFORM_WIN32)
+	const static int TINY_BITWIDE_TARGET = TINY_BITWIDE_X86;
+#else
+	#error Unsupport platform
+#endif

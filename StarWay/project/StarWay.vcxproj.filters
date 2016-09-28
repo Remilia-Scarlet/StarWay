@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\precomp.cpp" />
+    <ClCompile Include="..\Object\Sun.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Scene\MainScene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\graph\StarVertex.cpp">
+      <Filter>graph</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\precomp.h" />
+    <ClInclude Include="..\Object\Sun.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Scene\MainScene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\graph\StarVertex.h">
+      <Filter>graph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shader\common.h">
+      <Filter>shader</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Object">
+      <UniqueIdentifier>{685aeb02-db32-40d0-b310-633fad3c2f2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{a69bf592-5ecf-4ca5-8b84-04d7f1e2f471}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graph">
+      <UniqueIdentifier>{507e83f9-fa1d-4f9c-9434-fbfc3982548e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader">
+      <UniqueIdentifier>{f18dc8d3-02b1-46e7-a3b2-2ab30027ed0e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\shader\default_shader_PS.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\shader\default_shader_VS.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\shader\ShaderFirst_PS.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\shader\ShaderFirst_VS.hlsl">
+      <Filter>shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
