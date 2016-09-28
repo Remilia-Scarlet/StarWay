@@ -1,0 +1,6 @@
+.vs/*
+*.user
+output/*
+*.opensdf
+*.sdf
+ipch/*
