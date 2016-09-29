@@ -35,13 +35,13 @@
     <ClCompile Include="..\DX11\DX11ConstantBufferManager.cpp">
       <Filter>DX11</Filter>
     </ClCompile>
-    <ClCompile Include="..\DX11\DXStaticFunctions.cpp">
-      <Filter>DX11</Filter>
-    </ClCompile>
     <ClCompile Include="..\DX11\DX11Texture.cpp">
       <Filter>DX11</Filter>
     </ClCompile>
     <ClCompile Include="..\DX11\DDSTextureLoader.cpp">
+      <Filter>DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DX11\DX11Wrapper.cpp">
       <Filter>DX11</Filter>
     </ClCompile>
   </ItemGroup>
@@ -84,13 +84,13 @@
     <ClInclude Include="..\Manager\InputLayoutDefine.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="..\DX11\DXStaticFunctions.h">
-      <Filter>DX11</Filter>
-    </ClInclude>
     <ClInclude Include="..\DX11\DX11Texture.h">
       <Filter>DX11</Filter>
     </ClInclude>
     <ClInclude Include="..\DX11\DDSTextureLoader.h">
+      <Filter>DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DX11\DX11Wrapper.h">
       <Filter>DX11</Filter>
     </ClInclude>
   </ItemGroup>

@@ -192,10 +192,14 @@ template<class To,class From>
 RefCountPtr<To> DynamicRefCountCast(const RefCountPtr<From>& ptr)
 {
 	To* toPtr = dynamic_cast<To*>(ptr.get());
-	if (toPtr)
-		return RefCountPtr<To>(toPtr);
-	return RefCountPtr<To>();
+	return RefCountPtr<To>(toPtr);
 }
 
+template<class To, class From>
+RefCountPtr<To> StaticRefCountCast(const RefCountPtr<From>& ptr)
+{
+	To* toPtr = static_cast<To*>(ptr.get());
+	return RefCountPtr<To>(toPtr);
+}
 //////////////////////////////////////////////////////////////////////////
 #include "RefCountPtr.inl"

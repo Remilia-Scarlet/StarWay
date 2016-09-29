@@ -42,6 +42,7 @@ bool GfxVertexBuffer::initBuffer(const void* vertexBufferData, int size, int str
 		return false;
 	}
 	SET_DEBUG_NAME(_vertexBuffer,"VertexBuffer");
+	_vertexBufferStride = stride;
 	return true;
 #else
 #error Not supported

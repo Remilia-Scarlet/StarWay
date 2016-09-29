@@ -2,6 +2,9 @@
 #include "Object.h"
 #include "Graphic\Manager\GraphicMgr.h"
 #include "TinyEngine\Components\BaseComponent.h"
+#include "TinyEngine\Components\CameraComponent.h"
+#include "Graphic\DX11\DX11ConstantBufferManager.h"
+
 
 ObjectPtr Object::create()
 {
@@ -33,6 +36,8 @@ void Object::addComponent(const BaseComponentPtr& component)
 	{
 		ensureComponentMap();
 		(*_components)[component->getObjectId()] = component;
+		if (DynamicRefCountCast<CameraComponent>(component).isValid())
+			setFlag(ObjectFlag::IS_CAMERA, true);
 	}
 	else
 		TinyAssert(false,"Object::addComponent ptr is not valid");
@@ -51,17 +56,31 @@ BaseComponentPtr Object::getComponent(ObjectID componentId)
 
 void Object::render()
 {
+	GraphicMgr::instance()->setDrawIndexNumber(0);
 	if (_components)
 	{
 		for (auto it = _components->begin(); it != _components->end(); ++it)
 			it->second->render();
 	}
+	DX11ConstantBufferManager::instance()->commitVSBuffer();
+	DX11ConstantBufferManager::instance()->commitPSBuffer();
+	GraphicMgr::instance()->draw();
+
 	if (_children)
 	{
 		for (auto it = _children->begin(); it != _children->end(); ++it)
 			it->second->render();
 	}
-	GraphicMgr::instance()->draw();
+}
+
+void Object::setFlag(ObjectFlag flagType, bool val)
+{
+	_flag[static_cast<size_t>(flagType)] = val;
+}
+
+bool Object::getFlag(ObjectFlag flagType)
+{
+	return _flag[static_cast<size_t>(flagType)];
 }
 
 void Object::ensureChildMap()

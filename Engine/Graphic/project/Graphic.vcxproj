@@ -38,7 +38,7 @@
     <ClCompile Include="..\DX11\DX11ConstantBufferManager.cpp" />
     <ClCompile Include="..\DX11\DX11GraphicMgr.cpp" />
     <ClCompile Include="..\DX11\DX11Texture.cpp" />
-    <ClCompile Include="..\DX11\DXStaticFunctions.cpp" />
+    <ClCompile Include="..\DX11\DX11Wrapper.cpp" />
     <ClCompile Include="..\gfx\GfxIndexBuffer.cpp" />
     <ClCompile Include="..\gfx\GfxMesh.cpp" />
     <ClCompile Include="..\gfx\GfxShaderPixel.cpp" />
@@ -62,7 +62,7 @@
     <ClInclude Include="..\DX11\DX11ConstantBufferManager.h" />
     <ClInclude Include="..\DX11\DX11GraphicMgr.h" />
     <ClInclude Include="..\DX11\DX11Texture.h" />
-    <ClInclude Include="..\DX11\DXStaticFunctions.h" />
+    <ClInclude Include="..\DX11\DX11Wrapper.h" />
     <ClInclude Include="..\GfxDefines.h" />
     <ClInclude Include="..\gfx\GfxIndexBuffer.h" />
     <ClInclude Include="..\gfx\GfxMesh.h" />

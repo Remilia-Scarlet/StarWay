@@ -6,7 +6,7 @@
 #include "Graphic/Manager/ShaderMgr.h"
 #include "TinyEngine/Engine/LocalSetting.h"
 #include <functional>
-#include "DXStaticFunctions.h"
+#include "DX11Wrapper.h"
 
 const float DX11GraphicMgr::s_clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 void DX11GraphicMgr::setViewPort(const ViewPort& viewPort)
@@ -43,7 +43,8 @@ void DX11GraphicMgr::preRender()
 
 void DX11GraphicMgr::draw()
 {
-	_pImmediateContext->DrawIndexed(_drawIndexNumber, 0, 0);
+	if(_drawIndexNumber > 0)
+		_pImmediateContext->DrawIndexed(_drawIndexNumber, 0, 0);
 }
 
 void DX11GraphicMgr::render()
@@ -90,15 +91,15 @@ bool DX11GraphicMgr::initInputLayout()
 		switch (inputLayoutType)
 		{
 		case InputLayoutEleType::FLOAT:
-			return InputElementInfo(DXGI_FORMAT_R32_FLOAT,"float",8 );
+			return InputElementInfo(DXGI_FORMAT_R32_FLOAT,"float",4 );
 		case InputLayoutEleType::VECTOR2:
-			return InputElementInfo(DXGI_FORMAT_R32G32_FLOAT, "float2", 16);
+			return InputElementInfo(DXGI_FORMAT_R32G32_FLOAT, "float2", 8);
 		case InputLayoutEleType::VECTOR3:
-			return InputElementInfo(DXGI_FORMAT_R32G32B32_FLOAT, "float3", 24);
+			return InputElementInfo(DXGI_FORMAT_R32G32B32_FLOAT, "float3", 12);
 		case InputLayoutEleType::VECTOR4:
-			return InputElementInfo(DXGI_FORMAT_R32G32B32A32_FLOAT, "float4", 32);
+			return InputElementInfo(DXGI_FORMAT_R32G32B32A32_FLOAT, "float4", 16);
 		default:
-			return InputElementInfo(DXGI_FORMAT_R32G32B32A32_FLOAT, "float4", 32);
+			return InputElementInfo(DXGI_FORMAT_R32G32B32A32_FLOAT, "float4", 16);
 		}
 	};
 
@@ -112,7 +113,7 @@ bool DX11GraphicMgr::initInputLayout()
 		int valueNumber = 0;
 		for (const InputLayoutStruct& desc : INPUT_LAYOUT_DESCS[i])
 		{
-			layout.push_back({desc._semanticName.c_str(), 0, convertInputLayoutEleTypeFun(desc._type)._format, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0});
+			layout.push_back({desc._semanticName.c_str(), 0, convertInputLayoutEleTypeFun(desc._type)._format, 0, (UINT)valueNumber, D3D11_INPUT_PER_VERTEX_DATA, 0});
 			shaderCode += convertInputLayoutEleTypeFun(desc._type)._typeInfo;
 			shaderCode += FormatString(" value%d : %s;\n", valueNumber, desc._semanticName.c_str());
 			valueNumber += convertInputLayoutEleTypeFun(desc._type)._size;
@@ -125,7 +126,7 @@ bool DX11GraphicMgr::initInputLayout()
 			"}\n"
 			;
 		ID3DBlob* shaderBlob;
-		bool successed = DXStaticFunctions::CompileShader(shaderCode.c_str(), (int)shaderCode.length(), "main","vs_5_0", &shaderBlob);
+		bool successed = DX11Wrapper::CompileShader(shaderCode.c_str(), (int)shaderCode.length(), "main","vs_5_0", &shaderBlob);
 
 		if (successed)
 		{
@@ -266,7 +267,7 @@ bool DX11GraphicMgr::init(int width, int height, HWND hWnd)
 		//init DepthStencil
 		TINY_BREAK_IF(!initDepthStencil(width, height));
 		//set default view port
-		setViewPort(ViewPort((float)width, (float)height, 0.5f, 1.0f, 0, 0));
+		setViewPort(ViewPort(0, 0,(float)width, (float)height, 0.5f, 1.0f));
 		// init input layout
 		TINY_BREAK_IF(!initInputLayout());
 

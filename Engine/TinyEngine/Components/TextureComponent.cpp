@@ -36,6 +36,7 @@ bool TextureComponent::init(const std::string& fileName, const std::string& shad
 		_psShader = ShaderMgr::instance()->getPSShader(shadeName);
 		return true;
 	} while (0);
+	TinyAssert(false,"TextureComponent::init failed");
 	return false;
 
 }

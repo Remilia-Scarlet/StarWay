@@ -1,8 +1,8 @@
 #include "Graphic\precomp.h"
-#include "DXStaticFunctions.h"
+#include "DX11Wrapper.h"
 
 
-bool DXStaticFunctions::CompileShader(const char* shaderCode, int codeLen, const char* entryName,const char* target, ID3DBlob** ppCode)
+bool DX11Wrapper::CompileShader(const char* shaderCode, int codeLen, const char* entryName,const char* target, ID3DBlob** ppCode)
 {
 	HRESULT hr = S_OK;
 
@@ -36,11 +36,11 @@ bool DXStaticFunctions::CompileShader(const char* shaderCode, int codeLen, const
 	return true;
 }
 
-DXStaticFunctions::DXStaticFunctions()
+DX11Wrapper::DX11Wrapper()
 {
 }
 
 
-DXStaticFunctions::~DXStaticFunctions()
+DX11Wrapper::~DX11Wrapper()
 {
 }

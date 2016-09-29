@@ -1,15 +1,21 @@
 #pragma once
 #include "TinyEngine\Engine\EngineDefs.h"
-
-#include <functional>
 #include <unordered_map>
 #include <type_traits>
 #include "Ash/RefCountPointer/RefCountObj.h"
 #include "Ash/RefCountPointer/RefCountPtr.h"
 #include <type_traits>
+#include <bitset>
+
 TINY_DEFINE_PTR(Object);
 TINY_DEFINE_PTR(BaseComponent);
 class BaseComponent;
+
+enum class ObjectFlag
+{
+	IS_CAMERA = 0   //check if this obj is a camera
+};
+
 class Object : public RefCountObj
 {
 public:
@@ -28,6 +34,9 @@ public:
 	virtual void render();
 
 	virtual ObjectID getObjectId() { return _id; }
+
+	virtual void setFlag(ObjectFlag flagType, bool val);
+	virtual bool getFlag(ObjectFlag flagType);
 protected:
 	void ensureChildMap();
 	void ensureComponentMap();
@@ -37,6 +46,7 @@ protected:
 	ObjectWeakPtr _parent;
 	std::unordered_map<ObjectID, ObjectPtr>* _children;
 	std::unordered_map<ObjectID, BaseComponentPtr>* _components;
+	std::bitset<32> _flag;
 public:
 	explicit Object();
 	virtual ~Object();

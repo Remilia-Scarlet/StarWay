@@ -9,8 +9,8 @@
 #include "Graphic/Manager/ConstantBufferManager.h"
 #include "Graphic/Manager/ShaderMgr.h"
 
-const int SOLUTION_WIDTH = 1024;
-const int SOLUTION_HEIGHT = 768;
+const int SOLUTION_WIDTH = 640;
+const int SOLUTION_HEIGHT = 480;
 const int DESIRED_FPS = 60;
 
 Engine::Engine()

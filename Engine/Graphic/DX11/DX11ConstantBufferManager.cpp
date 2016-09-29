@@ -60,11 +60,26 @@ void DX11ConstantBufferManager::setPSFloat(int slot, float value)
 
 void DX11ConstantBufferManager::setVSMatrix(int slot, const Matrix4& matrix)
 {
-
+	TinyAssert(slot + 4< CONSTANT_SLOT_NUMBER);
+	if (slot + 4 < CONSTANT_SLOT_NUMBER)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			_tempVSSubmitBuffer[slot + i] = matrix(i);
+		}
+	}
 }
 
 void DX11ConstantBufferManager::setPSMatrix(int slot, const Matrix4& matrix)
 {
+	TinyAssert(slot + 4 < CONSTANT_SLOT_NUMBER);
+	if (slot + 4 < CONSTANT_SLOT_NUMBER)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			_tempPSSubmitBuffer[slot + i] = matrix(i);
+		}
+	}
 
 }
 
