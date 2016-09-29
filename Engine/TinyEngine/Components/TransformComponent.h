@@ -2,7 +2,7 @@
 #include "BaseComponent.h"
 #include "Math/vector/Vector.h"
 #include "Math/quaternion/Quaternion.h"
-#include "Math/matrix/Matrix4.h"
+#include "Math/matrix/Matrix.h"
 #include "TinyEngine/Objects/Object.h"
 
 TINY_DEFINE_PTR(TransformComponent);
@@ -15,6 +15,9 @@ public:
 
 	void setLocation(const Vector3& position) { _nodeToParentMatrixDirty = true; _location = position; }
 	Vector3 getLocation() { return _location; }
+
+	virtual void faceToDir(const Vector3& lookAt);
+	virtual void faceToPoint(const Vector3& point);
 
 	void setRotation(float deltaX, float deltaY, float deltaZ);
 	void setRotation(const Quaternion& rotation);

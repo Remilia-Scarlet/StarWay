@@ -7,7 +7,7 @@
 #include "TinyEngine/Components/CameraComponent.h"
 #include "Graphic/Manager/InputLayoutDefine.h"
 #include "Math/vector/Vector.h"
-#include "Math/matrix/Matrix4.h"
+#include "Math/matrix/Matrix.h"
 #include "Math/quaternion/Quaternion.h"
 
 MainScenePtr MainScene::create()
@@ -112,7 +112,7 @@ bool MainScene::init()
 		TransformComponentPtr cametaTran = TransformComponent::create();
 		cameraObj->addComponent(cametaTran);
 
-		camera->lookAtPoint(Vector3());
+		cametaTran->faceToPoint(Vector3());
 
 		addObject(cameraObj);
 

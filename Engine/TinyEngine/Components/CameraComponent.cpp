@@ -4,7 +4,7 @@
 #include "Graphic\Manager\ConstantBufferManager.h"
 #include "Math/vector/Vector.h"
 #include "Math/quaternion/Quaternion.h"
-#include "Math/matrix/Matrix4.h"
+#include "Math/matrix/Matrix.h"
 #include <DirectXMath.h>
 #include "TinyEngine\Engine\Engine.h"
 
@@ -25,27 +25,6 @@ CameraComponentPtr CameraComponent::create()
 	if (!ret || !ret->init())
 		TINY_SAFE_DELETE(ret);
 	return CameraComponentPtr(ret);
-}
-
-void CameraComponent::lookAtDir(const Vector3& lookAt)
-{
-	throw "not support yet";
-}
-
-void CameraComponent::lookAtPoint(const Vector3& point)
-{
-	//TinyAssert(!_owner.expired(),"need owner");
-	//if (_owner.expired())
-	//	return;
-
-	//ObjectPtr owner = _owner.lock();
-	//TransformComponentPtr trans = owner->getComponent<TransformComponentPtr>();
-	//if (!trans)
-	//	return;
-
-	//Matrix4 viewMatrix = getLookAtPointMatrix(trans->getLocation(), trans->getUpDirection(), point);
-	//Vector3 rotation(viewMatrix(0, 0), viewMatrix(1, 1), viewMatrix(2, 2));
-	//trans->setRotation(rotation);
 }
 
 void CameraComponent::render()

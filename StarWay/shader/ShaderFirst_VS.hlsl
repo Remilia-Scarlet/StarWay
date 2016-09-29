@@ -8,7 +8,7 @@ matrix World : register(c8);
 PS_INPUT main(VS_INPUT_COMMON input )
 {
     PS_INPUT output = (PS_INPUT)0;
-    output.pos = mul( float4(input.pos,1), World );
+	output.pos = mul(float4(input.pos, 1), World);
     output.pos = mul( output.pos, View );
     output.pos = mul( output.pos, Projection );
     output.tex = input.tex;

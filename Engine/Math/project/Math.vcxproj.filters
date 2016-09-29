@@ -1,16 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="..\matrix\Matrix4.h">
-      <Filter>matrix</Filter>
-    </ClInclude>
     <ClInclude Include="..\quaternion\Quaternion.h">
       <Filter>quaternion</Filter>
     </ClInclude>
-    <ClInclude Include="..\MathStorage.h" />
     <ClInclude Include="..\precomp.h" />
     <ClInclude Include="..\vector\Vector.h">
       <Filter>vector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\matrix\Matrix.h">
+      <Filter>matrix</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -25,12 +24,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\matrix\Matrix4.cpp">
-      <Filter>matrix</Filter>
-    </ClCompile>
     <ClCompile Include="..\quaternion\Quaternion.cpp">
       <Filter>quaternion</Filter>
     </ClCompile>
     <ClCompile Include="..\precomp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\vector\Vector.inl">
+      <Filter>vector</Filter>
+    </None>
+    <None Include="..\matrix\Matrix.inl">
+      <Filter>matrix</Filter>
+    </None>
   </ItemGroup>
 </Project>

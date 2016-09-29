@@ -2,7 +2,7 @@
 #include "Graphic/GfxDefines.h"
 #include "Graphic/gfx/GfxShaderVertex.h"
 #include "Math/vector/Vector.h"
-#include "Math/matrix/Matrix4.h"
+#include "Math/matrix/Matrix.h"
 
 #if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
 	class DX11ConstantBufferManager;

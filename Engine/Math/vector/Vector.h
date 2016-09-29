@@ -1,60 +1,76 @@
 #pragma once
-#include "Math/MathStorage.h"
-class Vector2 : public MathStorage<float, 2>
+#include <type_traits>
+#include <memory.h>
+#include "TinyEngine\Engine\EngineDefs.h"
+template<class ValueType, int Size>
+class VectorStorage
 {
 public:
-	inline Vector2() {}
-	inline Vector2(float x, float y)
-	{
-		setValue(0, x);
-		setValue(1, y);
-	}
-	~Vector2() {}
-	inline Vector2& operator=(const float& value)
-	{
-		setValue(0, value);
-		setValue(1, value);
-		return *this;
-	}
+	inline VectorStorage();
+	inline VectorStorage(const ValueType& x, const ValueType& y);
+	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z);
+	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w);
+	~VectorStorage() {}
+
+public:
+	inline ValueType& X();
+	inline const ValueType& X() const;
+	inline ValueType& Y();
+	inline const ValueType& Y() const;
+	inline ValueType& Z();
+	inline const ValueType& Z() const;
+	inline ValueType& W();
+	inline const ValueType& W() const;
+
+	inline ValueType& operator()(int index);
+	inline const ValueType& operator()(int index) const;
+
+	inline VectorStorage& operator=(const VectorStorage& other);
+	inline VectorStorage& operator=(const ValueType& value);
+
+	inline void setValue(int index, const ValueType& value);
+	inline ValueType dot(const VectorStorage& other) const;
+	inline VectorStorage& scale(const ValueType& scale);
+protected:
+	ValueType _data[Size];
 };
 
-class Vector3 : public MathStorage<float, 3>
+template<int Size>
+bool operator==(const VectorStorage<float, Size>& left, const VectorStorage<float, Size>& right)
 {
-public:
-	inline Vector3() {}
-	inline Vector3(float x, float y, float z)
+	for (int i = 0; i < Size; ++i)
 	{
-		setValue(0, x);
-		setValue(1, y);
-		setValue(2, z);
+		if (TINY_FLOAT_EQUAL(left(i), right(i)))
+			return false;
 	}
-	~Vector3() {}
-	inline Vector3& operator=(const float& value)
-	{
-		setValue(0, value);
-		setValue(1, value);
-		setValue(2, value);
-		return *this;
-	}
-};
-class Vector4 : public MathStorage<float, 4>
+	return true;
+}
+
+template<class ValueType, int Size>
+bool operator==(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right)
 {
-public:
-	inline Vector4() {}
-	inline Vector4(float x, float y, float z, float w)
-	{
-		setValue(0, x);
-		setValue(1, y);
-		setValue(2, z);
-		setValue(3, w);
-	}
-	~Vector4() {}
-	inline Vector4& operator=(const float& value)
-	{
-		setValue(0, value);
-		setValue(1, value);
-		setValue(2, value);
-		setValue(3, value);
-		return *this;
-	}
-};
+	return memcmp(_data, other._data, sizeof(_data)) == 0;
+}
+
+template<class ValueType, int Size>
+ValueType operator*(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right)
+{
+	return left.dot(right);
+}
+
+template<class ValueType, int Size>
+VectorStorage<ValueType, Size>& operator*(const VectorStorage<ValueType, Size>& vec, const ValueType& scale)
+{
+	return vec.scale(scale);
+}
+template<class ValueType, int Size>
+VectorStorage<ValueType, Size>& operator*(const ValueType& scale, const VectorStorage<ValueType, Size>& vec)
+{
+	return vec.scale(scale);
+}
+
+#include "Vector.inl"
+
+typedef VectorStorage<float, 2> Vector2;
+typedef VectorStorage<float, 3> Vector3;
+typedef VectorStorage<float, 4> Vector4;

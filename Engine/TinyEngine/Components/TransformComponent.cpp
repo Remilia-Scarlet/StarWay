@@ -22,6 +22,7 @@ TransformComponent::TransformComponent()
 	:BaseComponent()
 	, _scale(1.f,1.f,1.f)
 	, _nodeToParentMatrixDirty(true)
+	, _nodeToParentMatrix(Matrix4::Identity)
 {
 }
 
@@ -36,6 +37,16 @@ TransformComponentPtr TransformComponent::create()
 	if (!ret || !ret->init())
 		TINY_SAFE_DELETE(ret);
 	return TransformComponentPtr(ret);
+}
+
+void TransformComponent::faceToDir(const Vector3& lookAt)
+{
+
+}
+
+void TransformComponent::faceToPoint(const Vector3& point)
+{
+
 }
 
 void TransformComponent::setRotation(float deltaX, float deltaY, float deltaZ)
@@ -74,27 +85,10 @@ Vector3 TransformComponent::getFrontDirection()
 
 void TransformComponent::render()
 {
-	//DirectX::XMMATRIX proj;
-	//proj = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, Engine::instance()->getSolutionWidth() / (FLOAT)Engine::instance()->getSolutionHeight(), 0.01f, 100.0f);
-	//proj = XMMatrixTranspose(proj);
 
-	//struct World
-	//{
-	//	DirectX::XMMATRIX world;
-	//};
-	//World w;
-	//static float t = 0.0f;
-	//static DWORD dwTimeStart = 0;
-	//DWORD dwTimeCur = GetTickCount();
-	//if (dwTimeStart == 0)
-	//	dwTimeStart = dwTimeCur;
-	//t = (dwTimeCur - dwTimeStart) / 1000.0f;
-	//// Rotate cube around the origin
-	//w.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationY(t));
-	//ConstantBufferManager::instance()->setConstantBuffer(2, &w, sizeof(w), ConstantBufferManager::VS);
 	DirectX::XMMATRIX world = DirectX::XMMatrixIdentity();
 	world = XMMatrixTranspose(world);
-	Matrix4 worldMat;
+	Matrix4 worldMat = getWorldMatrix();
 	memcpy(&worldMat, &world, sizeof(worldMat));
 	ConstantBufferManager::instance()->setVSMatrix(8, worldMat);
 }

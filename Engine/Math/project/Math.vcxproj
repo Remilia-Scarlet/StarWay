@@ -27,14 +27,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\MathStorage.h" />
-    <ClInclude Include="..\matrix\Matrix4.h" />
+    <ClInclude Include="..\matrix\Matrix.h" />
     <ClInclude Include="..\precomp.h" />
     <ClInclude Include="..\quaternion\Quaternion.h" />
     <ClInclude Include="..\vector\Vector.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\matrix\Matrix4.cpp" />
     <ClCompile Include="..\precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -44,6 +42,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\quaternion\Quaternion.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\matrix\Matrix.inl" />
+    <None Include="..\vector\Vector.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{02717FAA-D141-439D-86F3-9A01F194A284}</ProjectGuid>
