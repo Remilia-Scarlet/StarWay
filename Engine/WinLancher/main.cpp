@@ -126,6 +126,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		{
 			start_t = stop_t;
 			Engine::instance()->mainLoop(frameTime);
+#if _DEBUG
+			extern void UnitTest();
+			UnitTest();
+#endif
 		}
 		else
 		{

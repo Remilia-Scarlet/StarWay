@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="..\precomp.cpp" />
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\UnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />

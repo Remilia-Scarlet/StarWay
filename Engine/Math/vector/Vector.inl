@@ -1,3 +1,42 @@
+//////////////////////////////////////////////////////////////////////////
+//Global function
+//////////////////////////////////////////////////////////////////////////
+template<int Size>
+bool operator==(const VectorStorage<float, Size>& left, const VectorStorage<float, Size>& right)
+{
+	for (int i = 0; i < Size; ++i)
+	{
+		if (TINY_FLOAT_EQUAL(left(i), right(i)))
+			return false;
+	}
+	return true;
+}
+
+template<class ValueType, int Size>
+bool operator==(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right)
+{
+	return memcmp(_data, other._data, sizeof(_data)) == 0;
+}
+
+template<class ValueType, int Size>
+ValueType operator*(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right)
+{
+	return left.dot(right);
+}
+
+template<class ValueType, int Size>
+VectorStorage<ValueType, Size>& operator*(const VectorStorage<ValueType, Size>& vec, const ValueType& scale)
+{
+	return vec.scale(scale);
+}
+template<class ValueType, int Size>
+VectorStorage<ValueType, Size>& operator*(const ValueType& scale, const VectorStorage<ValueType, Size>& vec)
+{
+	return vec.scale(scale);
+}
+//////////////////////////////////////////////////////////////////////////
+//Member function
+//////////////////////////////////////////////////////////////////////////
 template <class ValueType, int Size>
 VectorStorage<ValueType, Size>::VectorStorage()
 {
@@ -24,7 +63,7 @@ VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueTyp
 template <class ValueType, int Size>
 VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w)
 {
-	static_assert(Size == 3, "This constructor is only aviliable for Vector3");
+	static_assert(Size == 4, "This constructor is only aviliable for Vector4");
 	_data[0] = x;
 	_data[1] = y;
 	_data[2] = z;
@@ -138,5 +177,12 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const 
 	{
 		_data[i] = value;
 	}
+	return *this;
+}
+
+template<class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const ValueType* data)
+{
+	memcpy(_data, data, sizeof(_data));
 	return *this;
 }

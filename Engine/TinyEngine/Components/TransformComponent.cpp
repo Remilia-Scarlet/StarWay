@@ -22,7 +22,7 @@ TransformComponent::TransformComponent()
 	:BaseComponent()
 	, _scale(1.f,1.f,1.f)
 	, _nodeToParentMatrixDirty(true)
-	, _nodeToParentMatrix(Matrix4::Identity)
+	, _nodeToParentMatrix(Matrix4::identity())
 {
 }
 
