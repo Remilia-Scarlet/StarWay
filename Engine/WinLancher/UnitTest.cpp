@@ -54,6 +54,6 @@ void UnitTest()
 	MatrixStorage<float, 2, 2> mmmm4 = { 7,8, 9,10 };
 	mmmm.dotInPlace(mmmm4);
 
-
-
+	MatrixStorage<float, 3, 2> madas = mmmm.scaled(5);
+	mmmm.scaleInPlace(5);
 }

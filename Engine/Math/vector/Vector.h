@@ -3,38 +3,67 @@
 #include <memory.h>
 #include "TinyEngine\Engine\EngineDefs.h"
 
-template<class ValueType, int Size>
+template <class ValueType, int Size>
 class VectorStorage
 {
-public:
+   public:
+	// Construct a Vector with all elements 0.
 	inline VectorStorage();
-	inline VectorStorage(const ValueType& x, const ValueType& y);
-	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z);
-	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w);
-	~VectorStorage() {}
 
-public:
-	inline ValueType& X();
-	inline const ValueType& X() const;
-	inline ValueType& Y();
-	inline const ValueType& Y() const;
-	inline ValueType& Z();
-	inline const ValueType& Z() const;
-	inline ValueType& W();
-	inline const ValueType& W() const;
+	// Initilize vector by {....}. For example:
+	// VectorStorage<float,3> vector = {1,0,0};
+	inline VectorStorage(std::initializer_list<ValueType> valueList);
 
+	// Initilize vector by data.
+	inline VectorStorage(const ValueType* data);
+
+	// Initilize all elements with a value
+	inline VectorStorage(const ValueType& value);
+
+	// Copy another vector
+	inline VectorStorage(const VectorStorage& other);
+
+	inline ~VectorStorage() {}
+	// Get an elem
 	inline ValueType& operator()(int index);
 	inline const ValueType& operator()(int index) const;
 
-	inline VectorStorage& operator=(const VectorStorage& other);
-	inline VectorStorage& operator=(const ValueType& value);
+	inline VectorStorage& operator=(std::initializer_list<ValueType> valueList);
 	inline VectorStorage& operator=(const ValueType* data);
+	inline VectorStorage& operator=(const ValueType& value);
+	inline VectorStorage& operator=(const VectorStorage& other);
 
+	// Reset all elem to 0
+	inline void reset();
+
+	// Reset vector by {....}. For example:
+	// vector = {1,0,0};
+	inline void reset(std::initializer_list<ValueType> valueList);
+
+	// Reset vector by data.
+	inline void reset(const ValueType* data);
+
+	// Reset vector by value.
+	inline void reset(const ValueType& value);
+
+	// Copy another vector
+	inline void reset(const VectorStorage& other);
+
+	// Set an elem
 	inline void setValue(int index, const ValueType& value);
+
+	// Dot multiply
 	inline ValueType dot(const VectorStorage& other) const;
-	inline VectorStorage& scale(const ValueType& scale);
+
+	// Multiply all elem with this value, and return the copy. See also scaleInPlace().
+	inline VectorStorage& scaled(const ValueType& scale);
+
+	// Multiply all elem with this value, and return this. See also scaleInPlace().
+	inline VectorStorage& scaleInPlace(const ValueType& scale);
+
 	inline VectorStorage& normalize();
-protected:
+
+   protected:
 	ValueType _data[Size];
 };
 

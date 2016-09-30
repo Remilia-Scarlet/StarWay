@@ -20,7 +20,7 @@ bool TransformComponent::init()
 
 TransformComponent::TransformComponent()
 	:BaseComponent()
-	, _scale(1.f,1.f,1.f)
+	, _scale{1.f,1.f,1.f}
 	, _nodeToParentMatrixDirty(true)
 	, _nodeToParentMatrix(Matrix4::identity())
 {

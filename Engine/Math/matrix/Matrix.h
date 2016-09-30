@@ -22,6 +22,7 @@ public:
 	inline MatrixStorage(const MatrixStorage& other);
 
 	inline ~MatrixStorage() {}
+
 	// Get a row
 	inline VectorStorage<ValueType, ColNum>& operator()(int index);
 	inline const VectorStorage<ValueType, ColNum>& operator()(int index) const;
@@ -112,6 +113,12 @@ public:
 
 	// Dot this matrix and other one, and set the result to this. Return ref of this. See also dot()
 	inline MatrixStorage<ValueType, RowNum, ColNum>& dotInPlace(const MatrixStorage<ValueType, ColNum, ColNum>& other);
+
+	// Multi all elements with value. Return copy. See also scaleInPlace()
+	inline MatrixStorage<ValueType, RowNum, ColNum> scaled(const ValueType& value) const;
+
+	// Multi all elements with value. Return this. See also scaled()
+	inline MatrixStorage<ValueType, RowNum, ColNum>& scaleInPlace(const ValueType& value);
 protected:
 	union Data
 	{

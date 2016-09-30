@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
-//Global function
+// Global function
 //////////////////////////////////////////////////////////////////////////
-template<int Size>
+template <int Size>
 bool operator==(const VectorStorage<float, Size>& left, const VectorStorage<float, Size>& right)
 {
 	for (int i = 0; i < Size; ++i)
@@ -12,113 +12,59 @@ bool operator==(const VectorStorage<float, Size>& left, const VectorStorage<floa
 	return true;
 }
 
-template<class ValueType, int Size>
+template <class ValueType, int Size>
 bool operator==(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right)
 {
 	return memcmp(_data, other._data, sizeof(_data)) == 0;
 }
 
-template<class ValueType, int Size>
+template <class ValueType, int Size>
 ValueType operator*(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right)
 {
 	return left.dot(right);
 }
 
-template<class ValueType, int Size>
+template <class ValueType, int Size>
 VectorStorage<ValueType, Size>& operator*(const VectorStorage<ValueType, Size>& vec, const ValueType& scale)
 {
 	return vec.scale(scale);
 }
-template<class ValueType, int Size>
+template <class ValueType, int Size>
 VectorStorage<ValueType, Size>& operator*(const ValueType& scale, const VectorStorage<ValueType, Size>& vec)
 {
 	return vec.scale(scale);
 }
 //////////////////////////////////////////////////////////////////////////
-//Member function
+// Member function
 //////////////////////////////////////////////////////////////////////////
 template <class ValueType, int Size>
 VectorStorage<ValueType, Size>::VectorStorage()
 {
-	memset(this, 0, sizeof(VectorStorage<ValueType, Size>));
+	reset();
 }
 
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueType& y)
+VectorStorage<ValueType, Size>::VectorStorage(std::initializer_list<ValueType> valueList)
 {
-	static_assert(Size == 2, "This constructor is only aviliable for Vector2");
-	_data[0] = x;
-	_data[1] = y;
+	reset(valueList);
 }
 
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z)
+VectorStorage<ValueType, Size>::VectorStorage(const ValueType* data)
 {
-	static_assert(Size == 3, "This constructor is only aviliable for Vector3");
-	_data[0] = x;
-	_data[1] = y;
-	_data[2] = z;
+	reset(data);
 }
 
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w)
+VectorStorage<ValueType, Size>::VectorStorage(const ValueType& value)
 {
-	static_assert(Size == 4, "This constructor is only aviliable for Vector4");
-	_data[0] = x;
-	_data[1] = y;
-	_data[2] = z;
-	_data[3] = w;
+	reset(value);
 }
 
 template <class ValueType, int Size>
-ValueType& VectorStorage<ValueType, Size>::X()
+VectorStorage<ValueType, Size>::VectorStorage(const VectorStorage& other)
 {
-	static_assert(Size >= 1, "This function is not availiable for Size < 1");
-	return _data[0];
-}
-template <class ValueType, int Size>
-const ValueType& VectorStorage<ValueType, Size>::X() const
-{
-	static_assert(Size >= 1, "This function is not availiable for Size < 1");
-	return _data[0];
-}
-template <class ValueType, int Size>
-ValueType& VectorStorage<ValueType, Size>::Y()
-{
-	static_assert(Size >= 2, "This function is not availiable for Size < 2");
-	return _data[1];
-}
-template <class ValueType, int Size>
-const ValueType& VectorStorage<ValueType, Size>::Y() const
-{
-	static_assert(Size >= 2, "This function is not availiable for Size < 2");
-	return _data[1];
-}
-
-template <class ValueType, int Size>
-ValueType& VectorStorage<ValueType, Size>::Z()
-{
-	static_assert(Size >= 3, "This function is not availiable for Vector2");
-	return _data[2];
-}
-template <class ValueType, int Size>
-const ValueType& VectorStorage<ValueType, Size>::Z() const
-{
-	static_assert(Size >= 3, "This function is not availiable for Vector2");
-	return _data[2];
-}
-
-template <class ValueType, int Size>
-ValueType& VectorStorage<ValueType, Size>::W()
-{
-	static_assert(Size >= 4, "This function is not availiable for Vector2 and Vector3");
-	return _data[3];
-}
-template <class ValueType, int Size>
-const ValueType& VectorStorage<ValueType, Size>::W() const
-{
-	static_assert(Size >= 4, "This function is not availiable for Vector2 and Vector3");
-	return _data[3];
+	reset(other);
 }
 
 template <class ValueType, int Size>
@@ -133,6 +79,71 @@ const ValueType& VectorStorage<ValueType, Size>::operator()(int index) const
 {
 	TinyAssert(index < Size && index >= 0);
 	return _data[index];
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(std::initializer_list<ValueType> valueList)
+{
+	reset(valueList);
+	return *this;
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const ValueType* data)
+{
+	reset(data);
+	return *this;
+}
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const ValueType& value)
+{
+	reset(value);
+	return *this;
+}
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const VectorStorage& other)
+{
+	reset(other);
+	return *this;
+}
+
+template <class ValueType, int Size>
+void VectorStorage<ValueType, Size>::reset()
+{
+	memset(_data, 0, sizeof(_data));
+}
+
+template <class ValueType, int Size>
+void VectorStorage<ValueType, Size>::reset(std::initializer_list<ValueType> valueList)
+{
+	for (int i = 0; i < Size; ++i)
+	{
+		if (i < (int)valueList.size())
+			_data[i] = *(valueList.begin() + i);
+		else
+			_data[i] = 0;
+	}
+}
+
+template <class ValueType, int Size>
+void VectorStorage<ValueType, Size>::reset(const ValueType* data)
+{
+	memcpy(_data, data, sizeof(_data));
+}
+
+template <class ValueType, int Size>
+void VectorStorage<ValueType, Size>::reset(const ValueType& value)
+{
+	for (int i = 0; i < Size; ++i)
+	{
+		_data[i] = value;
+	}
+}
+
+template <class ValueType, int Size>
+void VectorStorage<ValueType, Size>::reset(const VectorStorage& other)
+{
+	memcpy(_data, other._data, sizeof(_data));
 }
 
 template <class ValueType, int Size>
@@ -154,7 +165,18 @@ ValueType VectorStorage<ValueType, Size>::dot(const VectorStorage& other) const
 }
 
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scale(const ValueType& scale)
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scaled(const ValueType& scale)
+{
+	VectorStorage<ValueType, Size> target = *this;
+	for (i = 0; i < Size; ++i)
+	{
+		target._data[i] *= scale;
+	}
+	return target;
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scaleInPlace(const ValueType& scale)
 {
 	for (i = 0; i < Size; ++i)
 	{
@@ -164,25 +186,6 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scale(const Valu
 }
 
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const VectorStorage& other)
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::normalize()
 {
-	memcpy(_data, other._data, sizeof(_data));
-	return *this;
-}
-
-template <class ValueType, int Size>
-VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const ValueType& value)
-{
-	for (int i = 0; i < Size; ++i)
-	{
-		_data[i] = value;
-	}
-	return *this;
-}
-
-template<class ValueType, int Size>
-VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const ValueType* data)
-{
-	memcpy(_data, data, sizeof(_data));
-	return *this;
 }

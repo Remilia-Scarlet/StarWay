@@ -309,3 +309,24 @@ inline MatrixStorage<ValueType, RowNum, ColNum>& MatrixStorage<ValueType, RowNum
 	}
 	return *this;
 }
+
+template <class ValueType, int RowNum, int ColNum>
+MatrixStorage<ValueType, RowNum, ColNum> MatrixStorage<ValueType, RowNum, ColNum>::scaled(const ValueType& value) const
+{
+	MatrixStorage<ValueType, RowNum, ColNum> target = *this;
+	for (int i = 0; i < RowNum * ColNum; ++i)
+	{
+		target._data._d[i] *= value;
+	}
+	return target;
+}
+
+template <class ValueType, int RowNum, int ColNum>
+MatrixStorage<ValueType, RowNum, ColNum>& MatrixStorage<ValueType, RowNum, ColNum>::scaleInPlace(const ValueType& value)
+{
+	for (int i = 0; i < RowNum * ColNum; ++i)
+	{
+		_data._d[i] *= value;
+	}
+	return *this;
+}
