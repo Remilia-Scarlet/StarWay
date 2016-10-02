@@ -17,7 +17,7 @@ bool operator==(const MatrixStorage<float, RowNum, ColNum>& left, const MatrixSt
 template <class ValueType, int RowNum, int ColNum>
 bool operator==(const MatrixStorage<ValueType, RowNum, ColNum>& left, const MatrixStorage<ValueType, RowNum, ColNum>& right)
 {
-	return memcmp(left.getData(), right.getData(), sizeof(MatrixStorage<ValueType, RowNum, ColNum>));
+	return memcmp(left.getData(), right.getData(), sizeof(MatrixStorage<ValueType, RowNum, ColNum>)) == 0;
 }
 
 template <class ValueType, int RowNum_left, int ColNum_left, int RowNum_right, int ColNum_right>

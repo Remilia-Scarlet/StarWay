@@ -1,7 +1,7 @@
 #include "WinLancher/precomp.h"
 #include "Math/matrix/Matrix.h"
 
-void UnitTest()
+void TestMatrix()
 {
 	Matrix4 ma;
 	Vector4 v4 = { 1,2,3,4 };
@@ -56,4 +56,59 @@ void UnitTest()
 
 	MatrixStorage<float, 3, 2> madas = mmmm.scaled(5);
 	mmmm.scaleInPlace(5);
+
+	//if (mmmm == mmmm2)
+	//{
+	//	int a = 0;
+	//}
+	if (madas == mmmm)
+	{
+		int a = 0;
+	}
+	MatrixStorage<double, 2, 2> ddd = { 1.1,2.2,3.3,4.4 };
+	MatrixStorage<double, 2, 2> ddd2 = ddd;
+	if (ddd == ddd2)
+	{
+		int a = 0;
+	}
+
+}
+
+void TestVector()
+{
+	Vector4 v4;
+	Vector4 v41 = { 1,2 };
+	Vector4 v42 = { 1,2,3,4,5,6,7 };
+	float dd[] = { 1,2,3,4,5,6,7,8,9,10 };
+	Vector4 v43 = dd;
+	Vector4 v44 = 1;
+	Vector4 v45 = v44;
+
+	float ff = v42(1);
+	ff = const_cast<const Vector4&>(v42)(2);
+
+	v42 = { 1.1f,1.2f,1.3f,1.4f,1.5f };
+	v42 = dd;
+	v42 = 999;
+	v42 = v44;
+
+	v42.reset();
+	v42.reset({ 1.1f });
+	v42.reset(ff);
+	v42.reset(dd);
+	v42.reset(v44);
+
+	v42.setValue(1, 999);
+	float aa = v42.dot({ 1,2,3,4 });
+	auto dsaf = v42.scaled(2);
+	v42.scaleInPlace(2);
+	auto fdsafsa= v42.normalized();
+	v42.normalizeInPlace();;
+
+}
+
+void UnitTest()
+{
+	TestMatrix();
+	TestVector();
 }

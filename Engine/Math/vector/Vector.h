@@ -61,8 +61,14 @@ class VectorStorage
 	// Multiply all elem with this value, and return this. See also scaleInPlace().
 	inline VectorStorage& scaleInPlace(const ValueType& scale);
 
-	inline VectorStorage& normalize();
+	// Return a copy of normalized vector. See also normalizeInPlace().
+	inline VectorStorage normalized() const;
 
+	// Normalize vector and return ref. See also normalized()
+	inline  VectorStorage& normalizeInPlace();
+
+	// Get vector lenth
+	inline int lenth() const;
    protected:
 	ValueType _data[Size];
 };

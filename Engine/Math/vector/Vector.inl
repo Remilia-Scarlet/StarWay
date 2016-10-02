@@ -168,7 +168,7 @@ template <class ValueType, int Size>
 VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scaled(const ValueType& scale)
 {
 	VectorStorage<ValueType, Size> target = *this;
-	for (i = 0; i < Size; ++i)
+	for (int i = 0; i < Size; ++i)
 	{
 		target._data[i] *= scale;
 	}
@@ -178,7 +178,7 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scaled(const Val
 template <class ValueType, int Size>
 VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scaleInPlace(const ValueType& scale)
 {
-	for (i = 0; i < Size; ++i)
+	for (int i = 0; i < Size; ++i)
 	{
 		_data[i] *= scale;
 	}
@@ -186,6 +186,19 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scaleInPlace(con
 }
 
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::normalize()
+VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::normalized()
 {
+
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::normalizeInPlace()
+{
+
+}
+
+template <class ValueType, int Size>
+int VectorStorage<ValueType, Size>::lenth()
+{
+
 }
