@@ -1,6 +1,7 @@
 #pragma once
 #include <type_traits>
 #include <memory.h>
+#include <cmath>
 #include "TinyEngine\Engine\EngineDefs.h"
 
 template <class ValueType, int Size>
@@ -52,11 +53,15 @@ class VectorStorage
 	// Set an elem
 	inline void setValue(int index, const ValueType& value);
 
+	// return the data
+	inline ValueType* getData();
+	inline const ValueType* getData() const;
+
 	// Dot multiply
 	inline ValueType dot(const VectorStorage& other) const;
 
 	// Multiply all elem with this value, and return the copy. See also scaleInPlace().
-	inline VectorStorage& scaled(const ValueType& scale);
+	inline VectorStorage scaled(const ValueType& scale) const;
 
 	// Multiply all elem with this value, and return this. See also scaleInPlace().
 	inline VectorStorage& scaleInPlace(const ValueType& scale);
@@ -68,7 +73,7 @@ class VectorStorage
 	inline  VectorStorage& normalizeInPlace();
 
 	// Get vector lenth
-	inline int lenth() const;
+	inline double lenth() const;
    protected:
 	ValueType _data[Size];
 };

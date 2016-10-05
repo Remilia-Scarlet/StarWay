@@ -13,7 +13,7 @@ public:
 	void setRotation(const Vector3& eulerAngles);
 	void setRotation(float xRotate, float yRotate, float zRotate);
 	void setRotation(const Matrix4& rotationMatrix);
-	virtual ~Quaternion();
+	~Quaternion();
 	float W() const { return _w; }
 	float X() const { return _x; }
 	float Y() const { return _y; }

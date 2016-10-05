@@ -87,6 +87,9 @@ void TestVector()
 	float ff = v42(1);
 	ff = const_cast<const Vector4&>(v42)(2);
 
+	float* da1 = v42.getData();
+	const float* da2 = const_cast<const Vector4&>(v42).getData();
+
 	v42 = { 1.1f,1.2f,1.3f,1.4f,1.5f };
 	v42 = dd;
 	v42 = 999;
@@ -102,13 +105,40 @@ void TestVector()
 	float aa = v42.dot({ 1,2,3,4 });
 	auto dsaf = v42.scaled(2);
 	v42.scaleInPlace(2);
+
 	auto fdsafsa= v42.normalized();
 	v42.normalizeInPlace();;
 
+	if (v41 == v42)
+	{
+		int a = 0;
+	}
+	v41 = v42;
+	if (v41 == v42)
+	{
+		int a = 0;
+	}
+
+	VectorStorage<int, 3> vii = { 1,2,3 };
+	//if (v41 == vii)
+	//{
+	//	int a = 0;
+	//}
+	VectorStorage<int, 3> vii2 = { 1,2,3 };
+	if (vii == vii2)
+	{
+		int a = 0;
+	}
+	float dot = v43 * v42;
+	Vector4 vvv = 2.f * v43;
+
+	double l = v42.lenth();
+
+	int a = 0;
 }
 
 void UnitTest()
 {
-	TestMatrix();
-	TestVector();
+//	TestMatrix();
+//	TestVector();
 }

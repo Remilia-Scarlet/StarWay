@@ -15,7 +15,7 @@ bool operator==(const VectorStorage<float, Size>& left, const VectorStorage<floa
 template <class ValueType, int Size>
 bool operator==(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right)
 {
-	return memcmp(_data, other._data, sizeof(_data)) == 0;
+	return memcmp(left.getData(), right.getData(), sizeof(VectorStorage<ValueType, Size>)) == 0;
 }
 
 template <class ValueType, int Size>
@@ -25,14 +25,14 @@ ValueType operator*(const VectorStorage<ValueType, Size>& left, const VectorStor
 }
 
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size>& operator*(const VectorStorage<ValueType, Size>& vec, const ValueType& scale)
+VectorStorage<ValueType, Size> operator*(const VectorStorage<ValueType, Size>& vec, const ValueType& scale)
 {
-	return vec.scale(scale);
+	return vec.scaled(scale);
 }
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size>& operator*(const ValueType& scale, const VectorStorage<ValueType, Size>& vec)
+VectorStorage<ValueType, Size> operator*(const ValueType& scale, const VectorStorage<ValueType, Size>& vec)
 {
-	return vec.scale(scale);
+	return vec.scaled(scale);
 }
 //////////////////////////////////////////////////////////////////////////
 // Member function
@@ -154,6 +154,18 @@ void VectorStorage<ValueType, Size>::setValue(int index, const ValueType& value)
 }
 
 template <class ValueType, int Size>
+ValueType* VectorStorage<ValueType, Size>::getData()
+{
+	return _data;
+}
+
+template <class ValueType, int Size>
+const ValueType* VectorStorage<ValueType, Size>::getData() const
+{
+	return _data;
+}
+
+template <class ValueType, int Size>
 ValueType VectorStorage<ValueType, Size>::dot(const VectorStorage& other) const
 {
 	ValueType sum = 0;
@@ -165,7 +177,7 @@ ValueType VectorStorage<ValueType, Size>::dot(const VectorStorage& other) const
 }
 
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scaled(const ValueType& scale)
+VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::scaled(const ValueType& scale) const
 {
 	VectorStorage<ValueType, Size> target = *this;
 	for (int i = 0; i < Size; ++i)
@@ -186,19 +198,36 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::scaleInPlace(con
 }
 
 template <class ValueType, int Size>
-VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::normalized()
+VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::normalized() const
 {
-
+	VectorStorage<ValueType, Size> ret = *this;
+	double len = ret.lenth();
+	for (int i = 0; i < Size; ++i)
+	{
+		ret._data[i] /= (ValueType)len;
+	}
+	return ret;
 }
 
 template <class ValueType, int Size>
 VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::normalizeInPlace()
 {
-
+	double len = lenth();
+	for (int i = 0; i < Size; ++i)
+	{
+		_data[i] /= (ValueType)len;
+	}
+	return *this;
 }
 
 template <class ValueType, int Size>
-int VectorStorage<ValueType, Size>::lenth()
+double VectorStorage<ValueType, Size>::lenth() const
 {
-
+	double sum = 0;
+	for (int i = 0; i < Size; ++i)
+	{
+		sum += _data[i] * _data[i];
+	}
+	sum = sqrt(sum);
+	return sum;
 }
