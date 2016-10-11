@@ -7,7 +7,7 @@
 template <class ValueType, int Size>
 class VectorStorage
 {
-   public:
+public:
 	// Construct a Vector with all elements 0.
 	inline VectorStorage();
 
@@ -73,8 +73,20 @@ class VectorStorage
 	inline  VectorStorage& normalizeInPlace();
 
 	// Get vector lenth
-	inline double lenth() const;
-   protected:
+	inline ValueType lenth() const;
+
+	inline ValueType& X();
+	inline const ValueType& X() const;
+
+	inline ValueType& Y();
+	inline const ValueType& Y() const;
+
+	inline ValueType& Z();
+	inline const ValueType& Z() const;
+
+	inline ValueType& W();
+	inline const ValueType& W() const;
+protected:
 	ValueType _data[Size];
 };
 

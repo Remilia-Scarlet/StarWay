@@ -4,7 +4,6 @@
     <ClInclude Include="..\quaternion\Quaternion.h">
       <Filter>quaternion</Filter>
     </ClInclude>
-    <ClInclude Include="..\precomp.h" />
     <ClInclude Include="..\vector\Vector.h">
       <Filter>vector</Filter>
     </ClInclude>
@@ -24,17 +23,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\quaternion\Quaternion.cpp">
-      <Filter>quaternion</Filter>
-    </ClCompile>
-    <ClCompile Include="..\precomp.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\vector\Vector.inl">
       <Filter>vector</Filter>
     </None>
     <None Include="..\matrix\Matrix.inl">
       <Filter>matrix</Filter>
+    </None>
+    <None Include="..\quaternion\Quaternion.inl">
+      <Filter>quaternion</Filter>
     </None>
   </ItemGroup>
 </Project>

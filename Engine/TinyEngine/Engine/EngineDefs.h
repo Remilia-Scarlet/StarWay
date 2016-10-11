@@ -3,7 +3,7 @@
 #include <string>
 #include <assert.h>
 #include <stdarg.h>
-#include <math.h>
+#include <cmath>
 #include "Ash/RefCountPointer/RefCountPtr.h"
 
 void DebugString(std::string format, ...);
@@ -12,7 +12,7 @@ void DebugString(std::string format, ...);
 #define TINY_BREAK_IF(CENTENCE) if(CENTENCE)break
 #define TINY_SAFE_DELETE(PTR) do{if(PTR != nullptr){delete PTR;PTR = nullptr;}}while(0)
 #define TINY_SAFE_RELEASE(PTR) do{if(PTR != nullptr){PTR->Release();PTR = nullptr;}}while(0)
-#define TINY_FLOAT_EQUAL(_FLOATA_,_FLOATB_) (abs(_FLOATA_ - _FLOATB_)<0.00000001f)
+#define TINY_FLOAT_EQUAL(_FLOATA_,_FLOATB_) (abs((_FLOATA_) - (_FLOATB_))<0.00000001f)
 
 inline std::string FormatString(const char* format, ...)
 {

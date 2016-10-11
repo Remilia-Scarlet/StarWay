@@ -91,6 +91,15 @@ void TestVector()
 	const float* da2 = const_cast<const Vector4&>(v42).getData();
 
 	v42 = { 1.1f,1.2f,1.3f,1.4f,1.5f };
+	float& x = v42.X();
+	float& y = v42.Y();
+	float& z = v42.Z();
+	float& w = v42.W();
+	const float& cx = const_cast<const Vector4&>(v42).X();
+	const float& cy = const_cast<const Vector4&>(v42).Y();
+	const float& cz = const_cast<const Vector4&>(v42).Z();
+	const float& cw = const_cast<const Vector4&>(v42).W();
+
 	v42 = dd;
 	v42 = 999;
 	v42 = v44;
@@ -132,13 +141,13 @@ void TestVector()
 	float dot = v43 * v42;
 	Vector4 vvv = 2.f * v43;
 
-	double l = v42.lenth();
+	float l = v42.lenth();
 
 	int a = 0;
 }
 
 void UnitTest()
 {
-//	TestMatrix();
-//	TestVector();
+	TestMatrix();
+	TestVector();
 }

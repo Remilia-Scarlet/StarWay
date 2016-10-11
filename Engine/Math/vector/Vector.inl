@@ -201,33 +201,84 @@ template <class ValueType, int Size>
 VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::normalized() const
 {
 	VectorStorage<ValueType, Size> ret = *this;
-	double len = ret.lenth();
-	for (int i = 0; i < Size; ++i)
-	{
-		ret._data[i] /= (ValueType)len;
-	}
-	return ret;
+	return ret.normalizeInPlace();
 }
 
 template <class ValueType, int Size>
 VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::normalizeInPlace()
 {
-	double len = lenth();
+	ValueType len = lenth();
 	for (int i = 0; i < Size; ++i)
 	{
-		_data[i] /= (ValueType)len;
+		_data[i] /= len;
 	}
 	return *this;
 }
 
 template <class ValueType, int Size>
-double VectorStorage<ValueType, Size>::lenth() const
+ValueType VectorStorage<ValueType, Size>::lenth() const
 {
-	double sum = 0;
+	ValueType sum = 0;
 	for (int i = 0; i < Size; ++i)
 	{
 		sum += _data[i] * _data[i];
 	}
 	sum = sqrt(sum);
 	return sum;
+}
+
+template <class ValueType, int Size>
+ValueType& VectorStorage<ValueType, Size>::X()
+{
+	static_assert(Size >= 1, "This is only aviliable when Size >= 1");
+	return _data[0];
+}
+
+template <class ValueType, int Size>
+const ValueType& VectorStorage<ValueType, Size>::X() const
+{
+	static_assert(Size >= 1, "This is only aviliable when Size >= 1");
+	return _data[0];
+}
+
+template <class ValueType, int Size>
+ValueType& VectorStorage<ValueType, Size>::Y()
+{
+	static_assert(Size >= 2, "This is only aviliable when Size >= 2");
+	return _data[1];
+}
+
+template <class ValueType, int Size>
+const ValueType& VectorStorage<ValueType, Size>::Y() const
+{
+	static_assert(Size >= 2, "This is only aviliable when Size >= 2");
+	return _data[1];
+}
+
+template <class ValueType, int Size>
+ValueType& VectorStorage<ValueType, Size>::Z()
+{
+	static_assert(Size >= 3, "This is only aviliable when Size >= 3");
+	return _data[2];
+}
+
+template <class ValueType, int Size>
+const ValueType& VectorStorage<ValueType, Size>::Z() const
+{
+	static_assert(Size >= 3, "This is only aviliable when Size >= 3");
+	return _data[2];
+}
+
+template <class ValueType, int Size>
+ValueType& VectorStorage<ValueType, Size>::W()
+{
+	static_assert(Size >= 4, "This is only aviliable when Size >= 4");
+	return _data[3];
+}
+
+template <class ValueType, int Size>
+const ValueType& VectorStorage<ValueType, Size>::W() const
+{
+	static_assert(Size >= 4, "This is only aviliable when Size >= 4");
+	return _data[3];
 }
