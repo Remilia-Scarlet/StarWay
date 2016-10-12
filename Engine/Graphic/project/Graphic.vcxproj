@@ -80,9 +80,6 @@
     <ProjectReference Include="..\..\Ash\project\Ash.vcxproj">
       <Project>{c138a5ee-b50e-470f-bdbe-9600431b27e7}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Math\project\Math.vcxproj">
-      <Project>{02717faa-d141-439d-86f3-9a01f194a284}</Project>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7070F552-7801-44E1-923F-5FDD391906BB}</ProjectGuid>

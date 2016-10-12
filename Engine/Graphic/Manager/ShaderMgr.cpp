@@ -71,5 +71,6 @@ bool ShaderMgr::init()
 		TINY_BREAK_IF(!_defaultPShader.isValid());
 		return true;
 	} while (0);
+	TinyAssert(false, "ShaderMgr creating failed!");
 	return false;
 }

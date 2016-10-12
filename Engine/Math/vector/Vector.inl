@@ -6,7 +6,18 @@ bool operator==(const VectorStorage<float, Size>& left, const VectorStorage<floa
 {
 	for (int i = 0; i < Size; ++i)
 	{
-		if (TINY_FLOAT_EQUAL(left(i), right(i)))
+		if (!isEqual(left(i), right(i)))
+			return false;
+	}
+	return true;
+}
+
+template <int Size>
+bool operator==(const VectorStorage<double, Size>& left, const VectorStorage<double, Size>& right)
+{
+	for (int i = 0; i < Size; ++i)
+	{
+		if (!isEqual(left(i), right(i)))
 			return false;
 	}
 	return true;
@@ -177,6 +188,27 @@ ValueType VectorStorage<ValueType, Size>::dot(const VectorStorage& other) const
 }
 
 template <class ValueType, int Size>
+VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::cross(const VectorStorage<ValueType, Size>& other) const
+{
+	VectorStorage<ValueType, Size> ret = *this;
+	return ret.crossInPlace(other);
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::crossInPlace(const VectorStorage<ValueType, Size>& other)
+{
+	static_assert(Size == 3, "Only Vector3 can use cross");
+
+	ValueType x1 = X(), y1 = Y(), z1 = Z();
+	ValueType x2 = other.X(), y2 = other.Y(), z2 = other.Z();
+
+	X() = y1 * z2 - z1 * y2;
+	Y() = x2 * z1 - z2 * x1;
+	Z() = x1 * y2 - x2 * y1;
+	return *this;
+}
+
+template <class ValueType, int Size>
 VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::scaled(const ValueType& scale) const
 {
 	VectorStorage<ValueType, Size> target = *this;
@@ -218,13 +250,13 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::normalizeInPlace
 template <class ValueType, int Size>
 ValueType VectorStorage<ValueType, Size>::lenth() const
 {
-	ValueType sum = 0;
-	for (int i = 0; i < Size; ++i)
-	{
-		sum += _data[i] * _data[i];
-	}
-	sum = sqrt(sum);
-	return sum;
+	return sqrt(lenth2());
+}
+
+template <class ValueType, int Size>
+ValueType VectorStorage<ValueType, Size>::lenth2() const
+{
+	return this->dot(*this);
 }
 
 template <class ValueType, int Size>

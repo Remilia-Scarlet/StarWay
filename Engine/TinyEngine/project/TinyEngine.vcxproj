@@ -66,9 +66,6 @@
     <ProjectReference Include="..\..\Ash\project\Ash.vcxproj">
       <Project>{c138a5ee-b50e-470f-bdbe-9600431b27e7}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Math\project\Math.vcxproj">
-      <Project>{02717faa-d141-439d-86f3-9a01f194a284}</Project>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FDC4E310-0F62-4301-8645-2D0A34A92703}</ProjectGuid>

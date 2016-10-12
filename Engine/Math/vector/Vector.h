@@ -60,6 +60,12 @@ public:
 	// Dot multiply
 	inline ValueType dot(const VectorStorage& other) const;
 
+	// Cross multiply and return the copy. See also crossInPlace()
+	inline VectorStorage cross(const VectorStorage& other) const;
+
+	// Cross multiply in this and return this. See also cross()
+	inline VectorStorage& crossInPlace(const VectorStorage& other);
+
 	// Multiply all elem with this value, and return the copy. See also scaleInPlace().
 	inline VectorStorage scaled(const ValueType& scale) const;
 
@@ -72,8 +78,11 @@ public:
 	// Normalize vector and return ref. See also normalized()
 	inline  VectorStorage& normalizeInPlace();
 
-	// Get vector lenth
+	// Get vector lenth. See also lenth2()
 	inline ValueType lenth() const;
+
+	// Get square of vector lenth. See also lenth()
+	inline ValueType lenth2() const;
 
 	inline ValueType& X();
 	inline const ValueType& X() const;

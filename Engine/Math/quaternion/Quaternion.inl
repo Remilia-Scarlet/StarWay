@@ -2,17 +2,8 @@
 // Global Function
 //////////////////////////////////////////////////////////////////////////
 
-
-
-
-
-
-
-
-
-
 //////////////////////////////////////////////////////////////////////////
-//Member Function
+// Member Function
 //////////////////////////////////////////////////////////////////////////
 template <class ValueType>
 QuaternionStorage<ValueType>::QuaternionStorage()
@@ -65,7 +56,6 @@ QuaternionStorage<ValueType>::QuaternionStorage(const QuaternionStorage& other)
 template <class ValueType>
 QuaternionStorage<ValueType>::~QuaternionStorage()
 {
-
 }
 
 template <class ValueType>
@@ -86,9 +76,9 @@ void QuaternionStorage<ValueType>::reset(const Vector3& eulerAngles)
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const ValueType& zRotate, const ValueType& xRotate, const ValueType& yRotate)
 {
-	const ValueType p = (ValueType)M_PI / (ValueType)360.0 * zRotate;
-	const ValueType y = (ValueType)M_PI / (ValueType)360.0 * xRotate;
-	const ValueType r = (ValueType)M_PI / (ValueType)360.0 * yRotate;
+	const ValueType p = degreeToRadian(zRotate);
+	const ValueType y = degreeToRadian(xRotate);
+	const ValueType r = degreeToRadian(yRotate);
 
 	const ValueType sinp = sin(p);
 	const ValueType siny = sin(y);
@@ -107,9 +97,9 @@ template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType, 3>& axis, const ValueType& angle)
 {
 	VectorStorage<ValueType, 3> axis_norm = axis.normalized();
-	const ValueType sin_2 = sin(angle / (ValueType)2);
+	const ValueType sin_2 = sin(degreeToRadian(angle / (ValueType)2));
 
-	_w = cos(angle / (ValueType)2);
+	_w = cos(degreeToRadian(angle / (ValueType)2));
 	_x = axis_norm.X() * sin_2;
 	_y = axis_norm.Y() * sin_2;
 	_z = axis_norm.Z() * sin_2;
@@ -118,37 +108,26 @@ void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType, 3>& axis
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType, 3>& from, const VectorStorage<ValueType, 3>& to)
 {
-	VectorStorage<ValueType, 3> from_norm = from.normalized();
-	VectorStorage<ValueType, 3> to_norm = to.normalized();
+	//http://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
 
-	ValueType d = from_norm * to_norm;
+	ValueType k_cos_theta = from.dot(to);
+	ValueType k = sqrt(from.lenth2() * to.lenth2());
 
-	constexpr bool isFloat = std::is_floating_point<ValueType>::value;
-	if ((isFloat && TINY_FLOAT_EQUAL(d, (ValueType)1)) //same directions
-		|| (!isFloat && d == (ValueType)1))
+	// 180 degree rotation around any orthogonal vector
+	if (isEqual(k_cos_theta / k, (ValueType)-1))
 	{
-		return QuaternionStorage<ValueType>();
-	}
-	else if (isFloat && TINY_FLOAT_EQUAL(d, (ValueType)(-1))  //opposite directions
-		|| (!isFloat && d == (ValueType)(-1))
-		)
-	{
-		VectorStorage<ValueType> ax(1, 0, 0);
-		ax.cross(from_norm);
-		if (ax.dot(ax) == 0) {
-			ax = cv::Vec3d(0, 1, 0);
-			ax = ax.cross(from_n);
+		VectorStorage<ValueType> orthogonal(1, 0, 0);
+		orthogonal.crossInPlace(from);
+		if (isEqual(orthogonal.lenth2(), (ValueType)0))
+		{
+			orthogonal = { 0,1,0 };
+			orthogonal.crossInPlace(from);
 		}
-		QuaternionStorage qr(ax,0);
-		return qr;
+		orthogonal.normalizeInPlace();
+		return Quaternion(0, orthogonal.X(), orthogonal.Y(), orthogonal.Z());
 	}
-
-	double s = (double)sqrt((1 + d) * 2);
-	double inv_s = 1.0f / s;
-
-	cv::Vec3d axis = from_n.cross(to_n);
-	Quaternion q(s*0.5f, axis[0] * inv_s, axis[1] * inv_s, axis[2] * inv_s);
-	return q.Normalize();
+	VectorStorage<ValueType, 3> cross = from.cross(to);
+	return Quaternion(k_cos_theta + k, cross.X(), cross.Y(), cross.Z()).normalizeInPlace();
 }
 
 template <class ValueType>
@@ -160,13 +139,11 @@ void QuaternionStorage<ValueType>::reset(const MatrixStorage<ValueType, 4, 4>& r
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const ValueType& w, const ValueType& x, const ValueType& y, const ValueType& z)
 {
-
 }
 
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const QuaternionStorage& other)
 {
-
 }
 
 template <class ValueType>
@@ -225,7 +202,7 @@ QuaternionStorage<ValueType> QuaternionStorage<ValueType>::normalized() const
 }
 
 template <class ValueType>
-QuaternionStorage& QuaternionStorage<ValueType>::normalizeInPlace()
+QuaternionStorage<ValueType>& QuaternionStorage<ValueType>::normalizeInPlace()
 {
 	ValueType mag = _x * _x + _y * _y + _z * _z + _w * _w;
 	mag = sqrt(mag);

@@ -1,5 +1,41 @@
 #include "WinLancher/precomp.h"
 #include "Math/matrix/Matrix.h"
+void Common()
+{
+	float a = 1.2f;
+	float b = 1.3f;
+	if (TINY_FLOAT_EQUAL(a, 1.2f))
+	{
+		int a = 0;
+	}
+	if (TINY_FLOAT_EQUAL(a, 1.20001f))
+	{
+		int a = 0;
+	}
+	if (TINY_FLOAT_EQUAL(b, 1.3f))
+	{
+		int a = 0;
+	}
+	if (TINY_FLOAT_EQUAL(b, 1.30001f))
+	{
+		int a = 0;
+	}
+	float c = a + 0.1f;
+	auto asdad = abs(c - b);
+	if (TINY_FLOAT_EQUAL(c,b))
+	{
+		int a = 0;
+	}
+	c += 0.000001f;
+	if (TINY_FLOAT_EQUAL(c, b))
+	{
+		int a = 0;
+	}
+
+	float d30 = degreeToRadian(30.0f);
+	float r30 = radianToDegree(d30);
+
+}
 
 void TestMatrix()
 {
@@ -71,7 +107,12 @@ void TestMatrix()
 	{
 		int a = 0;
 	}
-
+	MatrixStorage<int, 2, 2> iii = { 1,2,3,4 };
+	MatrixStorage<int, 2, 2> iii2 = iii;
+	if (iii == iii2)
+	{
+		int a = 0;
+	}
 }
 
 void TestVector()
@@ -138,16 +179,35 @@ void TestVector()
 	{
 		int a = 0;
 	}
+	VectorStorage<double, 3> ddd1 = { 1.1,1.2,1.3 };
+	VectorStorage<double, 3> ddd2 = { 1.1,1.2,1.3 };
+	if(ddd1 == ddd2)
+	{
+		int a = 0;
+	}
+
+
+
 	float dot = v43 * v42;
 	Vector4 vvv = 2.f * v43;
 
 	float l = v42.lenth();
+	float l2 = v42.lenth2();
+
+//	Vector4 crossss = v42.cross(v43);
+//	v42.crossInPlace(v43);
+
+	Vector3 cccc1 = { 1,2,3 };
+	Vector3 cccc2 = { 4,5,6 };
+	Vector3 ccccc = cccc1.cross(cccc2);
+	cccc1.crossInPlace(cccc2);
 
 	int a = 0;
 }
 
 void UnitTest()
 {
+	Common();
 	TestMatrix();
 	TestVector();
 }

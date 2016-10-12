@@ -275,9 +275,6 @@
     <ProjectReference Include="..\..\Engine\Graphic\project\Graphic.vcxproj">
       <Project>{7070f552-7801-44e1-923f-5fdd391906bb}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Engine\Math\project\Math.vcxproj">
-      <Project>{02717faa-d141-439d-86f3-9a01f194a284}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\Engine\TinyEngine\project\TinyEngine.vcxproj">
       <Project>{fdc4e310-0f62-4301-8645-2d0a34a92703}</Project>
     </ProjectReference>

@@ -2,13 +2,25 @@
 // Global function
 //////////////////////////////////////////////////////////////////////////
 
-// for float, use TINY_FLOAT_EQUAL to compare the value.
+// for float, use isEqual to compare the value.
 template <int RowNum, int ColNum>
 bool operator==(const MatrixStorage<float, RowNum, ColNum>& left, const MatrixStorage<float, RowNum, ColNum>& right)
 {
 	for (int i = 0; i < ColNum * RowNum; ++i)
 	{
-		if (!TINY_FLOAT_EQUAL(*(left.getData() + i), *(right.getData() + i)))
+		if (!isEqual(*(left.getData() + i), *(right.getData() + i)))
+			return false;
+	}
+	return true;
+}
+
+// for double, use isEqual to compare the value.
+template <int RowNum, int ColNum>
+bool operator==(const MatrixStorage<double, RowNum, ColNum>& left, const MatrixStorage<double, RowNum, ColNum>& right)
+{
+	for (int i = 0; i < ColNum * RowNum; ++i)
+	{
+		if (!isEqual(*(left.getData() + i), *(right.getData() + i)))
 			return false;
 	}
 	return true;
