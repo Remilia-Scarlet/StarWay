@@ -4,3 +4,4 @@ output/*
 *.sdf
 ipch/*
 *.opendb
+*.user

@@ -57,6 +57,7 @@
     <ClInclude Include="..\Engine\Engine.h" />
     <ClInclude Include="..\Engine\EngineDefs.h" />
     <ClInclude Include="..\Engine\LocalSetting.h" />
+    <ClInclude Include="..\Engine\TinyAssert.h" />
     <ClInclude Include="..\Objects\Object.h" />
     <ClInclude Include="..\precomp.h" />
     <ClInclude Include="..\Scene\Scene.h" />

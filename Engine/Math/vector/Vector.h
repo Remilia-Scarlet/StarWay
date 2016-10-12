@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <memory.h>
 #include <cmath>
-#include "TinyEngine\Engine\EngineDefs.h"
+#include "Math/MathDef.h"
 
 template <class ValueType, int Size>
 class VectorStorage

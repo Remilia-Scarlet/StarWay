@@ -133,17 +133,85 @@ void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType, 3>& from
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const MatrixStorage<ValueType, 4, 4>& rotationMatrix)
 {
+	ValueType trace = rotationMatrix(0, 0) + rotationMatrix(1, 1) + rotationMatrix(2, 2);
+	if (isGreater(trace,(ValueType)0))
+	{
+		ValueType s = sqrt(trace + (ValueType)1);
+		ValueType t = s * (ValueType)0.5;
+		X() = (rotationMatrix(2, 1) - rotationMatrix(1, 2)) * t;
+		Y() = (rotationMatrix(0, 2) - rotationMatrix(2, 0)) * t;
+		Z() = (rotationMatrix(1, 0) - rotationMatrix(0, 1)) * t;
+		W() = s * (ValueType)0.5;
+	}
+	else
+	{
+		int i = 0;
+		if (rotationMatrix(1, 1) > rotationMatrix(0, 0))
+			i = 1;
+		if (rotationMatrix(2, 2) > rotationMatrix(i, i))
+			i = 2;
 
+		const static int next[3] = { 1,2,0 };
+		int j = next[i];
+		int k = next[j];
+
+		ValueType s = sqrt(rotationMatrix(i, i) - (rotationMatrix(j, j) + rotationMatrix(k, k)) + (ValueType)1);
+		ValueType t;
+		if (!isEqual(s, (ValueType)0))
+			t = (ValueType)0.5 / s;
+		else
+			t = s;
+
+		(*this)(i + 1) = s * (ValueType)0.5;
+		(*this)(j + 1) = (rotationMatrix(j, i) + rotationMatrix(i, j))*t;
+		(*this)(k + 1) = (rotationMatrix(k, i) + rotationMatrix(i, k))*t;
+		(*this)(0) = (rotationMatrix(k, j) + rotationMatrix(j, k))*t;
+	}
 }
 
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const ValueType& w, const ValueType& x, const ValueType& y, const ValueType& z)
 {
+	_w = w;
+	_x = x;
+	_y = y;
+	_z = z;
 }
 
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const QuaternionStorage& other)
 {
+	reset(other.W(), other.X(), other.Y(), other.Z());
+}
+
+template <class ValueType>
+ValueType& QuaternionStorage<ValueType>::operator()(int index)
+{
+	switch (index)
+	{
+	case 0:
+		return _w;
+	case 1:
+		return _x;
+	case 2:
+		return _y;
+	case 3:
+		return _z;
+	}
+	TinyAssert(false,"Quaternion operator() index wrong");
+	return 0;
+}
+
+template <class ValueType>
+const ValueType& QuaternionStorage<ValueType>::operator()(int index) const
+{
+	return const_cast<QuaternionStorage<ValueType>&>(*this)(index);
+}
+
+template <class ValueType>
+QuaternionStorage<ValueType>& QuaternionStorage<ValueType>::operator=(const QuaternionStorage& other)
+{
+	reset(other);
 }
 
 template <class ValueType>
@@ -212,4 +280,16 @@ QuaternionStorage<ValueType>& QuaternionStorage<ValueType>::normalizeInPlace()
 	_z /= mag;
 	_w /= mag;
 	return *this;
+}
+
+template <class ValueType>
+MatrixStorage<ValueType, 4, 4> QuaternionStorage<ValueType>::toRotationMatrix() const
+{
+	MatrixStorage<ValueType, 4, 4> matrix = {
+		1 - 2 * Y()*Y() - 2 * Z()*Z(),	2 * X()*Y() + 2 * Z()*W(),		2 * X()*Y() - 2 * Y()*W(),		0 ,
+		2 * X()*Y() - 2 * Z()*W(),		1 - 2 * X()*X() - 2 * Z()*Z(),	2 * Y()*Z() + 2 * X()*W(),		0 ,
+		2 * X()*Z() + 2 * Y()*W(),		2 * Y()*Z() - 2 * X()*W(),		1 - 2 * X()*X() - 2 * Y()*Y(),	0 ,
+		0,								0,								0,								1
+	};
+	return matrix;
 }

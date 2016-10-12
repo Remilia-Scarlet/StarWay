@@ -2,6 +2,16 @@
 #include "Math/matrix/Matrix.h"
 void Common()
 {
+	float o = 1.0f;
+	float o2 = o + FLT_EPSILON;
+	if (o == o2)
+	{
+		int a = 0;
+	}
+	if (isgreater(o2, o))
+	{
+		int a = 0;
+	}
 	float a = 1.2f;
 	float b = 1.3f;
 	if (TINY_FLOAT_EQUAL(a, 1.2f))
@@ -22,7 +32,31 @@ void Common()
 	}
 	float c = a + 0.1f;
 	auto asdad = abs(c - b);
+	if (asdad == FLT_EPSILON)
+	{
+		int a = 0;
+	}
 	if (TINY_FLOAT_EQUAL(c,b))
+	{
+		int a = 0;
+	}
+	if (isgreater(c, b))
+	{
+		int a = 0;
+	}
+	if (isgreater(b, c))
+	{
+		int a = 0;
+	}
+	if (isGreater(c, b))
+	{
+		int a = 0;
+	}
+	if (isLess(c, b))
+	{
+		int a = 0;
+	}
+	if (c == b + FLT_EPSILON)
 	{
 		int a = 0;
 	}

@@ -27,6 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\MathDef.h" />
     <ClInclude Include="..\matrix\Matrix.h" />
     <ClInclude Include="..\quaternion\Quaternion.h" />
     <ClInclude Include="..\vector\Vector.h" />

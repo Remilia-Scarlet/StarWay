@@ -1,6 +1,7 @@
 #pragma once
 #include "Math\vector\Vector.h"
 #include "Math\matrix\Matrix.h"
+#include "Math/MathDef.h"
 
 template <class ValueType>
 class QuaternionStorage
@@ -56,6 +57,11 @@ public:
 	// Init QuaternionStorage with other QuaternionStorage
 	inline void reset(const QuaternionStorage& other);
 
+	// Get an element by index. 0 is w, 1 is x, 2 is y, 3 is z
+	ValueType& operator()(int index);
+	const ValueType& operator()(int index) const;
+
+	QuaternionStorage& operator=(const QuaternionStorage& other);
 
 	ValueType& W();
 	const ValueType& W() const;
@@ -74,6 +80,9 @@ public:
 
 	// Normalize this quaternion and return this. See also normalized()
 	QuaternionStorage& normalizeInPlace();
+
+	// Get rotation matrix4*4
+	MatrixStorage<ValueType, 4, 4> toRotationMatrix()const;
 protected:
 	ValueType _w;
 	ValueType _x;

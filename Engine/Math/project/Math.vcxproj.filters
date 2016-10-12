@@ -10,6 +10,7 @@
     <ClInclude Include="..\matrix\Matrix.h">
       <Filter>matrix</Filter>
     </ClInclude>
+    <ClInclude Include="..\MathDef.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vector">
