@@ -67,6 +67,12 @@ public:
 	// Cross multiply in this and return this. See also cross()
 	inline VectorStorage& crossInPlace(const VectorStorage& other);
 
+	// Add a vector. Return copy. See also addInPlace()
+	inline VectorStorage add(const VectorStorage& other)const;
+
+	// Add a vector to self. Return self. See also add()
+	inline VectorStorage& addInPlace(const VectorStorage& other);
+
 	// Multiply all elem with this value, and return the copy. See also scaleInPlace().
 	inline VectorStorage scaled(const ValueType& scale) const;
 

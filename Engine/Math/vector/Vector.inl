@@ -46,6 +46,12 @@ VectorStorage<ValueType, Size> operator*(const ValueType& scale, const VectorSto
 {
 	return vec.scaled(scale);
 }
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator+(const VectorStorage<ValueType, Size>& vec1, const VectorStorage<ValueType, Size>& vec2)
+{
+	return vec1.add(vec2);
+}
 //////////////////////////////////////////////////////////////////////////
 // Member function
 //////////////////////////////////////////////////////////////////////////
@@ -210,6 +216,22 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::crossInPlace(con
 }
 
 template <class ValueType, int Size>
+VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::add(const VectorStorage<ValueType, Size>& other) const
+{
+	return VectorStorage<ValueType, Size>(*this).addInPlace(other);
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::addInPlace(const VectorStorage<ValueType, Size>& other)
+{
+	for (int i = 0; i < Size; ++i)
+	{
+		_data[i] += other._data[i];
+	}
+	return *this;
+}
+
+template <class ValueType, int Size>
 VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::scaled(const ValueType& scale) const
 {
 	VectorStorage<ValueType, Size> target = *this;
@@ -329,8 +351,10 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::rotateInPlace(co
 	static_assert(Size == 3, "Only Vector3 can be rotated by quaternion");
 	TinyAssert(normedQuaternion.isNormalized(), "You must use normalized quaternion to rotate a vector");
 
-	QuaternionStorage<ValueType> vecQuaternion = { 0,X(),Y(),Z() };
-	vecQuaternion = normedQuaternion * vecQuaternion * normedQuaternion.conjugate();
-	*this = { vecQuaternion.X(),vecQuaternion.Y(),vecQuaternion.Z() };
+	VectorStorage<ValueType, Size> qv = { normedQuaternion.X(), normedQuaternion.Y(), normedQuaternion.Z() };
+	VectorStorage<ValueType, Size>& v = *this;
+
+	*this = v + ((ValueType)2 * qv).cross(qv.cross(v) + normedQuaternion.W() * v);
+
 	return *this;
 }

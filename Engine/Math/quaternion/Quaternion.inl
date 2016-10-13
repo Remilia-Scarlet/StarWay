@@ -337,10 +337,10 @@ QuaternionStorage<ValueType> QuaternionStorage<ValueType>::product(const Quatern
 	const QuaternionStorage<ValueType>& q = other;
 
 	return QuaternionStorage(
-		p.W() * q.X() + p.X() * q.W() + p.Y() * q.Z() - p.Z() * q.Y(),
-		p.W() * q.Y() + p.Y() * q.W() + p.Z() * q.X() - p.X() * q.Z(),
-		p.W() * q.Z() + p.Z() * q.W() + p.X() * q.Y() - p.Y() * q.X(),
-		p.W() * q.W() - p.X() * q.X() - p.Y() * q.Y() - p.Z() * q.Z()
+		p._w * q._w - p._x * q._x - p._y * q._y - p._z * q._z,
+		p._w * q._x + p._x * q._w + p._y * q._z - p._z * q._y,
+		p._w * q._y + p._y * q._w + p._z * q._x - p._x * q._z,
+		p._w * q._z + p._z * q._w + p._x * q._y - p._y * q._x
 		);
 }
 
