@@ -3,6 +3,7 @@
 #include <memory.h>
 #include <cmath>
 #include "Math/MathDef.h"
+#include "Math/quaternion/Quaternion.h"
 
 template <class ValueType, int Size>
 class VectorStorage
@@ -95,6 +96,13 @@ public:
 
 	inline ValueType& W();
 	inline const ValueType& W() const;
+
+	// Rotate a copy vector by quaternion. See also rotateInPlace(). Notice : you must give a normorized quaternion.
+	VectorStorage<ValueType, Size> rotate(const QuaternionStorage<ValueType>& normedQuaternion) const;
+
+	// Rotate this vector bu quaternion in place. See also rotate(). Notice : you must give a normorized quaternion.
+	VectorStorage<ValueType, Size>& rotateInPlace(const QuaternionStorage<ValueType>& normedQuaternion);
+
 protected:
 	ValueType _data[Size];
 };

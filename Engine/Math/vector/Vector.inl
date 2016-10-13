@@ -315,3 +315,22 @@ const ValueType& VectorStorage<ValueType, Size>::W() const
 	static_assert(Size >= 4, "This is only aviliable when Size >= 4");
 	return _data[3];
 }
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::rotate(const QuaternionStorage<ValueType>& normedQuaternion) const
+{
+	VectorStorage<ValueType, Size> ret = *this;
+	return ret.rotateInPlace(normedQuaternion);
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::rotateInPlace(const QuaternionStorage<ValueType>& normedQuaternion)
+{
+	static_assert(Size == 3, "Only Vector3 can be rotated by quaternion");
+	TinyAssert(normedQuaternion.isNormalized(), "You must use normalized quaternion to rotate a vector");
+
+	QuaternionStorage<ValueType> vecQuaternion = { 0,X(),Y(),Z() };
+	vecQuaternion = normedQuaternion * vecQuaternion * normedQuaternion.conjugate();
+	*this = { vecQuaternion.X(),vecQuaternion.Y(),vecQuaternion.Z() };
+	return *this;
+}

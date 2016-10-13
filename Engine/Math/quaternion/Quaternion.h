@@ -1,7 +1,11 @@
 #pragma once
-#include "Math\vector\Vector.h"
-#include "Math\matrix\Matrix.h"
 #include "Math/MathDef.h"
+
+template <class ValueType, int Size>
+class VectorStorage;
+
+template <class ValueType, int RowNum, int ColNum>
+class MatrixStorage;
 
 template <class ValueType>
 class QuaternionStorage
@@ -37,7 +41,7 @@ public:
 	inline void reset();
 
 	// Init QuaternionStorage with euler angles. In z,x,y(pitch,roll,yaw) order. eulerAngles.X() is x angel, eulerAngles.Y() is y angel, eulerAngles.Z() is z angel.
-	inline void reset(const Vector3& eulerAngles);
+	inline void reset(const VectorStorage<ValueType, 3>& eulerAngles);
 
 	// Init QuaternionStorage with euler angles. In z,x,y(pitch,roll,yaw) order.
 	inline void reset(const ValueType& zRotate, const ValueType& xRotate, const ValueType& yRotate);
@@ -81,8 +85,23 @@ public:
 	// Normalize this quaternion and return this. See also normalized()
 	QuaternionStorage& normalizeInPlace();
 
+	// Is this quaternion normalized
+	bool isNormalized() const;
+
 	// Get rotation matrix4*4
 	MatrixStorage<ValueType, 4, 4> toRotationMatrix()const;
+
+	// Get a conjugate copy of this quaternion. See also conjugateInPlace()
+	QuaternionStorage conjugate() const;
+
+	// Make this quaternion conjugate and return self. See also conjugate()
+	QuaternionStorage& conjugateInPlace();
+
+	// Grassmann product. See also productInPlace().
+	QuaternionStorage product(const QuaternionStorage<ValueType>& other) const;
+
+	// Grassmann product. See also product()
+	QuaternionStorage& productInPlace(const QuaternionStorage<ValueType>& other);
 protected:
 	ValueType _w;
 	ValueType _x;

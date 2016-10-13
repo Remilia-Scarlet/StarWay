@@ -1,7 +1,20 @@
 //////////////////////////////////////////////////////////////////////////
 // Global Function
 //////////////////////////////////////////////////////////////////////////
+template<class ValueType>
+bool operator==(const QuaternionStorage<ValueType>& a, const QuaternionStorage<ValueType>& b)
+{
+	return isEqual(a.X(), b.X())
+		&& isEqual(a.Y(), b.Y())
+		&& isEqual(a.Z(), b.Z())
+		&& isEqual(a.W(), b.W());
+}
 
+template<class ValueType>
+QuaternionStorage<ValueType> operator*(const QuaternionStorage<ValueType>& a, const QuaternionStorage<ValueType>& b)
+{
+	return a.product(b);
+}
 //////////////////////////////////////////////////////////////////////////
 // Member Function
 //////////////////////////////////////////////////////////////////////////
@@ -68,7 +81,7 @@ void QuaternionStorage<ValueType>::reset()
 }
 
 template <class ValueType>
-void QuaternionStorage<ValueType>::reset(const Vector3& eulerAngles)
+void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType,3>& eulerAngles)
 {
 	reset(eulerAngles.Z(), eulerAngles.X(), eulerAngles.Y());
 }
@@ -212,6 +225,7 @@ template <class ValueType>
 QuaternionStorage<ValueType>& QuaternionStorage<ValueType>::operator=(const QuaternionStorage& other)
 {
 	reset(other);
+	return *this;
 }
 
 template <class ValueType>
@@ -283,6 +297,12 @@ QuaternionStorage<ValueType>& QuaternionStorage<ValueType>::normalizeInPlace()
 }
 
 template <class ValueType>
+bool QuaternionStorage<ValueType>::isNormalized() const
+{
+	return isEqual(_x*_x + _y*_y + _z*_z + _w*_w, (ValueType)1);
+}
+
+template <class ValueType>
 MatrixStorage<ValueType, 4, 4> QuaternionStorage<ValueType>::toRotationMatrix() const
 {
 	MatrixStorage<ValueType, 4, 4> matrix = {
@@ -292,4 +312,41 @@ MatrixStorage<ValueType, 4, 4> QuaternionStorage<ValueType>::toRotationMatrix() 
 		0,								0,								0,								1
 	};
 	return matrix;
+}
+
+template <class ValueType>
+QuaternionStorage<ValueType> QuaternionStorage<ValueType>::conjugate() const
+{
+	QuaternionStorage<ValueType> val = *this;
+	return val.conjugateInPlace();
+}
+
+template <class ValueType>
+QuaternionStorage<ValueType>& QuaternionStorage<ValueType>::conjugateInPlace()
+{
+	_x = -_x;
+	_y = -_y;
+	_z = -_z;
+	return *this;
+}
+
+template <class ValueType>
+QuaternionStorage<ValueType> QuaternionStorage<ValueType>::product(const QuaternionStorage<ValueType>& other) const
+{
+	const QuaternionStorage<ValueType>& p = *this;
+	const QuaternionStorage<ValueType>& q = other;
+
+	return QuaternionStorage(
+		p.W() * q.X() + p.X() * q.W() + p.Y() * q.Z() - p.Z() * q.Y(),
+		p.W() * q.Y() + p.Y() * q.W() + p.Z() * q.X() - p.X() * q.Z(),
+		p.W() * q.Z() + p.Z() * q.W() + p.X() * q.Y() - p.Y() * q.X(),
+		p.W() * q.W() - p.X() * q.X() - p.Y() * q.Y() - p.Z() * q.Z()
+		);
+}
+
+template <class ValueType>
+QuaternionStorage<ValueType>& QuaternionStorage<ValueType>::productInPlace(const QuaternionStorage<ValueType>& other)
+{
+	*this = product(other);
+	return *this;
 }

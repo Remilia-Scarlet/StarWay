@@ -1,5 +1,6 @@
 #include "WinLancher/precomp.h"
 #include "Math/matrix/Matrix.h"
+#include "Math/quaternion/Quaternion.h"
 void Common()
 {
 	float o = 1.0f;
@@ -235,6 +236,16 @@ void TestVector()
 	Vector3 cccc2 = { 4,5,6 };
 	Vector3 ccccc = cccc1.cross(cccc2);
 	cccc1.crossInPlace(cccc2);
+
+	Vector3 v111 = { 1,1,1 };
+	Quaternion rotate(Vector3{ 1,0,0 }, 90);
+	Quaternion rotate2(Vector3{ 0,1,0 }, 90);
+	Quaternion rotate3(Vector3{ 0,0,1 }, 90);
+	auto v111r1 = v111.rotate(rotate);
+	auto v111r2 = v111.rotate(rotate2);
+	auto v111r3 = v111.rotate(rotate3);
+	v111.rotateInPlace(rotate3);
+	v111.rotateInPlace(Quaternion{Vector3{1, 1, 1}, 45});
 
 	int a = 0;
 }
