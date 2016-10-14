@@ -4,6 +4,10 @@
 #include <math.h>
 #include <float.h>
 
+#ifndef M_PI
+	#define M_PI       3.14159265358979323846   // pi
+#endif
+
 #define TINY_FLOAT_EPSILON	(FLT_EPSILON * 3)
 #define TINY_DBL_EPSILON	(DBL_EPSILON * 3)
 #define TINY_LDBL_EPSILON	(LDBL_EPSILON * 3)
@@ -22,13 +26,13 @@
 
 
 template<class ValueType>
-inline ValueType degreeToRadian(const ValueType& degree)
+inline ValueType degToRad(const ValueType& degree)
 {
 	return degree / (ValueType)180 * (ValueType)M_PI;
 }
 
 template<class ValueType>
-inline ValueType radianToDegree(const ValueType& radian)
+inline ValueType radToDeg(const ValueType& radian)
 {
 	return radian / (ValueType)M_PI * (ValueType)180;
 }

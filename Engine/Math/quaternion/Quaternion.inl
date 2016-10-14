@@ -89,30 +89,30 @@ void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType,3>& euler
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const ValueType& zRotate, const ValueType& xRotate, const ValueType& yRotate)
 {
-	const ValueType p = degreeToRadian(zRotate);
-	const ValueType y = degreeToRadian(xRotate);
-	const ValueType r = degreeToRadian(yRotate);
+	const ValueType r = degToRad(zRotate) / (ValueType)2;
+	const ValueType p = degToRad(xRotate) / (ValueType)2;
+	const ValueType y = degToRad(yRotate) / (ValueType)2;
 
+	const ValueType sinr = sin(r);
 	const ValueType sinp = sin(p);
 	const ValueType siny = sin(y);
-	const ValueType sinr = sin(r);
+	const ValueType cosr = cos(r);
 	const ValueType cosp = cos(p);
 	const ValueType cosy = cos(y);
-	ValueType cosr = cos(r);
-
+	
 	_w = cosr * cosp * cosy + sinr * sinp * siny;
-	_x = sinr * cosp * cosy - cosr * sinp * siny;
-	_y = cosr * sinp * cosy + sinr * cosp * siny;
-	_z = cosr * cosp * siny - sinr * sinp * cosy;
+	_x = cosr * sinp * cosy - sinr * cosp * siny;
+	_y = cosr * cosp * siny + sinr * sinp * cosy;
+	_z = sinr * cosp * cosy - cosr * sinp * siny;
 }
 
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType, 3>& axis, const ValueType& angle)
 {
 	VectorStorage<ValueType, 3> axis_norm = axis.normalized();
-	const ValueType sin_2 = sin(degreeToRadian(angle / (ValueType)2));
+	const ValueType sin_2 = sin(degToRad(angle / (ValueType)2));
 
-	_w = cos(degreeToRadian(angle / (ValueType)2));
+	_w = cos(degToRad(angle / (ValueType)2));
 	_x = axis_norm.X() * sin_2;
 	_y = axis_norm.Y() * sin_2;
 	_z = axis_norm.Z() * sin_2;
@@ -129,7 +129,7 @@ void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType, 3>& from
 	// 180 degree rotation around any orthogonal vector
 	if (isEqual(k_cos_theta / k, (ValueType)-1))
 	{
-		VectorStorage<ValueType> orthogonal(1, 0, 0);
+		VectorStorage<ValueType, 3> orthogonal{ 1, 0, 0 };
 		orthogonal.crossInPlace(from);
 		if (isEqual(orthogonal.lenth2(), (ValueType)0))
 		{
@@ -137,48 +137,73 @@ void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType, 3>& from
 			orthogonal.crossInPlace(from);
 		}
 		orthogonal.normalizeInPlace();
-		return Quaternion(0, orthogonal.X(), orthogonal.Y(), orthogonal.Z());
+
+		_w = 0;
+		_x = orthogonal.X();
+		_y = orthogonal.Y();
+		_z = orthogonal.Z();
+		return;
 	}
 	VectorStorage<ValueType, 3> cross = from.cross(to);
-	return Quaternion(k_cos_theta + k, cross.X(), cross.Y(), cross.Z()).normalizeInPlace();
+
+	_w = k_cos_theta + k;
+	_x = cross.X();
+	_y = cross.Y();
+	_z = cross.Z();
+	normalizeInPlace();
 }
 
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const MatrixStorage<ValueType, 4, 4>& rotationMatrix)
 {
-	ValueType trace = rotationMatrix(0, 0) + rotationMatrix(1, 1) + rotationMatrix(2, 2);
-	if (isGreater(trace,(ValueType)0))
+	// I don't know how to build quaternion by matrix, so I copied this function from DirextX::XMQuaternionRotationMatrix
+
+	ValueType r22 = rotationMatrix(2, 2);
+	if (r22 <= 0.f)  // x^2 + y^2 >= z^2 + w^2
 	{
-		ValueType s = sqrt(trace + (ValueType)1);
-		ValueType t = s * (ValueType)0.5;
-		X() = (rotationMatrix(2, 1) - rotationMatrix(1, 2)) * t;
-		Y() = (rotationMatrix(0, 2) - rotationMatrix(2, 0)) * t;
-		Z() = (rotationMatrix(1, 0) - rotationMatrix(0, 1)) * t;
-		W() = s * (ValueType)0.5;
+		ValueType dif10 = rotationMatrix(1,1) - rotationMatrix(0,0);
+		ValueType omr22 = (ValueType)1 - r22;
+		if (isLess(dif10, (ValueType)0))  // x^2 >= y^2
+		{
+			ValueType fourXSqr = omr22 - dif10;
+			ValueType inv4x = (ValueType)0.5 / sqrtf(fourXSqr);
+			_x = fourXSqr*inv4x;
+			_y = (rotationMatrix(0,1) + rotationMatrix(1,0))*inv4x;
+			_z = (rotationMatrix(0,2) + rotationMatrix(2,0))*inv4x;
+			_w = (rotationMatrix(1,2) - rotationMatrix(2,1))*inv4x;
+		}
+		else  // y^2 >= x^2
+		{
+			ValueType fourYSqr = omr22 + dif10;
+			ValueType inv4y = (ValueType)0.5 / sqrtf(fourYSqr);
+			_x = (rotationMatrix(0,1) + rotationMatrix(1,0))*inv4y;
+			_y = fourYSqr*inv4y;
+			_z = (rotationMatrix(1,2) + rotationMatrix(2,1))*inv4y;
+			_w = (rotationMatrix(2,0) - rotationMatrix(0,2))*inv4y;
+		}
 	}
-	else
+	else  // z^2 + w^2 >= x^2 + y^2
 	{
-		int i = 0;
-		if (rotationMatrix(1, 1) > rotationMatrix(0, 0))
-			i = 1;
-		if (rotationMatrix(2, 2) > rotationMatrix(i, i))
-			i = 2;
-
-		const static int next[3] = { 1,2,0 };
-		int j = next[i];
-		int k = next[j];
-
-		ValueType s = sqrt(rotationMatrix(i, i) - (rotationMatrix(j, j) + rotationMatrix(k, k)) + (ValueType)1);
-		ValueType t;
-		if (!isEqual(s, (ValueType)0))
-			t = (ValueType)0.5 / s;
-		else
-			t = s;
-
-		(*this)(i + 1) = s * (ValueType)0.5;
-		(*this)(j + 1) = (rotationMatrix(j, i) + rotationMatrix(i, j))*t;
-		(*this)(k + 1) = (rotationMatrix(k, i) + rotationMatrix(i, k))*t;
-		(*this)(0) = (rotationMatrix(k, j) + rotationMatrix(j, k))*t;
+		ValueType sum10 = rotationMatrix(1,1) + rotationMatrix(0,0);
+		ValueType opr22 = (ValueType)1 + r22;
+		if (isLess(sum10 , (ValueType)0))  // z^2 >= w^2
+		{
+			ValueType fourZSqr = opr22 - sum10;
+			ValueType inv4z = (ValueType)0.5 / sqrtf(fourZSqr);
+			_x = (rotationMatrix(0,2) + rotationMatrix(2,0))*inv4z;
+			_y = (rotationMatrix(1,2) + rotationMatrix(2,1))*inv4z;
+			_z = fourZSqr*inv4z;
+			_w = (rotationMatrix(0,1) - rotationMatrix(1,0))*inv4z;
+		}
+		else  // w^2 >= z^2
+		{
+			ValueType fourWSqr = opr22 + sum10;
+			ValueType inv4w = (ValueType)0.5 / sqrtf(fourWSqr);
+			_x = (rotationMatrix(1,2) - rotationMatrix(2,1))*inv4w;
+			_y = (rotationMatrix(2,0) - rotationMatrix(0,2))*inv4w;
+			_z = (rotationMatrix(0,1) - rotationMatrix(1,0))*inv4w;
+			_w = fourWSqr*inv4w;
+		}
 	}
 }
 
@@ -212,7 +237,8 @@ ValueType& QuaternionStorage<ValueType>::operator()(int index)
 		return _z;
 	}
 	TinyAssert(false,"Quaternion operator() index wrong");
-	return 0;
+	static ValueType forWrong = 0;
+	return forWrong;
 }
 
 template <class ValueType>
@@ -312,6 +338,29 @@ MatrixStorage<ValueType, 4, 4> QuaternionStorage<ValueType>::toRotationMatrix() 
 		0,								0,								0,								1
 	};
 	return matrix;
+}
+
+template <class ValueType>
+VectorStorage<ValueType, 3> QuaternionStorage<ValueType>::toEularAngle() const
+{
+	return VectorStorage<ValueType, 3>{
+		radToDeg(asin((ValueType)2 * (_w * _x - _y * _z))),															// x(pitch)
+		radToDeg(atan2((ValueType)2 * (_w * _y + _x * _z), (ValueType)1 - (ValueType)2 * (_x * _x + _y * _y))),		// y(yaw)
+		radToDeg(atan2((ValueType)2 * (_w * _z + _x * _y), (ValueType)1 - (ValueType)2 * (_x * _x + _z * _z))),		// z(roll)
+	};
+}
+
+template <class ValueType>
+std::pair<VectorStorage<ValueType, 3>, ValueType> QuaternionStorage<ValueType>::toAxisAngle() const
+{
+	ValueType theta_2 = acos(_w);
+	ValueType sin_theta_2 = sin(theta_2);
+	if (isEqual(sin_theta_2, (ValueType)0))
+		return std::make_pair(VectorStorage<ValueType, 3>(), (ValueType)0);
+	return std::make_pair(
+		VectorStorage<ValueType, 3>{_x / sin_theta_2, _y / sin_theta_2, _z / sin_theta_2},
+		radToDeg(theta_2 * (ValueType)2)
+		);
 }
 
 template <class ValueType>

@@ -14,10 +14,10 @@ public:
 	// Init QuaternionStorage with w=1 and x=y=z=0
 	inline QuaternionStorage();
 
-	// Init QuaternionStorage with euler angles. In z,x,y(pitch,roll,yaw) order. eulerAngles.X() is x angel, eulerAngles.Y() is y angel, eulerAngles.Z() is z angel.
+	// Init QuaternionStorage with euler angles. In z,x,y(roll,pitch,yaw) order. eulerAngles.X() is x angel, eulerAngles.Y() is y angel, eulerAngles.Z() is z angel.
 	inline QuaternionStorage(const VectorStorage<ValueType, 3>& eulerAngles);
 
-	// Init QuaternionStorage with euler angles. In z,x,y(pitch,roll,yaw) order.
+	// Init QuaternionStorage with euler angles. In z,x,y(roll,pitch,yaw) order.
 	inline QuaternionStorage(const ValueType& zRotate, const ValueType& xRotate, const ValueType& yRotate);
 
 	// Init QuaternionStorage with a rotation by axis. The angle is degree.
@@ -40,10 +40,10 @@ public:
 	// Init QuaternionStorage with w=1 and x=y=z=0
 	inline void reset();
 
-	// Init QuaternionStorage with euler angles. In z,x,y(pitch,roll,yaw) order. eulerAngles.X() is x angel, eulerAngles.Y() is y angel, eulerAngles.Z() is z angel.
+	// Init QuaternionStorage with euler angles. In z,x,y(roll,pitch,yaw) order. eulerAngles.X() is x angel, eulerAngles.Y() is y angel, eulerAngles.Z() is z angel.
 	inline void reset(const VectorStorage<ValueType, 3>& eulerAngles);
 
-	// Init QuaternionStorage with euler angles. In z,x,y(pitch,roll,yaw) order.
+	// Init QuaternionStorage with euler angles. In z,x,y(roll,pitch,yaw) order.
 	inline void reset(const ValueType& zRotate, const ValueType& xRotate, const ValueType& yRotate);
 
 	// Init QuaternionStorage with a rotation by axis. The angle is degree.
@@ -90,6 +90,12 @@ public:
 
 	// Get rotation matrix4*4
 	MatrixStorage<ValueType, 4, 4> toRotationMatrix()const;
+
+	// Convert the rotation to euler angle, in order z,x,y(roll,pitch,yaw). The returned vector.X() is x angle, returned vector.Y() is y angle, returned vector.Z() is z angle.
+	VectorStorage<ValueType, 3> toEularAngle() const;
+
+	// Return a rotation axis and rotation angle, (return.first) is axis, (return.second) is angle.
+	std::pair<VectorStorage<ValueType, 3>, ValueType> toAxisAngle() const;
 
 	// Get a conjugate copy of this quaternion. See also conjugateInPlace()
 	QuaternionStorage conjugate() const;
