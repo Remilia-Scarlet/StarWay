@@ -31,9 +31,9 @@ QuaternionStorage<ValueType>::QuaternionStorage(const VectorStorage<ValueType, 3
 }
 
 template <class ValueType>
-QuaternionStorage<ValueType>::QuaternionStorage(const ValueType& zRotate, const ValueType& xRotate, const ValueType& yRotate)
+QuaternionStorage<ValueType>::QuaternionStorage(const ValueType& xRotate, const ValueType& yRotate, const ValueType& zRotate)
 {
-	reset(zRotate, xRotate, yRotate);
+	reset(xRotate, yRotate, zRotate);
 }
 
 template <class ValueType>
@@ -83,12 +83,13 @@ void QuaternionStorage<ValueType>::reset()
 template <class ValueType>
 void QuaternionStorage<ValueType>::reset(const VectorStorage<ValueType,3>& eulerAngles)
 {
-	reset(eulerAngles.Z(), eulerAngles.X(), eulerAngles.Y());
+	reset(eulerAngles.X(), eulerAngles.Y(), eulerAngles.Z());
 }
 
 template <class ValueType>
-void QuaternionStorage<ValueType>::reset(const ValueType& zRotate, const ValueType& xRotate, const ValueType& yRotate)
+void QuaternionStorage<ValueType>::reset(const ValueType& xRotate, const ValueType& yRotate, const ValueType& zRotate)
 {
+	// Copy from DirectX::XMQuaternionRotationRollPitchYawFromVector
 	const ValueType r = degToRad(zRotate) / (ValueType)2;
 	const ValueType p = degToRad(xRotate) / (ValueType)2;
 	const ValueType y = degToRad(yRotate) / (ValueType)2;
@@ -99,11 +100,27 @@ void QuaternionStorage<ValueType>::reset(const ValueType& zRotate, const ValueTy
 	const ValueType cosr = cos(r);
 	const ValueType cosp = cos(p);
 	const ValueType cosy = cos(y);
-	
-	_w = cosr * cosp * cosy + sinr * sinp * siny;
-	_x = cosr * sinp * cosy - sinr * cosp * siny;
-	_y = cosr * cosp * siny + sinr * sinp * cosy;
-	_z = sinr * cosp * cosy - cosr * sinp * siny;
+
+	VectorStorage<ValueType, 4> p0 = { sinp, cosp, cosp, cosp };
+	VectorStorage<ValueType, 4> y0 = { cosy, siny, cosy, cosy };
+	VectorStorage<ValueType, 4> r0 = { cosr, cosr, sinr, cosr };
+	VectorStorage<ValueType, 4> p1 = { cosp, sinp, sinp, sinp };
+	VectorStorage<ValueType, 4> y1 = { siny, cosy, siny, siny };
+	VectorStorage<ValueType, 4> r1 = { sinr, sinr, cosr, sinr };
+
+	static const VectorStorage<ValueType, 4>  sign = { (ValueType)1.0f, (ValueType)-1.0f, (ValueType)-1.0f, (ValueType)1.0f };
+
+	VectorStorage<ValueType, 4> q0 = p0.multiply(y0);
+	VectorStorage<ValueType, 4> q1 = sign.multiply(p1);
+
+	q0.multiplyInPlace(r0);
+	q1.multiplyInPlace(y1);
+
+	VectorStorage<ValueType, 4> Q = q1.multiply(r1) + q0;
+	_x = Q.X();
+	_y = Q.Y();
+	_z = Q.Z();
+	_w = Q.W();
 }
 
 template <class ValueType>

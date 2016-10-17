@@ -8,7 +8,7 @@
 	#define M_PI       3.14159265358979323846   // pi
 #endif
 
-#define TINY_FLOAT_EPSILON	(FLT_EPSILON * 3)
+#define TINY_FLOAT_EPSILON	1e-5f
 #define TINY_DBL_EPSILON	(DBL_EPSILON * 3)
 #define TINY_LDBL_EPSILON	(LDBL_EPSILON * 3)
 

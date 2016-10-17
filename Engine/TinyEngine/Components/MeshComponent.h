@@ -19,7 +19,7 @@ public:
 protected:
 	template<class VertexType, class IndiceType>
 	bool init(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::vector<IndiceType>& indices, const std::string& vsFilename);
-	explicit MeshComponent();
+	MeshComponent();
 	GfxMeshPtr _gfxMesh;
 	GfxShaderVertexPtr _vertexShader;
 };

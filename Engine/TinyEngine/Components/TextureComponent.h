@@ -18,7 +18,7 @@ public:
 	virtual void render() override;
 protected:
 	virtual bool init(const std::string& fileName, const std::string& shadeName);
-	explicit TextureComponent();
+	TextureComponent();
 
 	GfxTexturePtr _gfxTexture;
 	GfxShaderPixelPtr _psShader;

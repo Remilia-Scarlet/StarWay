@@ -63,7 +63,7 @@ public:
 	virtual void setDrawIndexNumber(int number) { _drawIndexNumber = number; }
 	virtual int getDrawIndexNumber() { return _drawIndexNumber; }
 protected:
-	explicit GraphicMgr();
+	GraphicMgr();
 	virtual ~GraphicMgr();
 	virtual void clearDevice() = 0;
 	int _drawIndexNumber;

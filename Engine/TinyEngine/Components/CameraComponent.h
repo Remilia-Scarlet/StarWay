@@ -7,7 +7,7 @@ TINY_DEFINE_PTR(CameraComponent);
 class CameraComponent : public BaseComponent
 {
 public:
-	explicit CameraComponent();
+	CameraComponent();
 	virtual ~CameraComponent();
 public:
 	static CameraComponentPtr create();

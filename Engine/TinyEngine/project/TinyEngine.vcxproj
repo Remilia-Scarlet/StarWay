@@ -197,6 +197,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderFile>TinyEngine\precomp.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -212,6 +213,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderFile>TinyEngine\precomp.h</PrecompiledHeaderFile>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -195,6 +195,23 @@ ValueType VectorStorage<ValueType, Size>::dot(const VectorStorage& other) const
 }
 
 template <class ValueType, int Size>
+VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::multiply(const VectorStorage<ValueType, Size>& other) const
+{
+	VectorStorage<ValueType, Size> vec = *this;
+	return vec.multiplyInPlace(other);
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::multiplyInPlace(const VectorStorage<ValueType, Size>& other)
+{
+	for (int i = 0; i < Size; ++i)
+	{
+		_data[i] *= other._data[i];
+	}
+	return *this;
+}
+
+template <class ValueType, int Size>
 VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::cross(const VectorStorage<ValueType, Size>& other) const
 {
 	VectorStorage<ValueType, Size> ret = *this;
@@ -355,6 +372,5 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::rotateInPlace(co
 	VectorStorage<ValueType, Size>& v = *this;
 
 	*this = v + ((ValueType)2 * qv).cross(qv.cross(v) + normedQuaternion.W() * v);
-
 	return *this;
 }

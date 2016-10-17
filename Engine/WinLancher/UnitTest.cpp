@@ -237,6 +237,8 @@ void TestVector()
 	Vector3 cccc2 = { 4,5,6 };
 	Vector3 ccccc = cccc1.cross(cccc2);
 	cccc1.crossInPlace(cccc2);
+	auto fdsafdas = cccc1.multiply(cccc2);
+	cccc1.multiplyInPlace(cccc2);
 
 	Vector3 v111 = { 1,1,1 };
 	Quaternion rotate(Vector3{ 1,0,0 }, 90.f);
@@ -252,16 +254,31 @@ void TestVector()
 }
 void TestQuaternion()
 {
+	float theta = degToRad(90.0f);
+	DirectX::XMMATRIX dxma = DirectX::XMMatrixRotationY(theta);
+	DirectX::XMVECTOR v = { 0,1,0,0 };
+	DirectX::XMVECTOR qua = DirectX::XMQuaternionRotationAxis(v, theta);
+	DirectX::XMVECTOR qua2 = DirectX::XMQuaternionRotationMatrix(dxma);
+	DirectX::XMMATRIX dxma2 = DirectX::XMMatrixRotationQuaternion(qua);
+	DirectX::XMVECTOR vvv = { 1,1,1,0 };
+	DirectX::XMVECTOR fadsafdsfdas = DirectX::XMVector3Rotate(vvv, qua);
+
+	DirectX::XMVECTOR vv = { 1,1,1,0 };
+	DirectX::XMVECTOR quaaa = DirectX::XMQuaternionRotationRollPitchYaw(degToRad(45.f), 0, degToRad(90.f));
+	DirectX::XMVECTOR fadsfdas = DirectX::XMVector3Rotate(vv, quaaa);
+
 	Quaternion qqqq;
 
 	Vector3 v111 = { 1,1,1 };
 	Quaternion rotate(Vector3{ 0,0,90 });
 	Quaternion rotate2(Vector3{0,0,1},90);
-	Quaternion rotate3(0, 90, 0);
+	Quaternion rotate3(90, 0, 0);
 	Quaternion rotate4(Vector3{ 1,0,0 }, 90);
-	Quaternion rotate5(0, 0, 90);
+	Quaternion rotate5(0, 90, 0);
 	Quaternion rotate6(Vector3{ 0,1,0 }, 90);
 	auto r111 = v111.rotate(rotate);
+	auto r222 = v111.rotate(rotate3);
+	auto r333 = v111.rotate(rotate5);
 	auto eu = rotate2.toEularAngle();
 	float deta =90 - eu.Z();
 	if (isEqual(eu.Z(), 90.0f))
@@ -287,16 +304,7 @@ void TestQuaternion()
 	Quaternion from_to3(Vector3{ 1,0,0 }, Vector3{ -1,0,0 });
 	sdfsa = v111.rotate(from_to3);
 
-	float theta = degToRad(90.0f);
-	DirectX::XMMATRIX dxma = DirectX::XMMatrixRotationY(theta);
-	DirectX::XMVECTOR v;
-	((float*)(&v))[0] = 0;
-	((float*)(&v))[1] = 1;
-	((float*)(&v))[2] = 0;
-	((float*)(&v))[3] = 0;
-	DirectX::XMVECTOR qua = DirectX::XMQuaternionRotationAxis(v, theta);
-	DirectX::XMVECTOR qua2 = DirectX::XMQuaternionRotationMatrix(dxma);
-	DirectX::XMMATRIX dxma2 = DirectX::XMMatrixRotationQuaternion(qua);
+
 
 	Matrix4 ma = {
 		cos(theta),0,-sin(theta),0,
@@ -307,6 +315,10 @@ void TestQuaternion()
 	Quaternion from_matrix(ma);
 	sdfsa = v111.rotate(from_matrix);
 	auto mmma = from_matrix.toRotationMatrix();
+	if (mmma == ma)
+	{
+		int a = 0;
+	}
 	ma = {
 		1,0,0,0,
 		0,cos(theta),sin(theta),0,
@@ -316,6 +328,10 @@ void TestQuaternion()
 	from_matrix = ma;
 	sdfsa = v111.rotate(from_matrix);
 	mmma = from_matrix.toRotationMatrix();
+	if (mmma == ma)
+	{
+		int a = 0;
+	}
 	ma = {
 		cos(theta),sin(theta),0,0,
 		-sin(theta),cos(theta),0,0,
@@ -325,6 +341,10 @@ void TestQuaternion()
 	from_matrix = ma;
 	sdfsa = v111.rotate(from_matrix);
 	mmma = from_matrix.toRotationMatrix();
+	if (mmma == ma)
+	{
+		int a = 0;
+	}
 
 	auto fdsaf= from_matrix.toAxisAngle();
 
@@ -333,6 +353,15 @@ void TestQuaternion()
 
 	Quaternion vq = { 0,v111.X(),v111.Y(),v111.Z() };
 	auto fsadfgg = from_matrix * vq * from_matrix.conjugate();
+	auto fdsag = from_matrix;
+	fdsag.productInPlace(vq);
+	fdsag.productInPlace(from_matrix.conjugate());
+
+	Quaternion roooo(45,0,90);
+	v111 = { 1,1,1 };
+	auto erqre = v111.rotate(roooo);
+
+
 
 	int a = 0;
 

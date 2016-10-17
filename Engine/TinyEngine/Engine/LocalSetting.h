@@ -23,7 +23,7 @@ public:
 #endif // _DEBUG
 
 protected:
-	explicit LocalSetting();
+	LocalSetting();
 	virtual ~LocalSetting();
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS

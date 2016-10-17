@@ -16,7 +16,7 @@ class GfxTexture : public RefCountObj
 public:
 	static PlatformTexturePtr create(const uint8_t* ddsData, int dataSize,const char* debugName);
 public:
-	explicit GfxTexture();
+	GfxTexture();
 	virtual ~GfxTexture();
 
 	virtual void render() = 0;

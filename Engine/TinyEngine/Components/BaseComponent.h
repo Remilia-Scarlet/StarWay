@@ -14,7 +14,7 @@ public:
 	void setOwner(const RefCountPtr<Object> & owner);
 	WeakRefPtr<Object> getOwner();
 protected:
-	explicit BaseComponent();
+	BaseComponent();
 	ObjectID _id;
 	WeakRefPtr<Object> _owner;
 };

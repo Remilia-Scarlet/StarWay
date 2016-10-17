@@ -61,6 +61,12 @@ public:
 	// Dot multiply
 	inline ValueType dot(const VectorStorage& other) const;
 
+	// Multiply. return Vector{ a[0] * b[0], a[1] * b[1] , ... , a[Size - 1] * b[Size - 1] }. See also dot(), cross() and multiplyInPlace().
+	inline VectorStorage multiply(const VectorStorage& other) const;
+
+	// Multiply in self. self = Vector{ a[0] * b[0], a[1] * b[1] , ... , a[Size - 1] * b[Size - 1] }. See also dot(), cross() and multiply().
+	inline VectorStorage& multiplyInPlace(const VectorStorage& other);
+
 	// Cross multiply and return the copy. See also crossInPlace()
 	inline VectorStorage cross(const VectorStorage& other) const;
 

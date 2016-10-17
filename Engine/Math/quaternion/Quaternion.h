@@ -18,7 +18,7 @@ public:
 	inline QuaternionStorage(const VectorStorage<ValueType, 3>& eulerAngles);
 
 	// Init QuaternionStorage with euler angles. In z,x,y(roll,pitch,yaw) order.
-	inline QuaternionStorage(const ValueType& zRotate, const ValueType& xRotate, const ValueType& yRotate);
+	inline QuaternionStorage(const ValueType& xRotate, const ValueType& yRotate, const ValueType& zRotate);
 
 	// Init QuaternionStorage with a rotation by axis. The angle is degree.
 	inline QuaternionStorage(const VectorStorage<ValueType, 3>& axis, const ValueType& angle);
@@ -44,7 +44,7 @@ public:
 	inline void reset(const VectorStorage<ValueType, 3>& eulerAngles);
 
 	// Init QuaternionStorage with euler angles. In z,x,y(roll,pitch,yaw) order.
-	inline void reset(const ValueType& zRotate, const ValueType& xRotate, const ValueType& yRotate);
+	inline void reset(const ValueType& xRotate, const ValueType& yRotate, const ValueType& zRotate);
 
 	// Init QuaternionStorage with a rotation by axis. The angle is degree.
 	inline void reset(const VectorStorage<ValueType, 3>& axis, const ValueType& angle);

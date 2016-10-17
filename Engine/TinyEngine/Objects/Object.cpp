@@ -38,6 +38,7 @@ void Object::addComponent(const BaseComponentPtr& component)
 		(*_components)[component->getObjectId()] = component;
 		if (DynamicRefCountCast<CameraComponent>(component).isValid())
 			setFlag(ObjectFlag::IS_CAMERA, true);
+		component->setOwner(RefCountPtr<Object>(this));
 	}
 	else
 		TinyAssert(false,"Object::addComponent ptr is not valid");

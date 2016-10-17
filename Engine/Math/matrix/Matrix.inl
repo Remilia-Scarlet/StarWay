@@ -194,7 +194,7 @@ MatrixStorage<ValueType, RowNum, ColNum>& MatrixStorage<ValueType, RowNum, ColNu
 	reset();
 	for (int i = 0; i < RowNum; ++i)
 	{
-		_data._d[i + i * ColNum] = 1;
+		_data._d[i + i * ColNum] = (ValueType)1;
 	}
 	return *this;
 }

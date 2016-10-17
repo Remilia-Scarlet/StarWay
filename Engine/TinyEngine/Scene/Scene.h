@@ -8,7 +8,7 @@ TINY_DEFINE_PTR(Scene);
 class Scene : public RefCountObj
 {
 public:
-	explicit Scene();
+	Scene();
 	virtual ~Scene();
 public:
 	static ScenePtr create();

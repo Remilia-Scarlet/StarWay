@@ -13,39 +13,56 @@ public:
 public:
 	static TransformComponentPtr create();
 
-	void setLocation(const Vector3& position) { _nodeToParentMatrixDirty = true; _location = position; }
-	Vector3 getLocation() { return _location; }
+	// Set location to parent node
+	void setLocation(float deltaX, float deltaY, float deltaZ);
 
-	virtual void faceToDir(const Vector3& lookAt);
-	virtual void faceToPoint(const Vector3& point);
+	// Set location to parent node
+	void setLocation(const Vector3& position);
 
+	// Get location to parent node
+	const Vector3& getLocation();
+
+	// Face to direction in parent coordinate system
+	void faceToDir(const Vector3& lookAt);
+
+	// Face to a point in parent coordinate system
+	void faceToPoint(const Vector3& point);
+
+	// Set rotation. Rotate in z,x,y(roll,pitch,yaw) order. deltaX is rotation to local x axis.  deltaY is rotation to local y axis.  deltaZ is rotation to local z axis.
 	void setRotation(float deltaX, float deltaY, float deltaZ);
+
+	// Set rotation by quaternion 
 	void setRotation(const Quaternion& rotation);
-	void setRotationX(float deltaX);
-	void setRotationY(float deltaY);
-	void setRotationZ(float deltaZ);
+
+	// Get rotation, return quaternion. You can use Quaternion.toEuler() to get euler angle.
 	const Quaternion& getRotation();
-	float getRotationX();
-	float getRotationY();
-	float getRotationZ();
 
-	void setScale(float x, float y, float z) { _scale(0) = x; _scale(1) = y; _scale(2) = z; }
-	void setScale(const Vector3& scale) { _scale = scale; }
-	const Vector3& getScale() { return _scale; }
+	void setScale(float x, float y, float z);
+	void setScale(const Vector3& scale);
+	const Vector3& getScale();
 
-	const Matrix4& getWorldMatrix();
-	Vector3 getUpDirection();//return z direction
-	Vector3 getFrontDirection();//return y direction
+	const Matrix4& getNodeToWorldMatrix();
+
+	// Get y direction in parent coordinate
+	Vector3 getUpDirection();
+
+	// Get z direction in parent coordinate
+	Vector3 getFrontDirection();
 
 	virtual void render() override;
 protected:
 	virtual bool init();
 	
-	explicit TransformComponent();
+	TransformComponent();
+
 	Vector3 _location;
-	Quaternion _rotate;
+
+	//euler angle. Rotate in z,x,y order. 
+	Quaternion _rotate; 
+
 	Vector3 _scale;
-	bool _nodeToParentMatrixDirty;
+
 	Matrix4 _nodeToParentMatrix;
+	bool _nodeToParentMatrixDirty;
 };
 

@@ -8,7 +8,7 @@ public:
 public:
 
 protected:
-	explicit LightComponent();
+	LightComponent();
 
 };
 

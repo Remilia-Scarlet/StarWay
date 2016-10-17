@@ -19,7 +19,7 @@ public:
 	int getDesiredFPS() {return _desiredFPS;}
 	void setDesiredFPS(int desiredFPS) { _desiredFPS = desiredFPS; }
 protected:
-	explicit Engine();
+	Engine();
 	virtual ~Engine();
 	bool init();
 

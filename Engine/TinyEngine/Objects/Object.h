@@ -48,7 +48,7 @@ protected:
 	std::unordered_map<ObjectID, BaseComponentPtr>* _components;
 	std::bitset<32> _flag;
 public:
-	explicit Object();
+	Object();
 	virtual ~Object();
 };
 
