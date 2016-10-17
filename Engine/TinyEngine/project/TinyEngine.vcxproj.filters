@@ -32,6 +32,9 @@
     <ClCompile Include="..\Components\CameraComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\Other\Timer.cpp">
+      <Filter>Other</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -73,6 +76,9 @@
     <ClInclude Include="..\Engine\TinyAssert.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="..\Other\Timer.h">
+      <Filter>Other</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Objects">
@@ -89,6 +95,9 @@
     </Filter>
     <Filter Include="Engine">
       <UniqueIdentifier>{26a73b9e-3bac-4298-ba5f-bb224a6b8fbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Other">
+      <UniqueIdentifier>{a14b52ef-f878-47e3-b028-d6cdd53e8fba}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

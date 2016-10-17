@@ -133,6 +133,6 @@ Vector3 TransformComponent::getFrontDirection()
 
 void TransformComponent::render()
 {
-	Matrix4 worldMat = getNodeToWorldMatrix().transpose();
+	Matrix4 worldMat = getNodeToWorldMatrix();
 	ConstantBufferManager::instance()->setVSMatrix(8, worldMat);
 }

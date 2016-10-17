@@ -46,13 +46,11 @@ void CameraComponent::render()
 	DirectX::XMVECTOR At = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	DirectX::XMVECTOR Up = DirectX::XMVectorSet(0.0f, 11.0f, 0.0f, 0.0f);
 	DirectX::XMMATRIX View = DirectX::XMMatrixLookAtLH(Eye, At, Up);
-	View = XMMatrixTranspose(View);
 	Matrix4 viewMatrix;
 	memcpy(&viewMatrix,&View,sizeof(View));
 	ConstantBufferManager::instance()->setVSMatrix(0, viewMatrix);
 
 	DirectX::XMMATRIX Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, Engine::instance()->getSolutionWidth() / (FLOAT)Engine::instance()->getSolutionHeight(), 0.01f, 100.0f);
-	Projection = XMMatrixTranspose(Projection);
 	Matrix4 projMatrix;
 	memcpy(&projMatrix, &Projection, sizeof(Projection));
 	ConstantBufferManager::instance()->setVSMatrix(4, projMatrix);
