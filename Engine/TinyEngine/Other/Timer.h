@@ -1,47 +1,79 @@
 #pragma once
 #include <functional>
+#include <memory>
 
 /*
 Usage:
 
-Timer timer = Timer(1,0,somefunction);
+Timer timer = Timer(1,-1,someFunction);
 timer.start();
 
-Now the somefunction will be called every 1 second.
+Now the somefunction() will be called every 1 second.
 
-for example:
+
+Another example:
+Print Fibonacii sequence item 1-10 every 1 second.
 void test()
 {
-	
-	std::function<int,int> addFun = [](int x,int y){
-		printf("%d\n",x+y);
-	}
+	std::function<void(Timer*)> fibonacii = [](Timer* timer) {
+		int* array = (int*)timer->getUserData();
+		int value = array[0] + array[1];
+		array[0] = array[1];
+		array[1] = value;
+		DebugString("%d\n", value);
+	};
 
-	Timer timer = Timer(1,10,std::bind(addFun,));
+	Timer timer = Timer(1, 20, fibonacii);
+
+	timer.onStart() = [](Timer* timer) {
+		if (timer->getUserData() != nullptr)
+			delete timer->getUserData();
+		int* array = new int[2];
+		array[0] = array[1] = 1;
+		timer->setUserData(array);
+	};
+
+	timer.onStop() = [](Timer* timer) {
+		if (timer->getUserData() != nullptr)
+		{
+			delete timer->getUserData();
+			timer->setUserData(nullptr);
+		}
+	};
+
 	timer.start();
 }
 
 */
+class Timer;
+typedef std::function<void(Timer*)> TimerCallback;
 
-
+class TimerManager;
 class Timer
 {
+	friend class TimerManager;
 public:
-	// Create a timer, it will call callBack() every dt seconds with callTimes times.
-	// If dt == 0, it will be triggered every frame. If callTimes == 0, it will not automatically stop.
+	// Create a timer, it will call callback() every dt seconds with callTimes times.
+	// If dt == 0, it will be triggered every frame. If callTimes == -1, it will not automatically stop.
 	// Call start() to start this timer.
-	Timer(float dt, int callTimes, const std::function<void>& callBack, ... );
+	Timer(float dt, int callTimes, const TimerCallback& callback);
 	
-	~Timer();
+	//Create a timer with dt = 0 and callTimes = 0
+	Timer();
 
-	// Start timer
+	virtual ~Timer();
+
+	// Id is the unique symbol of a timer. Some function of TimerManager needs id as param.
+	int getId() const;
+
+	// Start timer. In fact it calls TimeManager.addTimer(*this)
 	void start();
 
-	// Stop this timer
+	// Stop this timer. In fact it calls TimeManager.removeTimer(getId()).
 	void stop();
 
 	// Return true if this timer is working.
-	void isWorking() const;
+	bool isWorking() const;
 
 	// Set remain calling times. Timer will automatically call stop() after this count of calling.
 	void setRemainCallTimes(int times);
@@ -52,9 +84,45 @@ public:
 	// Timer will call callback every dt time, in seconds. 
 	void setDetaTime(float dt);
 
-	float getDetaTime() const;
+	// return interval of evrey callback
+	double getDetaTime() const;
+	
+	// Set/Get userData. It's a void pointer that can be set to any thing. 
+	void* getUserData();
+	void setUserData(void* userData);
 
-	// Set call back fucntion
+public:
+	// set & get callback function
+	TimerCallback& callback();
+	const TimerCallback& callback() const;
 
-	const std::function<void>& 
+	// set & get onStart funciton. onStart function will be called when you call start()
+	TimerCallback& onStart();
+	const TimerCallback& onStart()const;
+
+	// set & get onStop funciton. onStop function will be called when you call stop()
+	TimerCallback& onStop();
+	const TimerCallback& onStop()const;
+
+	// set & get onDestruct function. onDestruct function will be called when Timer destructs.
+	TimerCallback& onDestruct();
+	const TimerCallback& onDestruct()const;
+protected:
+	struct TimerInfoSaver
+	{
+		TimerInfoSaver() :_dt(0), _remainCallTimes(-1), _dtFromLastCall(0), _userData(nullptr),_id(++s_timerid){}
+		double _dt;
+		int _remainCallTimes;
+		double _dtFromLastCall;
+		void* _userData;
+
+		TimerCallback _callback;
+		TimerCallback _onStart;
+		TimerCallback _onStop;
+		TimerCallback _onDestruct;
+		
+		int _id;
+		static int s_timerid;
+	};
+	std::shared_ptr<TimerInfoSaver> _info;
 };

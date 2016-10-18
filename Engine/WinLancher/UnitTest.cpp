@@ -2,6 +2,8 @@
 #include "Math/matrix/Matrix.h"
 #include "Math/quaternion/Quaternion.h"
 #include <DirectXMath.h>
+#include <functional>
+#include "TinyEngine/Other/Timer.h"
 void Common()
 {
 	float o = 1.0f;
@@ -366,10 +368,46 @@ void TestQuaternion()
 	int a = 0;
 
 }
+void TestTimer()
+{
+	static bool ok = false;
+	if (ok)
+		return;
+	ok = true;
+
+	std::function<void(Timer*)> fibonacii = [](Timer* timer) {
+		int* array = (int*)timer->getUserData();
+		int value = array[0] + array[1];
+		array[0] = array[1];
+		array[1] = value;
+		DebugString("%d\n", value);
+	};
+
+	Timer timer = Timer(1, 20, fibonacii);
+
+	timer.onStart() = [](Timer* timer) {
+		if (timer->getUserData() != nullptr)
+			delete timer->getUserData();
+		int* array = new int[2];
+		array[0] = array[1] = 1;
+		timer->setUserData(array);
+	};
+
+	timer.onStop() = [](Timer* timer) {
+		if (timer->getUserData() != nullptr)
+		{
+			delete timer->getUserData();
+			timer->setUserData(nullptr);
+		}
+	};
+
+	timer.start();
+}
 void UnitTest()
 {
 	Common();
 	TestMatrix();
 	TestVector();
 	TestQuaternion();
+	TestTimer();
 }

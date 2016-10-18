@@ -35,6 +35,9 @@
     <ClCompile Include="..\Other\Timer.cpp">
       <Filter>Other</Filter>
     </ClCompile>
+    <ClCompile Include="..\Other\TimerManager.cpp">
+      <Filter>Other</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -77,6 +80,9 @@
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="..\Other\Timer.h">
+      <Filter>Other</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Other\TimerManager.h">
       <Filter>Other</Filter>
     </ClInclude>
   </ItemGroup>

@@ -24,7 +24,7 @@ protected:
 	bool init();
 
 	void drawScene();
-
+	void updateWorld(double dt);
 	static Engine* s_instance;
 	int _solutionWidth;
 	int _solutionHeight;

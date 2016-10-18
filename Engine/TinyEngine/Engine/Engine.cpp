@@ -8,6 +8,7 @@
 #include "TinyEngine/Components/TransformComponent.h"
 #include "Graphic/Manager/ConstantBufferManager.h"
 #include "Graphic/Manager/ShaderMgr.h"
+#include "TinyEngine/Other/TimerManager.h"
 
 const int SOLUTION_WIDTH = 640;
 const int SOLUTION_HEIGHT = 480;
@@ -50,6 +51,7 @@ bool Engine::start()
 {
 	do
 	{
+		TINY_BREAK_IF(!TimerManager::createInstance());
 		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionHeight, _solutionWidth, LocalSetting::instance()->getWindowHWND()));
 		TINY_BREAK_IF(!ConstantBufferManager::createInstance());
 		TINY_BREAK_IF(!ShaderMgr::createInstance());
@@ -63,6 +65,7 @@ void Engine::end()
 	GraphicMgr::destroyInstance();
 	ConstantBufferManager::destroyInstance();
 	ShaderMgr::destroyInstance();
+	TimerManager::destoryInstance();
 }
 void Engine::destroyInstance()
 {
@@ -74,6 +77,7 @@ void Engine::mainLoop(double dt)
 	//deal input
 
 	//game logic
+	updateWorld(dt);
 
 	//draw current scene
 	drawScene();
@@ -106,6 +110,11 @@ void Engine::drawScene()
 	if (_currentScene.isValid())
 		_currentScene->render();
 	GraphicMgr::instance()->render();
+}
+
+void Engine::updateWorld(double dt)
+{
+	TimerManager::instance()->update(dt);
 }
 
 Engine* Engine::s_instance = nullptr;
