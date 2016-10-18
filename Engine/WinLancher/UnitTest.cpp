@@ -158,6 +158,7 @@ void TestVector()
 	Vector4 v4;
 	Vector4 v41 = { 1,2 };
 	Vector4 v42 = { 1,2,3,4,5,6,7 };
+	auto minusss = v42 - v41;
 	float dd[] = { 1,2,3,4,5,6,7,8,9,10 };
 	Vector4 v43 = dd;
 	Vector4 v44 = 1;

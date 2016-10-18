@@ -52,6 +52,12 @@ VectorStorage<ValueType, Size> operator+(const VectorStorage<ValueType, Size>& v
 {
 	return vec1.add(vec2);
 }
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator-(const VectorStorage<ValueType, Size>& vec1, const VectorStorage<ValueType, Size>& vec2)
+{
+	return vec1.minus(vec2);
+}
 //////////////////////////////////////////////////////////////////////////
 // Member function
 //////////////////////////////////////////////////////////////////////////
@@ -249,6 +255,22 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::addInPlace(const
 }
 
 template <class ValueType, int Size>
+VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::minus(const VectorStorage<ValueType, Size>& other) const
+{
+	return VectorStorage<ValueType, Size>(*this).minusInPlace(other);
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::minusInPlace(const VectorStorage<ValueType, Size>& other) 
+{
+	for (int i = 0; i < Size; ++i)
+	{
+		_data[i] -= other._data[i];
+	}
+	return *this;
+}
+
+template <class ValueType, int Size>
 VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::scaled(const ValueType& scale) const
 {
 	VectorStorage<ValueType, Size> target = *this;
@@ -373,4 +395,10 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::rotateInPlace(co
 
 	*this = v + ((ValueType)2 * qv).cross(qv.cross(v) + normedQuaternion.W() * v);
 	return *this;
+}
+
+template <class ValueType, int Size>
+QuaternionStorage<ValueType> VectorStorage<ValueType, Size>::getRotationToAnother(const VectorStorage<ValueType, Size>& other) const
+{
+	return QuaternionStorage<ValueType>(*this, other);
 }

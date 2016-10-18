@@ -21,9 +21,9 @@ public:
 
 	// Get location to parent node
 	const Vector3& getLocation();
-
-	// Face to direction in parent coordinate system
-	void faceToDir(const Vector3& lookAt);
+	float getLocationX();
+	float getLocationY();
+	float getLocationZ();
 
 	// Face to a point in parent coordinate system
 	void faceToPoint(const Vector3& point);

@@ -59,6 +59,7 @@ void TimerManager::addTimer(const Timer& timer)
 	{
 		Timer& arrTimer = _timers[timer.getId()];
 		arrTimer = timer;
+		arrTimer._info->_workedTime = 0;
 		if (timer._info->_onStart)
 			timer._info->_onStart(&arrTimer);
 	}
@@ -99,6 +100,7 @@ void TimerManager::update(double dt)
 		Timer& timer = it->second;
 		Timer::TimerInfoSaver* info = timer._info.get();
 		info->_dtFromLastCall += dt;
+		info->_workedTime += dt;
 		if (info->_dtFromLastCall >= info->_dt)
 		{
 			info->_dtFromLastCall -= info->_dt;

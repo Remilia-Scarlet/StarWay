@@ -70,7 +70,7 @@ double Timer::getDetaTime() const
 	return _info->_dt;
 }
 
-void* Timer::getUserData()
+void* Timer::getUserData() const
 {
 	return _info->_userData;
 }
@@ -78,6 +78,11 @@ void* Timer::getUserData()
 void Timer::setUserData(void* userData)
 {
 	_info->_userData = userData;
+}
+
+double Timer::getPassedTime() const
+{
+	return _info->_workedTime;
 }
 
 TimerCallback& Timer::callback()

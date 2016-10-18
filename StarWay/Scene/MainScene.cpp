@@ -9,6 +9,7 @@
 #include "Math/vector/Vector.h"
 #include "Math/matrix/Matrix.h"
 #include "Math/quaternion/Quaternion.h"
+#include "TinyEngine/Other/Timer.h"
 
 MainScenePtr MainScene::create()
 {
@@ -99,6 +100,15 @@ bool MainScene::init()
 		
 		TransformComponentPtr transform = TransformComponent::create();
 		obj->addComponent(transform);
+		Timer(0, -1, [transform](Timer* timer) {
+			transform->setLocation( (float)sin(timer->getPassedTime()) * 2.f , transform->getLocationY(), transform->getLocationZ());
+		//	transform->setRotation(0, (float)cos(timer->getPassedTime()) * 360 ,0);
+			Quaternion rotation(Vector3{ 0,0,3 }, Vector3{ 0,0,3 } - transform->getLocation());
+			Vector3 eular = rotation.toEularAngle();
+			eular.Z() = (float)sin(timer->getPassedTime()) * 360;
+			transform->setRotation(Quaternion(eular));
+		}).start();
+		transform->setScale(0.6f, 0.6f, 0.6f);
 
 		addObject(obj);
 
@@ -111,7 +121,7 @@ bool MainScene::init()
 
 		TransformComponentPtr cametaTran = TransformComponent::create();
 		cameraObj->addComponent(cametaTran);
-
+		cametaTran->setLocation(0, 2, -5);
 		cametaTran->faceToPoint(Vector3());
 
 		addObject(cameraObj);

@@ -68,7 +68,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
 //	_CrtDumpMemoryLeaks();
-//	_CrtSetBreakAlloc(196);
+//	_CrtSetBreakAlloc(617);
 #endif
 
 #ifdef _DEBUG

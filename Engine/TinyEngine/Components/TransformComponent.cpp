@@ -57,14 +57,26 @@ const Vector3& TransformComponent::getLocation()
 	return _location;
 }
 
-void TransformComponent::faceToDir(const Vector3& lookAt)
+float TransformComponent::getLocationX()
 {
-
+	return _location.X();
 }
+
+float TransformComponent::getLocationY()
+{
+	return _location.Y();
+}
+
+float TransformComponent::getLocationZ()
+{
+	return _location.Z();
+}
+
 
 void TransformComponent::faceToPoint(const Vector3& point)
 {
-
+	Vector3 vecThis2Point = point - _location;
+	_rotate = Quaternion(Vector3{ 0,0,1 }, vecThis2Point);
 }
 
 void TransformComponent::setRotation(float deltaX, float deltaY, float deltaZ)

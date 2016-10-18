@@ -14,8 +14,6 @@ public:
 public:
 	virtual void render() override;
 
-	virtual Matrix4 getLookToDirectionMatrix(const Vector3& location,const Vector3& upDirection,const Vector3& eyeDirection);
-	virtual Matrix4 getLookAtPointMatrix(const Vector3& location, const Vector3& upDirection, const Vector3& lookAtPoint);
 protected:
 	virtual bool init();
 };

@@ -79,6 +79,12 @@ public:
 	// Add a vector to self. Return self. See also add()
 	inline VectorStorage& addInPlace(const VectorStorage& other);
 
+	// Minus a vector. Return copy. See also minusInPlace()
+	inline VectorStorage minus(const VectorStorage& other)const;
+
+	// Minus a vector from self. Return self. See also minus()
+	inline VectorStorage minusInPlace(const VectorStorage& other);
+
 	// Multiply all elem with this value, and return the copy. See also scaleInPlace().
 	inline VectorStorage scaled(const ValueType& scale) const;
 
@@ -115,6 +121,8 @@ public:
 	// Rotate this vector bu quaternion in place. See also rotate(). Notice : you must give a normorized quaternion.
 	VectorStorage<ValueType, Size>& rotateInPlace(const QuaternionStorage<ValueType>& normedQuaternion);
 
+	// Return the quaternion witch can rotate this vector to other vector. Then you can use Vecor.rotate(quaternion) to rotate vector.
+	QuaternionStorage<ValueType> getRotationToAnother(const VectorStorage<ValueType, Size>& other) const;
 protected:
 	ValueType _data[Size];
 };

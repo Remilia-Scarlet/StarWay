@@ -88,9 +88,11 @@ public:
 	double getDetaTime() const;
 	
 	// Set/Get userData. It's a void pointer that can be set to any thing. 
-	void* getUserData();
+	void* getUserData() const;
 	void setUserData(void* userData);
 
+	// Return how long it has passed since start() be called.
+	double getPassedTime() const;
 public:
 	// set & get callback function
 	TimerCallback& callback();
@@ -110,11 +112,12 @@ public:
 protected:
 	struct TimerInfoSaver
 	{
-		TimerInfoSaver() :_dt(0), _remainCallTimes(-1), _dtFromLastCall(0), _userData(nullptr),_id(++s_timerid){}
+		TimerInfoSaver() :_dt(0), _remainCallTimes(-1), _dtFromLastCall(0), _userData(nullptr), _id(++s_timerid), _workedTime(0) {}
 		double _dt;
 		int _remainCallTimes;
 		double _dtFromLastCall;
 		void* _userData;
+		double _workedTime;
 
 		TimerCallback _callback;
 		TimerCallback _onStart;
