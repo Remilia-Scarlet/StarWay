@@ -25,6 +25,15 @@ public:
 	// Copy another vector
 	inline VectorStorage(const VectorStorage& other);
 
+	// Only for Vector2
+	inline VectorStorage(const ValueType& x, const ValueType& y);
+
+	// Only for Vector3
+	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z);
+
+	// Only for Vector4
+	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w);
+
 	inline ~VectorStorage() {}
 	// Get an elem
 	inline ValueType& operator()(int index);

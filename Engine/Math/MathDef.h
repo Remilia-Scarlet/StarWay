@@ -8,9 +8,12 @@
 	#define M_PI       3.14159265358979323846   // pi
 #endif
 
-#define TINY_FLOAT_EPSILON	1e-5f
-#define TINY_DBL_EPSILON	(DBL_EPSILON * 3)
-#define TINY_LDBL_EPSILON	(LDBL_EPSILON * 3)
+const double DEG_TO_RAD = 0.0174532925199432957692369076848;
+const double RAD_TO_DEG = 57.295779513082320876798154814105;
+
+const float	TINY_FLOAT_EPSILON = 1e-5f;
+const double TINY_DBL_EPSILON = DBL_EPSILON * 3;
+const long double TINY_LDBL_EPSILON = LDBL_EPSILON * 3;
 
 #define TINY_FLOAT_EQUAL(_A_,_B_) (abs((_A_) - (_B_))<TINY_FLOAT_EPSILON)
 #define TINY_DOUBLE_EQUAL(_A_,_B_) (abs((_A_) - (_B_))<TINY_DBL_EPSILON)
@@ -28,13 +31,13 @@
 template<class ValueType>
 inline ValueType degToRad(const ValueType& degree)
 {
-	return degree / (ValueType)180 * (ValueType)M_PI;
+	return degree * (ValueType)DEG_TO_RAD;
 }
 
 template<class ValueType>
 inline ValueType radToDeg(const ValueType& radian)
 {
-	return radian / (ValueType)M_PI * (ValueType)180;
+	return radian * (ValueType)RAD_TO_DEG;
 }
 
 template<class ValueType>

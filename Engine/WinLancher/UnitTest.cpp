@@ -151,6 +151,12 @@ void TestMatrix()
 	{
 		int a = 0;
 	}
+
+	auto fdsaf = CreateRotationMatrixX(30.f);
+	auto fasdcc = CreateRotationMatrixY(30.f);
+	auto fdsafds = CreateRotationMatrixZ(30.f);
+	auto vcxa = CreateTranslaionMatrix(123.f, 456.f, 789.f);
+	auto vzsd = CreateScalingMatrix(2.f, 3.f, 4.f);
 }
 
 void TestVector()

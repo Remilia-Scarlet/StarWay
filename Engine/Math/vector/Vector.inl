@@ -92,6 +92,33 @@ VectorStorage<ValueType, Size>::VectorStorage(const VectorStorage& other)
 }
 
 template <class ValueType, int Size>
+VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueType& y)
+{
+	static_assert(Size == 2, "This constructor is only available for Vector2");
+	_data[0] = x;
+	_data[1] = y;
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z)
+{
+	static_assert(Size == 3, "This constructor is only available for Vector3");
+	_data[0] = x;
+	_data[1] = y;
+	_data[2] = z;
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w)
+{
+	static_assert(Size == 4, "This constructor is only available for Vector4");
+	_data[0] = x;
+	_data[1] = y;
+	_data[2] = z;
+	_data[3] = w;
+}
+
+template <class ValueType, int Size>
 ValueType& VectorStorage<ValueType, Size>::operator()(int index)
 {
 	TinyAssert(index < Size && index >= 0);

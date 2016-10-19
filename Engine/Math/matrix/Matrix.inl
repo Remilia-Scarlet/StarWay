@@ -2,6 +2,103 @@
 // Global function
 //////////////////////////////////////////////////////////////////////////
 
+// create a rotation matrix rotating by x axis. 
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateRotationMatrixX(const ValueType& angle)
+{
+	ValueType sinAngle = sin(degToRad(angle));
+	ValueType cosAngle = cos(degToRad(angle));
+	
+	return MatrixStorage<ValueType, 4, 4>{
+		(ValueType)1,	(ValueType)0,	(ValueType)0,	(ValueType)0,
+		(ValueType)0,	cosAngle,		sinAngle,		(ValueType)0,
+		(ValueType)0,	-sinAngle,		cosAngle,		(ValueType)0,
+		(ValueType)0,	(ValueType)0,	(ValueType)0,	(ValueType)1
+	};
+}
+
+// create a rotation matrix rotating by y axis. 
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateRotationMatrixY(const ValueType& angle)
+{
+	ValueType sinAngle = sin(degToRad(angle));
+	ValueType cosAngle = cos(degToRad(angle));
+
+	return MatrixStorage<ValueType, 4, 4>{
+		cosAngle,		(ValueType)0,	-sinAngle,		(ValueType)0,
+		(ValueType)0,	(ValueType)1,	(ValueType)0,	(ValueType)0,
+		sinAngle,		(ValueType)0,	cosAngle,		(ValueType)0,
+		(ValueType)0,	(ValueType)0,	(ValueType)0,	(ValueType)1
+	};
+}
+
+// create a rotation matrix rotating by z axis. 
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateRotationMatrixZ(const ValueType& angle)
+{
+	ValueType sinAngle = sin(degToRad(angle));
+	ValueType cosAngle = cos(degToRad(angle));
+
+	return MatrixStorage<ValueType, 4, 4>{
+		cosAngle,		sinAngle,		(ValueType)0,	(ValueType)0,
+		-sinAngle,		cosAngle,		(ValueType)0,	(ValueType)0,
+		(ValueType)0,	(ValueType)0,	(ValueType)1,	(ValueType)0,
+		(ValueType)0,	(ValueType)0,	(ValueType)0,	(ValueType)1
+	};
+}
+
+// create a translation matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateTranslaionMatrix(const ValueType& x, const ValueType& y, const ValueType& z)
+{
+	return MatrixStorage<ValueType, 4, 4>{
+		1,			0,			0,			0,
+		0,			1,			0,			0,
+		0,			0,			1,			0,
+		x,			y,			z,			1
+	};
+}
+
+// create a translation matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateTranslaionMatrixFromVector(const VectorStorage<ValueType,3>& vec)
+{
+	return CreateTranslaionMatrix(vec.X(), vec.Y(), vec.Z());
+}
+
+// create a translation matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateScalingMatrix(const ValueType& x, const ValueType& y, const ValueType& z)
+{
+	return MatrixStorage<ValueType, 4, 4>{
+		x,			0,			0,			0,
+		0,			y,			0,			0,
+		0,			0,			z,			0,
+		0,			0,			0,			1
+	};
+}
+
+// create a translation matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateProjMatrix(const ValueType& fieldOfView, const ValueType& aspectHByW, const ValueType& nearZ, const ValueType& farZ)
+{
+	// copied from DirectX::XMMatrixPerspectiveFovLH
+	ValueType fov = fieldOfView * (ValueType)DEG_TO_RAD / (ValueType)2;
+	ValueType sinFov = sin(fov);
+	ValueType cosFov = cos(fov);
+
+	ValueType height = cosFov / sinFov;
+	ValueType width = height / aspectHByW;
+	ValueType range = farZ / (farZ - nearZ);
+
+	return MatrixStorage<ValueType, 4, 4> {
+		width,			(ValueType)0,	(ValueType)0,	(ValueType)0,
+		(ValueType)0,	height,			(ValueType)0,	(ValueType)0,
+		(ValueType)0,	(ValueType)0,	range,			(ValueType)1,
+		(ValueType)0,	(ValueType)0,	-range * nearZ,	(ValueType)0
+	};
+}
+
 // for float, use isEqual to compare the value.
 template <int RowNum, int ColNum>
 bool operator==(const MatrixStorage<float, RowNum, ColNum>& left, const MatrixStorage<float, RowNum, ColNum>& right)

@@ -75,6 +75,9 @@ float TransformComponent::getLocationZ()
 
 void TransformComponent::faceToPoint(const Vector3& point)
 {
+	if (point == _location)
+		return;
+
 	Vector3 vecThis2Point = point - _location;
 	_rotate = Quaternion(Vector3{ 0,0,1 }, vecThis2Point);
 }
@@ -120,14 +123,10 @@ const Matrix4& TransformComponent::getNodeToWorldMatrix()
 		TinyAssert(_owner.isValid());
 
 		Matrix4 rotationMatrix = _rotate.toRotationMatrix();
-		Matrix4 translation = Matrix4::identity();
-		translation(3) = { _location.X(),_location.Y(),_location.Z(),1 };
-		Matrix4 scaling = Matrix4::identity();
-		scaling(0, 0) = _scale.X();
-		scaling(1, 1) = _scale.Y();
-		scaling(2, 2) = _scale.Z();
+		Matrix4 translation = CreateTranslaionMatrixFromVector(_location); 
+		Matrix4 scaling = CreateScalingMatrix(_scale.X(), _scale.Y(), _scale.Z());
 
-		_nodeToParentMatrix = (rotationMatrix * translation) * scaling;
+		_nodeToParentMatrix = rotationMatrix * translation * scaling;
 		_nodeToParentMatrixDirty = false;
 	}
 	return _nodeToParentMatrix;
