@@ -38,6 +38,12 @@
     <ClCompile Include="..\Other\TimerManager.cpp">
       <Filter>Other</Filter>
     </ClCompile>
+    <ClCompile Include="..\Input\InputManager.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Input\Windows\InputManagerWin.cpp">
+      <Filter>Input\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -85,6 +91,15 @@
     <ClInclude Include="..\Other\TimerManager.h">
       <Filter>Other</Filter>
     </ClInclude>
+    <ClInclude Include="..\Input\InputManager.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Input\VirtualButton.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Input\Windows\InputManagerWin.h">
+      <Filter>Input\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Objects">
@@ -104,6 +119,12 @@
     </Filter>
     <Filter Include="Other">
       <UniqueIdentifier>{a14b52ef-f878-47e3-b028-d6cdd53e8fba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{36567ece-30e8-420e-8194-4291d115cbc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input\Windows">
+      <UniqueIdentifier>{3eddbf53-d5f8-4e48-be1a-64dc871da697}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

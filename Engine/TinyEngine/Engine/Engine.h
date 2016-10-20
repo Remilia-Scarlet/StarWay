@@ -18,6 +18,9 @@ public:
 
 	int getDesiredFPS() {return _desiredFPS;}
 	void setDesiredFPS(int desiredFPS) { _desiredFPS = desiredFPS; }
+
+	// return time in seconds since game started
+	float getTime() const;
 protected:
 	Engine();
 	virtual ~Engine();
@@ -30,5 +33,7 @@ protected:
 	int _solutionHeight;
 	int _desiredFPS;
 	ScenePtr _currentScene;
+	float _currentTime;
+	bool _paused;
 };
 

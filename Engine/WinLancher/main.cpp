@@ -16,7 +16,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hdc = BeginPaint(hWnd, &ps);
 		EndPaint(hWnd, &ps);
 		break;
+	case WM_KEYDOWN:
+		if (1)
+		{
 
+		}
+		break;
+	case WM_KEYUP:
+		if (1)
+		{
+
+		}
+		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;

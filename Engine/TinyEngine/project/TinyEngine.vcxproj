@@ -35,6 +35,8 @@
     <ClCompile Include="..\Components\TransformComponent.cpp" />
     <ClCompile Include="..\Engine\Engine.cpp" />
     <ClCompile Include="..\Engine\LocalSetting.cpp" />
+    <ClCompile Include="..\Input\InputManager.cpp" />
+    <ClCompile Include="..\Input\Windows\InputManagerWin.cpp" />
     <ClCompile Include="..\Objects\Object.cpp" />
     <ClCompile Include="..\Other\Timer.cpp" />
     <ClCompile Include="..\Other\TimerManager.cpp" />
@@ -60,6 +62,9 @@
     <ClInclude Include="..\Engine\EngineDefs.h" />
     <ClInclude Include="..\Engine\LocalSetting.h" />
     <ClInclude Include="..\Engine\TinyAssert.h" />
+    <ClInclude Include="..\Input\InputManager.h" />
+    <ClInclude Include="..\Input\VirtualButton.h" />
+    <ClInclude Include="..\Input\Windows\InputManagerWin.h" />
     <ClInclude Include="..\Objects\Object.h" />
     <ClInclude Include="..\Other\Timer.h" />
     <ClInclude Include="..\Other\TimerManager.h" />

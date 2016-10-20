@@ -9,6 +9,7 @@
 #include "Graphic/Manager/ConstantBufferManager.h"
 #include "Graphic/Manager/ShaderMgr.h"
 #include "TinyEngine/Other/TimerManager.h"
+#include "TinyEngine/Input/InputManager.h"
 
 const int SOLUTION_WIDTH = 640;
 const int SOLUTION_HEIGHT = 480;
@@ -18,6 +19,8 @@ Engine::Engine()
 	:_solutionWidth(0)
 	,_solutionHeight(0)
 	,_desiredFPS(DESIRED_FPS)
+	, _currentTime(0)
+	, _paused(false)
 {
 }
 
@@ -84,8 +87,12 @@ void Engine::destroyInstance()
 
 void Engine::mainLoop(float dt)
 {
-	//deal input
-
+	if (_paused)
+		return;
+	_currentTime += dt;
+	
+	// input
+	InputManager::instance()->update(dt);
 
 	//game logic
 	updateWorld(dt);
@@ -94,6 +101,11 @@ void Engine::mainLoop(float dt)
 	drawScene();
 }
 
+
+float Engine::getTime() const
+{
+	return _currentTime;
+}
 
 void Engine::startScene(ScenePtr scene)
 {
