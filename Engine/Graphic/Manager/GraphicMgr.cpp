@@ -13,11 +13,6 @@ PlatformGraphicMgr* GraphicMgr::instance()
 	return static_cast<PlatformGraphicMgr*>(s_instance);
 }
 
-void GraphicMgr::start()
-{
-	
-}
-
 bool GraphicMgr::createInstance(int width, int height, HWND hWnd)
 {
 #if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11

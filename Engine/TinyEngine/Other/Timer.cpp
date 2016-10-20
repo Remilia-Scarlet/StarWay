@@ -65,7 +65,7 @@ void Timer::setDetaTime(float dt)
 	_info->_dt = dt;
 }
 
-double Timer::getDetaTime() const
+float Timer::getDetaTime() const
 {
 	return _info->_dt;
 }
@@ -80,7 +80,7 @@ void Timer::setUserData(void* userData)
 	_info->_userData = userData;
 }
 
-double Timer::getPassedTime() const
+float Timer::getPassedTime() const
 {
 	return _info->_workedTime;
 }

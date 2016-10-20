@@ -45,8 +45,6 @@ public:
 	static void destroyInstance();
 	static PlatformGraphicMgr* instance();
 
-	virtual void start();
-
 	virtual void setViewPort(const ViewPort& viewPort) = 0;
 	virtual ViewPort getViewPort() = 0;
 

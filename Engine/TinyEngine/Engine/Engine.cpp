@@ -47,7 +47,18 @@ Engine* Engine::instance()
 	return s_instance;
 }
 
-bool Engine::start()
+bool Engine::init()
+{
+	_solutionWidth = SOLUTION_WIDTH;
+	_solutionHeight = SOLUTION_HEIGHT;
+	do
+	{
+		return true;
+	} while (0);
+	return false;
+}
+
+bool Engine::createManagers()
 {
 	do
 	{
@@ -55,26 +66,26 @@ bool Engine::start()
 		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionWidth, _solutionHeight, LocalSetting::instance()->getWindowHWND()));
 		TINY_BREAK_IF(!ConstantBufferManager::createInstance());
 		TINY_BREAK_IF(!ShaderMgr::createInstance());
-		GraphicMgr::instance()->start();
 		return true;
 	} while (0);
 	return false;
 }
-void Engine::end()
+void Engine::cleanUp()
 {
+	TimerManager::destoryInstance();
 	GraphicMgr::destroyInstance();
 	ConstantBufferManager::destroyInstance();
 	ShaderMgr::destroyInstance();
-	TimerManager::destoryInstance();
 }
 void Engine::destroyInstance()
 {
 	TINY_SAFE_DELETE(s_instance);
 }
 
-void Engine::mainLoop(double dt)
+void Engine::mainLoop(float dt)
 {
 	//deal input
+
 
 	//game logic
 	updateWorld(dt);
@@ -83,20 +94,6 @@ void Engine::mainLoop(double dt)
 	drawScene();
 }
 
-
-
-
-
-bool Engine::init()
-{
-	_solutionWidth = SOLUTION_WIDTH;
-	_solutionHeight = SOLUTION_HEIGHT;
-	do 
-	{
-		return true;
-	} while (0);
-	return false;
-}
 
 void Engine::startScene(ScenePtr scene)
 {
@@ -112,9 +109,11 @@ void Engine::drawScene()
 	GraphicMgr::instance()->render();
 }
 
-void Engine::updateWorld(double dt)
+void Engine::updateWorld(float dt)
 {
 	TimerManager::instance()->update(dt);
+	if (_currentScene.isValid())
+		_currentScene->update(dt);
 }
 
 Engine* Engine::s_instance = nullptr;

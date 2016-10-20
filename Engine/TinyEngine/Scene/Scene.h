@@ -17,7 +17,9 @@ public:
 	virtual void addObject(ObjectPtr obj);
 //@@TODO:	virtual void removeObject(...);
 
+	virtual void update(float dt);
 	virtual void render();
+
 
 	virtual bool start() { return true; }
 protected:

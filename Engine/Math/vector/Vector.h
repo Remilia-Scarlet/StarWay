@@ -135,6 +135,10 @@ public:
 
 	// Check equal
 	inline bool equal(const VectorStorage<ValueType, Size>& other) const;
+
+	// Get a part of vector. Example : Vector4 vec(1,2,3,4); Vecter3 subVec = vec.subVecter<1,3>(); //subVec == {2,3,4}
+	template<int From, int NewSize>
+	inline VectorStorage<ValueType, NewSize> subVecter() const;
 protected:
 	ValueType _data[Size];
 };

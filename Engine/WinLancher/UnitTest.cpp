@@ -168,6 +168,9 @@ void TestVector()
 	auto minusss = v42 - v41;
 	float dd[] = { 1,2,3,4,5,6,7,8,9,10 };
 	Vector4 v43 = dd;
+	Vector2 sub = v43.subVecter<1, 2>();
+	Vector4 sub2 = v43.subVecter<3, 4>();
+
 	Vector4 v44 = 1;
 	Vector4 v45 = v44;
 

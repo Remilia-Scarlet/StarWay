@@ -30,7 +30,7 @@ public:
 	BaseComponentPtr getComponent(ObjectID componentId);
 	template<class T> std::vector<RefCountPtr<T> > getComponents();
 
-	virtual void update(double dt) {}
+	virtual void update(float dt);
 	virtual void render();
 
 	virtual ObjectID getObjectId() { return _id; }

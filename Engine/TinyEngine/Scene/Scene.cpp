@@ -33,6 +33,18 @@ void Scene::addObject(ObjectPtr obj)
 
 }
 
+void Scene::update(float dt)
+{
+	//@@TODO : if in update, _object removed a item, it will crash
+	for (auto it = _objects.begin(); it != _objects.end(); ++it)
+	{
+		if (it->second.isValid())
+		{
+			it->second->update(dt);
+		}
+	}
+}
+
 void Scene::render()
 {
 	for (auto it = _cameras.begin(); it != _cameras.end();)

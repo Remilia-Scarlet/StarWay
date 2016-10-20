@@ -418,3 +418,13 @@ bool VectorStorage<ValueType, Size>::equal(const VectorStorage<ValueType, Size>&
 	}
 	return true;
 }
+
+template<class ValueType, int Size>
+template<int From, int NewSize>
+inline VectorStorage<ValueType, NewSize> VectorStorage<ValueType, Size>::subVecter() const
+{
+	static_assert(From < Size, "How can From >= Size??");
+	const int realSize = (NewSize <= Size - From ? NewSize : Size - From);
+	VectorStorage<ValueType, NewSize> newVec = std::initializer_list<ValueType>(_data + From, _data + From + realSize);
+	return newVec;
+}

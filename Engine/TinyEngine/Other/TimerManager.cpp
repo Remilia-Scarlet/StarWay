@@ -39,6 +39,8 @@ bool TimerManager::createInstance()
 
 void TimerManager::destoryInstance()
 {
+	if (s_instance)
+		s_instance->removeAll();
 	TINY_SAFE_DELETE(s_instance);
 }
 
@@ -80,6 +82,17 @@ bool TimerManager::removeTimer(int id)
 	return false;
 }
 
+void TimerManager::removeAll()
+{
+	std::unordered_map<int, Timer> timers(std::move(_timers));
+	for (auto it = timers.begin(); it != timers.end(); ++it)
+	{
+		Timer& timer = it->second;
+		if (timer._info->_onStop)
+			timer._info->_onStop(&timer);
+	}
+}
+
 Timer* TimerManager::getTimer(int id)
 {
 	auto it = _timers.find(id);
@@ -88,7 +101,7 @@ Timer* TimerManager::getTimer(int id)
 	return nullptr;
 }
 
-void TimerManager::update(double dt)
+void TimerManager::update(float dt)
 {
 	if (!_enable)
 		return;

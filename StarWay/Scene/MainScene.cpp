@@ -109,8 +109,11 @@ bool MainScene::init()
 			eular.Z() = (float)sin(timer->getPassedTime()) * 360;
 			transform->setRotation(Quaternion(eular));
 		}).start();
-		transform->setScale(0.6f, 0.6f, 0.6f);
-		transform->setLocation(Vector3(0, 0, 4));
+//		transform->setScale(0.6f, 0.6f, 0.6f);
+		transform->setLocation(Vector3(1, 0, 1));
+		transform->setRotation(Quaternion(0,45,0));
+		auto fr = transform->getFrontDirection();
+		auto up = transform->getUpDirection();
 
 		addObject(obj);
 
@@ -125,8 +128,7 @@ bool MainScene::init()
 
 		TransformComponentPtr cametaTran = TransformComponent::create();
 		cameraObj->addComponent(cametaTran);
-	//	cametaTran->setLocation(0, 2, -5);
-	//	cametaTran->setLocation(0, 0, 0);
+		cametaTran->setLocation(0, 2, -5);
 		cametaTran->faceToPoint(Vector3( 0,0,0 ));
 
 		addObject(cameraObj);

@@ -7,11 +7,11 @@ public:
 	static void destroyInstance();
 	static Engine* instance();
 
-	bool start();
+	bool createManagers();
 	void startScene(ScenePtr scene);
-	void end();
+	void cleanUp();
 
-	void mainLoop(double dt);
+	void mainLoop(float dt);
 
 	int getSolutionWidth() { return _solutionWidth; }
 	int getSolutionHeight() { return _solutionHeight; }
@@ -24,7 +24,7 @@ protected:
 	bool init();
 
 	void drawScene();
-	void updateWorld(double dt);
+	void updateWorld(float dt);
 	static Engine* s_instance;
 	int _solutionWidth;
 	int _solutionHeight;

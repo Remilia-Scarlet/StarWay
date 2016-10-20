@@ -92,36 +92,37 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	LocalSetting::instance()->setWindowHWND(hwnd);
 
 	//start
-	if (!Engine::instance()->start())
+	if (!Engine::instance()->createManagers())
 	{
 		//(NULL, "Init Engine failed.", "Error", MB_OK);
 		return 0;
 	}
 
+	//create Scene
 	{
-		//create Scene
 		ScenePtr scene = MainScene::create();
 		Engine::instance()->startScene(scene);
 	}
+
 	// Main message loop
 	LARGE_INTEGER freq;
 	LARGE_INTEGER start_t, stop_t;
-	double frameTime;
-	double remainTime;
-	double desiredFrameTime;
+	float frameTime;
+	float remainTime;
+	float desiredFrameTime;
 	MSG msg = { 0 };
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start_t);
 	while (WM_QUIT != msg.message)
 	{
-		desiredFrameTime = 1.0 / Engine::instance()->getDesiredFPS();
+		desiredFrameTime = 1.0f / Engine::instance()->getDesiredFPS();
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 		QueryPerformanceCounter(&stop_t);
-		frameTime = double(stop_t.QuadPart - start_t.QuadPart) / double(freq.QuadPart);
+		frameTime = float(stop_t.QuadPart - start_t.QuadPart) / float(freq.QuadPart);
 		if (frameTime >= desiredFrameTime)
 		{
 			start_t = stop_t;
@@ -140,7 +141,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		}
 	}
 
-	Engine::instance()->end();
+	Engine::instance()->cleanUp();
 
 	Engine::destroyInstance();
 

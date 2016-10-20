@@ -79,7 +79,7 @@ void TransformComponent::faceToPoint(const Vector3& point)
 		return;
 
 	Vector3 vecThis2Point = point - _location;
-	_rotate = Quaternion(Vector3{ 0,0,1 }, vecThis2Point);
+	_rotate = Quaternion(Vector3(0,0,1), vecThis2Point);
 }
 
 void TransformComponent::setRotation(float deltaX, float deltaY, float deltaZ)
@@ -134,12 +134,12 @@ const Matrix4& TransformComponent::getNodeToWorldMatrix()
 
 Vector3 TransformComponent::getUpDirection()
 {
-	return Vector3();
+	return getNodeToWorldMatrix().getRow(1).subVecter<0,3>();
 }
 
 Vector3 TransformComponent::getFrontDirection()
 {
-	return Vector3();
+	return getNodeToWorldMatrix().getRow(2).subVecter<0, 3>();
 }
 
 void TransformComponent::render()

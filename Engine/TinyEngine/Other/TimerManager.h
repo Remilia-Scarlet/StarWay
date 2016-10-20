@@ -18,11 +18,14 @@ public:
 	// Try to remove a timer. If found and removed, return true, otherwise return false. Calling Timer.stop() will call this function.
 	bool removeTimer(int id);
 
+	// remove all timer
+	void removeAll();
+
 	// Try to search a timer in timer list. Only when Timer.isWorking() == true, you can get it.
 	Timer* getTimer(int id);
 
 	// Called by Engine, do not call it manually.
-	void update(double dt);
+	void update(float dt);
 protected:
 	bool init();
 

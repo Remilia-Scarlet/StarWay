@@ -55,6 +55,16 @@ BaseComponentPtr Object::getComponent(ObjectID componentId)
 	return BaseComponentPtr();
 }
 
+void Object::update(float dt)
+{
+	//@@TODO : if in update, _components was removed a item, it will crash
+	if (_components)
+	{
+		for (auto it = _components->begin(); it != _components->end(); ++it)
+			it->second->update(dt);
+	}
+}
+
 void Object::render()
 {
 	GraphicMgr::instance()->setDrawIndexNumber(0);
