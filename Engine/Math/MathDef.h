@@ -23,10 +23,17 @@ const long double TINY_LDBL_EPSILON = LDBL_EPSILON * 3;
 #define TINY_DOUBLE_GREATER(_A_,_B_) ((_A_) >= (_B_) + (TINY_DBL_EPSILON))
 #define TINY_LONG_DOUBLE_GREATER(_A_,_B_) ((_A_) >= (_B_) + (TINY_LDBL_EPSILON))
 
+#define TINY_FLOAT_GREATER_OR_EQUAL(_A_,_B_) ((_A_) > (_B_) - (TINY_FLOAT_EPSILON))
+#define TINY_DOUBLE_GREATER_OR_EQUAL(_A_,_B_) ((_A_) > (_B_) - (TINY_DBL_EPSILON))
+#define TINY_LONG_DOUBLE_GREATER_OR_EQUAL(_A_,_B_) ((_A_) > (_B_) - (TINY_LDBL_EPSILON))
+
 #define TINY_FLOAT_LESS(_A_,_B_) ((_A_) <= (_B_) - (TINY_FLOAT_EPSILON))
 #define TINY_DOUBLE_LESS(_A_,_B_) ((_A_) <= (_B_) - (TINY_DBL_EPSILON))
 #define TINY_LONG_DOUBLE_LESS(_A_,_B_) ((_A_) <= (_B_) - (TINY_LDBL_EPSILON))
 
+#define TINY_FLOAT_LESS_OR_EQUAL(_A_,_B_) ((_A_) < (_B_) + (TINY_FLOAT_EPSILON))
+#define TINY_DOUBLE_LESS_OR_EQUAL(_A_,_B_) ((_A_) < (_B_) + (TINY_DBL_EPSILON))
+#define TINY_LONG_DOUBLE_LESS_OR_EQUAL(_A_,_B_) ((_A_) < (_B_) + (TINY_LDBL_EPSILON))
 
 template<class ValueType>
 inline ValueType degToRad(const ValueType& degree)
@@ -77,6 +84,25 @@ inline bool isGreater<double>(const double& a, const double& b)
 }
 
 template<class ValueType>
+inline bool isGreaterOrEqual(const ValueType &a, const ValueType& b)
+{
+	return a >= b;
+}
+
+template<>
+inline bool isGreaterOrEqual<float>(const float& a, const float& b)
+{
+	return TINY_FLOAT_GREATER_OR_EQUAL(a, b);
+}
+
+template<>
+inline bool isGreaterOrEqual<double>(const double& a, const double& b)
+{
+	return TINY_DOUBLE_GREATER_OR_EQUAL(a, b);
+}
+
+
+template<class ValueType>
 inline bool isLess(const ValueType &a, const ValueType& b)
 {
 	return a < b;
@@ -92,4 +118,22 @@ template<>
 inline bool isLess<double>(const double& a, const double& b)
 {
 	return TINY_DOUBLE_LESS(a, b);
+}
+
+template<class ValueType>
+inline bool isLessOrEuqal(const ValueType &a, const ValueType& b)
+{
+	return a < b;
+}
+
+template<>
+inline bool isLessOrEuqal<float>(const float& a, const float& b)
+{
+	return TINY_FLOAT_LESS_OR_EQUAL(a, b);
+}
+
+template<>
+inline bool isLessOrEuqal<double>(const double& a, const double& b)
+{
+	return TINY_DOUBLE_LESS_OR_EQUAL(a, b);
 }

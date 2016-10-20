@@ -266,8 +266,6 @@ bool DX11GraphicMgr::init(int width, int height, HWND hWnd)
 		TINY_BREAK_IF(!initDevice(width, height, hWnd));
 		//init DepthStencil
 		TINY_BREAK_IF(!initDepthStencil(width, height));
-		//set default view port
-		setViewPort(ViewPort(0, 0,(float)width, (float)height, 0.0f, 1.0f));
 		// init input layout
 		TINY_BREAK_IF(!initInputLayout());
 

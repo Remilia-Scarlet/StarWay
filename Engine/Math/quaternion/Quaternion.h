@@ -62,58 +62,72 @@ public:
 	inline void reset(const QuaternionStorage& other);
 
 	// Get an element by index. 0 is w, 1 is x, 2 is y, 3 is z
-	ValueType& operator()(int index);
-	const ValueType& operator()(int index) const;
+	inline ValueType& operator()(int index);
+	inline const ValueType& operator()(int index) const;
 
-	QuaternionStorage& operator=(const QuaternionStorage& other);
+	inline QuaternionStorage& operator=(const QuaternionStorage& other);
 
-	ValueType& W();
-	const ValueType& W() const;
+	inline ValueType& W();
+	inline const ValueType& W() const;
 
-	ValueType& X();
-	const ValueType& X() const;
+	inline ValueType& X();
+	inline const ValueType& X() const;
 
-	ValueType& Y();
-	const ValueType& Y() const;
+	inline ValueType& Y();
+	inline const ValueType& Y() const;
 
-	ValueType& Z();
-	const ValueType& Z() const;
+	inline ValueType& Z();
+	inline const ValueType& Z() const;
 
 	// Copy this quaternion and normalize the copy. See also normalizeInPlace()
-	QuaternionStorage normalized() const;
+	inline QuaternionStorage normalized() const;
 
 	// Normalize this quaternion and return this. See also normalized()
-	QuaternionStorage& normalizeInPlace();
+	inline QuaternionStorage& normalizeInPlace();
 
 	// Is this quaternion normalized
-	bool isNormalized() const;
+	inline bool isNormalized() const;
 
 	// Get rotation matrix4*4
-	MatrixStorage<ValueType, 4, 4> toRotationMatrix()const;
+	inline MatrixStorage<ValueType, 4, 4> toRotationMatrix()const;
 
 	// Convert the rotation to euler angle, in order z,x,y(roll,pitch,yaw). The returned vector.X() is x angle, returned vector.Y() is y angle, returned vector.Z() is z angle.
-	VectorStorage<ValueType, 3> toEularAngle() const;
+	inline VectorStorage<ValueType, 3> toEularAngle() const;
 
 	// Return a rotation axis and rotation angle, (return.first) is axis, (return.second) is angle.
-	std::pair<VectorStorage<ValueType, 3>, ValueType> toAxisAngle() const;
+	inline std::pair<VectorStorage<ValueType, 3>, ValueType> toAxisAngle() const;
 
 	// Get a conjugate copy of this quaternion. See also conjugateInPlace()
-	QuaternionStorage conjugate() const;
+	inline QuaternionStorage conjugate() const;
 
 	// Make this quaternion conjugate and return self. See also conjugate()
-	QuaternionStorage& conjugateInPlace();
+	inline QuaternionStorage& conjugateInPlace();
 
 	// Grassmann product. See also productInPlace().
-	QuaternionStorage product(const QuaternionStorage<ValueType>& other) const;
+	inline QuaternionStorage product(const QuaternionStorage<ValueType>& other) const;
 
 	// Grassmann product. See also product()
-	QuaternionStorage& productInPlace(const QuaternionStorage<ValueType>& other);
+	inline QuaternionStorage& productInPlace(const QuaternionStorage<ValueType>& other);
+
+	// Check equal
+	inline bool equal(const QuaternionStorage<ValueType>& other) const;
 protected:
 	ValueType _w;
 	ValueType _x;
 	ValueType _y;
 	ValueType _z;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Global Function
+//////////////////////////////////////////////////////////////////////////
+template<class ValueType>
+bool operator==(const QuaternionStorage<ValueType>& a, const QuaternionStorage<ValueType>& b);
+
+template<class ValueType>
+QuaternionStorage<ValueType> operator*(const QuaternionStorage<ValueType>& a, const QuaternionStorage<ValueType>& b);
+//////////////////////////////////////////////////////////////////////////
+
 
 #include "Quaternion.inl"
 

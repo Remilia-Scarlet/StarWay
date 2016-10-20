@@ -120,6 +120,8 @@ bool MainScene::init()
 
 		CameraComponentPtr camera = CameraComponent::create();
 		cameraObj->addComponent(camera);
+//		camera->setFiledOfView(25);
+//		camera->setDrawRectOnScreen(Rect(200, 200, 200, 200));
 
 		TransformComponentPtr cametaTran = TransformComponent::create();
 		cameraObj->addComponent(cametaTran);

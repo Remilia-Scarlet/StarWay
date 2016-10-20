@@ -125,16 +125,44 @@ public:
 	inline const ValueType& W() const;
 
 	// Rotate a copy vector by quaternion. See also rotateInPlace(). Notice : you must give a normorized quaternion.
-	VectorStorage<ValueType, Size> rotate(const QuaternionStorage<ValueType>& normedQuaternion) const;
+	inline VectorStorage<ValueType, Size> rotate(const QuaternionStorage<ValueType>& normedQuaternion) const;
 
 	// Rotate this vector bu quaternion in place. See also rotate(). Notice : you must give a normorized quaternion.
-	VectorStorage<ValueType, Size>& rotateInPlace(const QuaternionStorage<ValueType>& normedQuaternion);
+	inline VectorStorage<ValueType, Size>& rotateInPlace(const QuaternionStorage<ValueType>& normedQuaternion);
 
 	// Return the quaternion witch can rotate this vector to other vector. Then you can use Vecor.rotate(quaternion) to rotate vector.
-	QuaternionStorage<ValueType> getRotationToAnother(const VectorStorage<ValueType, Size>& other) const;
+	inline QuaternionStorage<ValueType> getRotationToAnother(const VectorStorage<ValueType, Size>& other) const;
+
+	// Check equal
+	inline bool equal(const VectorStorage<ValueType, Size>& other) const;
 protected:
 	ValueType _data[Size];
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Global function
+//////////////////////////////////////////////////////////////////////////
+template <class ValueType, int Size>
+bool operator==(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right);
+
+// dot
+template <class ValueType, int Size>
+ValueType operator*(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right);
+
+// scale
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator*(const VectorStorage<ValueType, Size>& vec, const ValueType& scale);
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator*(const ValueType& scale, const VectorStorage<ValueType, Size>& vec);
+
+// plus
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator+(const VectorStorage<ValueType, Size>& vec1, const VectorStorage<ValueType, Size>& vec2);
+
+// minus
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator-(const VectorStorage<ValueType, Size>& vec1, const VectorStorage<ValueType, Size>& vec2);
+//////////////////////////////////////////////////////////////////////////
 
 #include "Vector.inl"
 

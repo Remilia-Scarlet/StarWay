@@ -120,6 +120,9 @@ public:
 
 	// Multi all elements with value. Return this. See also scaled()
 	inline MatrixStorage<ValueType, RowNum, ColNum>& scaleInPlace(const ValueType& value);
+
+	// check equal
+	inline bool equal(const MatrixStorage<ValueType, RowNum, ColNum>& other) const;
 protected:
 	union Data
 	{
@@ -141,6 +144,48 @@ protected:
 		ValueType _d[ColNum * RowNum];
 	}_data;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Global function
+//////////////////////////////////////////////////////////////////////////
+
+// create a rotation matrix rotating by x axis.
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateRotationMatrixX(const ValueType& angle);
+
+// create a rotation matrix rotating by y axis. 
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateRotationMatrixY(const ValueType& angle);
+
+// create a rotation matrix rotating by z axis. 
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateRotationMatrixZ(const ValueType& angle);
+
+// create a translation matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateTranslaionMatrix(const ValueType& x, const ValueType& y, const ValueType& z);
+
+// create a translation matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateTranslaionMatrixFromVector(const VectorStorage<ValueType, 3>& vec);
+
+// create a scaling matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateScalingMatrix(const ValueType& x, const ValueType& y, const ValueType& z);
+
+// create a projection matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateProjMatrix(const ValueType& fieldOfView, const ValueType& aspectHByW, const ValueType& nearZ, const ValueType& farZ);
+
+// check equal
+template <class ValueType, int RowNum, int ColNum>
+bool operator==(const MatrixStorage<ValueType, RowNum, ColNum>& left, const MatrixStorage<ValueType, RowNum, ColNum>& right);
+
+// dot
+template <class ValueType, int RowNum_left, int ColNum_left, int RowNum_right, int ColNum_right>
+MatrixStorage<ValueType, RowNum_left, ColNum_right> operator*(const MatrixStorage<ValueType, RowNum_left, ColNum_left>& left,
+															  const MatrixStorage<ValueType, RowNum_right, ColNum_right>& right);
+//////////////////////////////////////////////////////////////////////////
 
 #include "Matrix.inl"
 

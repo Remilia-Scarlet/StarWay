@@ -2,32 +2,10 @@
 //////////////////////////////////////////////////////////////////////////
 // Global function
 //////////////////////////////////////////////////////////////////////////
-template <int Size>
-bool operator==(const VectorStorage<float, Size>& left, const VectorStorage<float, Size>& right)
-{
-	for (int i = 0; i < Size; ++i)
-	{
-		if (!isEqual(left(i), right(i)))
-			return false;
-	}
-	return true;
-}
-
-template <int Size>
-bool operator==(const VectorStorage<double, Size>& left, const VectorStorage<double, Size>& right)
-{
-	for (int i = 0; i < Size; ++i)
-	{
-		if (!isEqual(left(i), right(i)))
-			return false;
-	}
-	return true;
-}
-
 template <class ValueType, int Size>
 bool operator==(const VectorStorage<ValueType, Size>& left, const VectorStorage<ValueType, Size>& right)
 {
-	return memcmp(left.getData(), right.getData(), sizeof(VectorStorage<ValueType, Size>)) == 0;
+	return left.equal(right);
 }
 
 template <class ValueType, int Size>
@@ -428,4 +406,15 @@ template <class ValueType, int Size>
 QuaternionStorage<ValueType> VectorStorage<ValueType, Size>::getRotationToAnother(const VectorStorage<ValueType, Size>& other) const
 {
 	return QuaternionStorage<ValueType>(*this, other);
+}
+
+template <class ValueType, int Size>
+bool VectorStorage<ValueType, Size>::equal(const VectorStorage<ValueType, Size>& other) const
+{
+	for (int i = 0; i < Size; ++i)
+	{
+		if (!isEqual(_data[i], other._data[i]))
+			return false;
+	}
+	return true;
 }

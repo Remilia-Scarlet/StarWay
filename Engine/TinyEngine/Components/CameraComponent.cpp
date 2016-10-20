@@ -40,6 +40,39 @@ float CameraComponent::getFiledOfView() const
 	return _fieldOfView;
 }
 
+void CameraComponent::setFarClipPlane(float farZ)
+{
+	_farClipPlane = farZ;
+}
+
+float CameraComponent::getFarClipPlane() const
+{
+	return _farClipPlane;
+}
+
+void CameraComponent::setNearClipPlane(float nearZ)
+{
+	_nearClipPlane = nearZ;
+}
+
+float CameraComponent::getNearClipPlane() const
+{
+	return _nearClipPlane;
+}
+
+void CameraComponent::setDrawRectOnScreen(const Rect& rect)
+{
+	_viewPort.TopLeftX = rect.X();
+	_viewPort.TopLeftY = rect.Y();
+	_viewPort.Width = rect.W();
+	_viewPort.Height = rect.H();
+}
+
+Rect CameraComponent::getRawRectOnScreen() const
+{
+	return Rect(_viewPort.TopLeftX, _viewPort.TopLeftY, _viewPort.Width, _viewPort.Height);
+}
+
 void CameraComponent::render()
 {
  	if (_owner.isValid() == false)
@@ -64,5 +97,10 @@ void CameraComponent::render()
 
 bool CameraComponent::init()
 {
-	return true;
+	do 
+	{
+		_viewPort = { 0,0,(float)Engine::instance()->getSolutionWidth(),(float)Engine::instance()->getSolutionHeight(),0.f,1.f };
+		return true;
+	} while (0);
+	return false;
 }

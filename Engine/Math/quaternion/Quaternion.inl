@@ -4,10 +4,7 @@
 template<class ValueType>
 bool operator==(const QuaternionStorage<ValueType>& a, const QuaternionStorage<ValueType>& b)
 {
-	return isEqual(a.X(), b.X())
-		&& isEqual(a.Y(), b.Y())
-		&& isEqual(a.Z(), b.Z())
-		&& isEqual(a.W(), b.W());
+	return a.equal(b);
 }
 
 template<class ValueType>
@@ -415,4 +412,13 @@ QuaternionStorage<ValueType>& QuaternionStorage<ValueType>::productInPlace(const
 {
 	*this = product(other);
 	return *this;
+}
+
+template <class ValueType>
+bool QuaternionStorage<ValueType>::equal(const QuaternionStorage<ValueType>& other) const
+{
+	return isEqual(a.X(), b.X())
+		&& isEqual(a.Y(), b.Y())
+		&& isEqual(a.Z(), b.Z())
+		&& isEqual(a.W(), b.W());
 }

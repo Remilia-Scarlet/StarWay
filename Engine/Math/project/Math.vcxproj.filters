@@ -11,6 +11,9 @@
       <Filter>matrix</Filter>
     </ClInclude>
     <ClInclude Include="..\MathDef.h" />
+    <ClInclude Include="..\shape\Rect.h">
+      <Filter>rect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vector">
@@ -22,6 +25,9 @@
     <Filter Include="quaternion">
       <UniqueIdentifier>{0a3af3b3-22a3-4f87-b76b-0fd6952e8360}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rect">
+      <UniqueIdentifier>{405696ef-3eb8-44ad-b7a9-7b86fee74efe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\vector\Vector.inl">
@@ -32,6 +38,9 @@
     </None>
     <None Include="..\quaternion\Quaternion.inl">
       <Filter>quaternion</Filter>
+    </None>
+    <None Include="..\shape\Rect.inl">
+      <Filter>rect</Filter>
     </None>
   </ItemGroup>
 </Project>

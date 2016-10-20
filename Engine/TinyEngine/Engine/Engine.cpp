@@ -52,7 +52,7 @@ bool Engine::start()
 	do
 	{
 		TINY_BREAK_IF(!TimerManager::createInstance());
-		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionHeight, _solutionWidth, LocalSetting::instance()->getWindowHWND()));
+		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionWidth, _solutionHeight, LocalSetting::instance()->getWindowHWND()));
 		TINY_BREAK_IF(!ConstantBufferManager::createInstance());
 		TINY_BREAK_IF(!ShaderMgr::createInstance());
 		GraphicMgr::instance()->start();

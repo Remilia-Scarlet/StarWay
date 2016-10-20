@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include <functional>
 #include "TinyEngine/Other/Timer.h"
+#include "Math/shape/Rect.h"
 void Common()
 {
 	float o = 1.0f;
@@ -410,6 +411,39 @@ void TestTimer()
 
 	timer.start();
 }
+void TestRect()
+{
+	Rect re;
+	Rect re2(1.f, 2.f, 3.f, 4.f);
+
+	Vector2 lo = re2.getLocation();
+	Vector2 si = re2.getSize();
+
+	float w = re2.W();
+	auto ww = const_cast<const Rect&>(re2).W();
+
+	float h = re2.H();
+	auto hh = const_cast<const Rect&>(re2).H();
+
+	float x = re2.X();
+	auto xx = const_cast<const Rect&>(re2).X();
+
+	float y = re2.Y();
+	auto yy = const_cast<const Rect&>(re2).Y();
+
+	auto le = re2.getLeft();
+	auto ri = re2.getRight();
+	auto to = re2.getTop();
+	auto bo = re2.getBottom();
+
+	bool co = re2.contains(1.f, 1.f);
+	bool co2 = re2.contains({ 2,2 });
+
+	if (re == re2)
+	{
+		int a = 0;
+	}
+}
 void UnitTest()
 {
 	Common();
@@ -417,4 +451,5 @@ void UnitTest()
 	TestVector();
 	TestQuaternion();
 	TestTimer();
+	TestRect();
 }

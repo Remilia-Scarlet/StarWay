@@ -66,7 +66,7 @@ inline MatrixStorage<ValueType, 4, 4> CreateTranslaionMatrixFromVector(const Vec
 	return CreateTranslaionMatrix(vec.X(), vec.Y(), vec.Z());
 }
 
-// create a translation matrix
+// create a scaling matrix
 template<class ValueType>
 inline MatrixStorage<ValueType, 4, 4> CreateScalingMatrix(const ValueType& x, const ValueType& y, const ValueType& z)
 {
@@ -78,7 +78,7 @@ inline MatrixStorage<ValueType, 4, 4> CreateScalingMatrix(const ValueType& x, co
 	};
 }
 
-// create a translation matrix
+// create a projection matrix
 template<class ValueType>
 inline MatrixStorage<ValueType, 4, 4> CreateProjMatrix(const ValueType& fieldOfView, const ValueType& aspectHByW, const ValueType& nearZ, const ValueType& farZ)
 {
@@ -99,34 +99,10 @@ inline MatrixStorage<ValueType, 4, 4> CreateProjMatrix(const ValueType& fieldOfV
 	};
 }
 
-// for float, use isEqual to compare the value.
-template <int RowNum, int ColNum>
-bool operator==(const MatrixStorage<float, RowNum, ColNum>& left, const MatrixStorage<float, RowNum, ColNum>& right)
-{
-	for (int i = 0; i < ColNum * RowNum; ++i)
-	{
-		if (!isEqual(*(left.getData() + i), *(right.getData() + i)))
-			return false;
-	}
-	return true;
-}
-
-// for double, use isEqual to compare the value.
-template <int RowNum, int ColNum>
-bool operator==(const MatrixStorage<double, RowNum, ColNum>& left, const MatrixStorage<double, RowNum, ColNum>& right)
-{
-	for (int i = 0; i < ColNum * RowNum; ++i)
-	{
-		if (!isEqual(*(left.getData() + i), *(right.getData() + i)))
-			return false;
-	}
-	return true;
-}
-
 template <class ValueType, int RowNum, int ColNum>
 bool operator==(const MatrixStorage<ValueType, RowNum, ColNum>& left, const MatrixStorage<ValueType, RowNum, ColNum>& right)
 {
-	return memcmp(left.getData(), right.getData(), sizeof(MatrixStorage<ValueType, RowNum, ColNum>)) == 0;
+	return left.equal(right);
 }
 
 template <class ValueType, int RowNum_left, int ColNum_left, int RowNum_right, int ColNum_right>
@@ -438,4 +414,15 @@ MatrixStorage<ValueType, RowNum, ColNum>& MatrixStorage<ValueType, RowNum, ColNu
 		_data._d[i] *= value;
 	}
 	return *this;
+}
+
+template <class ValueType, int RowNum, int ColNum>
+bool MatrixStorage<ValueType, RowNum, ColNum>::equal(const MatrixStorage<ValueType, RowNum, ColNum>& other) const
+{
+	for (int i = 0; i < ColNum * RowNum; ++i)
+	{
+		if (!isEqual(_data._d[i], other._data._d[i]))
+			return false;
+	}
+	return true;
 }

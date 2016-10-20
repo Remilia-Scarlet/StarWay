@@ -3,6 +3,7 @@
 #include "Math/vector/Vector.h"
 #include "Math/matrix/Matrix.h"
 #include "Graphic/Manager/GraphicMgr.h"
+#include "Math/shape/Rect.h"
 
 TINY_DEFINE_PTR(CameraComponent);
 class CameraComponent : public BaseComponent
@@ -21,7 +22,25 @@ public:
 
 	// get filed of view in degree.
 	float getFiledOfView() const;
-	// 
+
+	// set far clip plane
+	void setFarClipPlane(float farZ);
+
+	// get far clip plane
+	float getFarClipPlane() const;
+
+	// set near clip plane
+	void setNearClipPlane(float nearZ);
+
+	// get near clip plane
+	float getNearClipPlane() const;
+
+	// set draw rect in screen
+	void setDrawRectOnScreen(const Rect& rect);
+
+	// get draw rect in screen
+	Rect getRawRectOnScreen() const;
+
 public:
 	virtual void render() override;
 
