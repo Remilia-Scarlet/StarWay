@@ -4,6 +4,7 @@
 #include "StarWay/Scene/MainScene.h"
 #include <d3d11sdklayers.h>
 #include "TinyEngine/Engine/LocalSetting.h"
+#include "TinyEngine/Input/InputManager.h"
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -17,16 +18,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_KEYDOWN:
-		if (1)
-		{
-
-		}
+		InputManager::instance()->onLocalKeyDown(int(wParam));
 		break;
 	case WM_KEYUP:
-		if (1)
-		{
-
-		}
+		InputManager::instance()->onLocalKeyUp(int(wParam));
+		break;
+	case WM_LBUTTONDOWN:
+		InputManager::instance()->onLocalMouseDown(1, LOWORD(lParam), HIWORD(lParam));
+		break;
+	case WM_RBUTTONDOWN:
+		InputManager::instance()->onLocalMouseDown(3, LOWORD(lParam), HIWORD(lParam));
+		break;
+	case WM_LBUTTONUP:
+		InputManager::instance()->onLocalMouseUp(1, LOWORD(lParam), HIWORD(lParam));
+		break;
+	case WM_RBUTTONUP:
+		InputManager::instance()->onLocalMouseUp(3, LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);

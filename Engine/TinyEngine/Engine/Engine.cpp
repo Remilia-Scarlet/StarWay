@@ -69,6 +69,7 @@ bool Engine::createManagers()
 		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionWidth, _solutionHeight, LocalSetting::instance()->getWindowHWND()));
 		TINY_BREAK_IF(!ConstantBufferManager::createInstance());
 		TINY_BREAK_IF(!ShaderMgr::createInstance());
+		TINY_BREAK_IF(!InputManager::createInstance());
 		return true;
 	} while (0);
 	return false;
@@ -79,6 +80,7 @@ void Engine::cleanUp()
 	GraphicMgr::destroyInstance();
 	ConstantBufferManager::destroyInstance();
 	ShaderMgr::destroyInstance();
+	InputManager::destroyInstance();
 }
 void Engine::destroyInstance()
 {
