@@ -149,6 +149,15 @@
     <ClCompile Include="..\..\ThirdParty\lua_5_3_3\lzio.c">
       <Filter>ThirdParty\lua_5_3_3</Filter>
     </ClCompile>
+    <ClCompile Include="..\ScriptManager\LuaManager.cpp">
+      <Filter>ScriptManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Components\ScriptComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ScriptManager\LuaVal.cpp">
+      <Filter>ScriptManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -283,6 +292,15 @@
     <ClInclude Include="..\..\ThirdParty\lua_5_3_3\lzio.h">
       <Filter>ThirdParty\lua_5_3_3</Filter>
     </ClInclude>
+    <ClInclude Include="..\ScriptManager\LuaManager.h">
+      <Filter>ScriptManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Components\ScriptComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ScriptManager\LuaVal.h">
+      <Filter>ScriptManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Objects">
@@ -314,6 +332,9 @@
     </Filter>
     <Filter Include="ThirdParty\lua_5_3_3">
       <UniqueIdentifier>{fb5fb820-40c4-4da8-9cdf-c8198a8c3f93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ScriptManager">
+      <UniqueIdentifier>{84ecb51d-1398-4016-b571-1531081763f6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
