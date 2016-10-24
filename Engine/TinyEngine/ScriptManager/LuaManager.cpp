@@ -23,12 +23,27 @@ void LuaManager::destroyInstance()
 	TINY_SAFE_DELETE(s_instance);
 }
 
+bool LuaManager::doFile(const char* fileName)
+{
+	if (luaL_dofile(_LuaState, fileName))
+	{
+		DebugString("Lua error : %s", lua_tostring(_LuaState, -1));
+		lua_pop(_LuaState, -1);
+		return false;
+	}
+	return true;
+}
+
 bool LuaManager::init()
 {
 	do 
 	{
 		_LuaState = luaL_newstate();
 		TINY_BREAK_IF(!_LuaState);
+		luaL_openlibs(_LuaState);
+	
+		doFile("Script/init.out");
+		
 		return true;
 	} while (0);
 	return false;

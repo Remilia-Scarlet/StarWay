@@ -40,6 +40,9 @@
     <Filter Include="shader">
       <UniqueIdentifier>{f18dc8d3-02b1-46e7-a3b2-2ab30027ed0e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Script">
+      <UniqueIdentifier>{43a373ec-0d4e-4ab5-a1d5-45802bcbfa60}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\shader\default_shader_PS.hlsl">
@@ -54,5 +57,10 @@
     <FxCompile Include="..\shader\ShaderFirst_VS.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\Script\init.lua">
+      <Filter>Script</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

@@ -10,6 +10,8 @@ public:
 	static void destroyInstance();
 
 	LuaVal call(const char* funcName, ...);
+
+	bool doFile(const char* fileName);
 protected:
 	bool init();
 	LuaManager();

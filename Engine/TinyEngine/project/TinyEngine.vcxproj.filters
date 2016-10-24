@@ -131,12 +131,6 @@
     <ClCompile Include="..\..\ThirdParty\lua_5_3_3\ltm.c">
       <Filter>ThirdParty\lua_5_3_3</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ThirdParty\lua_5_3_3\lua.c">
-      <Filter>ThirdParty\lua_5_3_3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ThirdParty\lua_5_3_3\luac.c">
-      <Filter>ThirdParty\lua_5_3_3</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ThirdParty\lua_5_3_3\lundump.c">
       <Filter>ThirdParty\lua_5_3_3</Filter>
     </ClCompile>

@@ -391,7 +391,7 @@ void TestTimer()
 		int value = array[0] + array[1];
 		array[0] = array[1];
 		array[1] = value;
-		DebugString("%d\n", value);
+		DebugString("%d", value);
 	};
 
 	Timer timer = Timer(1, 20, fibonacii);
@@ -453,6 +453,6 @@ void UnitTest()
 	TestMatrix();
 	TestVector();
 	TestQuaternion();
-	TestTimer();
+	//TestTimer();
 	TestRect();
 }

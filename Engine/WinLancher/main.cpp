@@ -6,6 +6,31 @@
 #include "TinyEngine/Engine/LocalSetting.h"
 #include "TinyEngine/Input/InputManager.h"
 
+static const bool SHOW_WIN32_CONSOLE_AT_START = true;
+void ShowHideWin32Console()
+{
+	static std::vector<char> s_buffer(1024,'\0');
+	DWORD num =  GetConsoleTitle(s_buffer.data(), (DWORD)s_buffer.size());
+	if (num == 0)
+	{
+		AllocConsole();
+		freopen("CONIN$", "r", stdin);
+		freopen("CONOUT$", "w", stdout);
+		freopen("CONOUT$", "w", stderr);
+		printf("Console Started\n");
+	}
+	else
+	{
+		HWND hwnd = FindWindow(NULL, s_buffer.data());
+		ShowWindow(hwnd,!IsWindowVisible(hwnd));
+	}
+}
+
+void CloseWin32Console()
+{
+	FreeConsole();
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -18,6 +43,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_KEYDOWN:
+		if (int(wParam) == VK_F4)
+			ShowHideWin32Console();
 		InputManager::instance()->onLocalKeyDown(int(wParam));
 		break;
 	case WM_KEYUP:
@@ -92,6 +119,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 #ifdef _DEBUG
 	new int(0x74736574); //to test if the memory leak detector works well
 #endif
+
+	if (SHOW_WIN32_CONSOLE_AT_START)
+		ShowHideWin32Console();
 
 	if (!Engine::createInstance())
 	{
@@ -173,6 +203,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (d3dDebug != nullptr)			d3dDebug->Release();
 #endif // _DEBUG
 
+
+	FreeConsole();
 
 	return (int)msg.wParam;
 }

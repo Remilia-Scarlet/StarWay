@@ -10,6 +10,7 @@
 #include "Graphic/Manager/ShaderMgr.h"
 #include "TinyEngine/Other/TimerManager.h"
 #include "TinyEngine/Input/InputManager.h"
+#include "TinyEngine/ScriptManager/LuaManager.h"
 
 const int SOLUTION_WIDTH = 640;
 const int SOLUTION_HEIGHT = 480;
@@ -70,12 +71,14 @@ bool Engine::createManagers()
 		TINY_BREAK_IF(!ConstantBufferManager::createInstance());
 		TINY_BREAK_IF(!ShaderMgr::createInstance());
 		TINY_BREAK_IF(!InputManager::createInstance());
+		TINY_BREAK_IF(!LuaManager::createInstance());
 		return true;
 	} while (0);
 	return false;
 }
 void Engine::cleanUp()
 {
+	LuaManager::destroyInstance();
 	TimerManager::destoryInstance();
 	GraphicMgr::destroyInstance();
 	ConstantBufferManager::destroyInstance();

@@ -119,14 +119,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)output\Windows\</OutDir>
+    <OutDir>$(SolutionDir)output\$(Platform)\</OutDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
     <IncludePath>$(SolutionDir);$(SolutionDir)\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)output\Windows\</OutDir>
+    <OutDir>$(SolutionDir)output\$(Platform)\</OutDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
     <IncludePath>$(SolutionDir);$(SolutionDir)\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
@@ -135,19 +135,19 @@
     <IncludePath>$(SolutionDir);$(SolutionDir)\Engine;$(IncludePath)</IncludePath>
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)output\Windows\</OutDir>
+    <OutDir>$(SolutionDir)output\$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)output\Windows\</OutDir>
+    <OutDir>$(SolutionDir)output\$(Platform)\</OutDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
     <IncludePath>$(VC_IncludePath);$(SolutionDir);$(WindowsSDK_IncludePath);$(SolutionDir)\Engine</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)output\Windows\</OutDir>
+    <OutDir>$(SolutionDir)output\$(Platform)\</OutDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
     <IncludePath>$(VC_IncludePath);$(SolutionDir);$(WindowsSDK_IncludePath);$(SolutionDir)\Engine</IncludePath>
   </PropertyGroup>
@@ -156,7 +156,7 @@
     <IncludePath>$(VC_IncludePath);$(SolutionDir);$(WindowsSDK_IncludePath);$(SolutionDir)\Engine</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)output\Windows\</OutDir>
+    <OutDir>$(SolutionDir)output\$(Platform)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
