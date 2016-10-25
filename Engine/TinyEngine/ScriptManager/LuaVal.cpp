@@ -1,6 +1,12 @@
 #include "TinyEngine\precomp.h"
 #include "LuaVal.h"
+//////////////////////////////////////////////////////////////////////////
+// Global fucntion
+//////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////
+// Member fucntion
+//////////////////////////////////////////////////////////////////////////
 const LuaVal LuaVal::NIL;
 
 LuaVal::LuaVal()
@@ -81,6 +87,16 @@ LuaVal::LuaVal(RefCountObj& obj)
 	reset(obj);
 }
 
+LuaVal::LuaVal(RefCountObj* obj)
+{
+	reset(obj);
+}
+
+LuaVal::LuaVal(std::initializer_list<LuaTableConstructHelper> table)
+{
+	reset(table);
+}
+
 LuaVal::LuaVal(const LuaVal& other)
 {
 	reset(other);
@@ -90,6 +106,7 @@ LuaVal::LuaVal(LuaVal&& other)
 {
 	reset(other);
 }
+
 
 LuaVal::~LuaVal()
 {
@@ -186,6 +203,18 @@ LuaVal& LuaVal::operator=(RefCountObj& obj)
 	return *this;
 }
 
+LuaVal& LuaVal::operator=(RefCountObj* obj)
+{
+	reset(obj);
+	return *this;
+}
+
+LuaVal& LuaVal::operator=(std::initializer_list<LuaTableConstructHelper> table)
+{
+	reset(table);
+	return *this;
+}
+
 LuaVal& LuaVal::operator=(const LuaVal& other)
 {
 	reset(other);
@@ -203,6 +232,64 @@ bool LuaVal::operator==(const LuaVal& other) const
 	return equal(other);
 }
 
+bool LuaVal::operator!=(const LuaVal& other) const
+{
+	return !equal(other);
+}
+
+LuaVal LuaVal::operator+(const LuaVal& other) const
+{
+	if (isInt64() && other.isInt64())
+		return LuaVal(convertInt64() + other.convertInt64());
+
+	if (isNumber() && other.isNumber())
+		return LuaVal(convertDouble() + other.convertDouble());
+
+	TinyAssert(false, "can't use operator+ for this two LuaVal");
+	return LuaVal();
+}
+
+LuaVal LuaVal::operator-(const LuaVal& other) const
+{
+	if (isInt64() && other.isInt64())
+		return LuaVal(convertInt64() - other.convertInt64());
+
+	if (isNumber() && other.isNumber())
+		return LuaVal(convertDouble() - other.convertDouble());
+
+	TinyAssert(false, "can't use operator- for this two LuaVal");
+	return LuaVal();
+}
+
+bool LuaVal::operator<(const LuaVal& other) const
+{
+	if (isNumber() && other.isNumber())
+		return convertDouble() < other.convertDouble();
+
+	if (_type != other._type)
+		return (int)_type < (int)other._type;
+
+	switch (_type)
+	{
+	case LuaVal::DataType::NIL:
+		return false;
+	case LuaVal::DataType::BOOLEAN:
+		return (int)_data.b < (int)other._data.b;
+	case LuaVal::DataType::INT64:
+	case LuaVal::DataType::DOUBLE:
+		TinyAssert(false, "unreachable");
+		break;
+	case LuaVal::DataType::STRING:
+		return std::strcmp(_data.s, other._data.s) < 0;
+	case LuaVal::DataType::REF_OBJ:
+		return *_data.obj < *other._data.obj;
+	case LuaVal::DataType::TABLE:
+		return *_data.table < *other._data.table;
+	}
+	TinyAssert(false, "unreachable");
+	return false;
+}
+
 void LuaVal::reset()
 {
 	clear();
@@ -216,8 +303,8 @@ void LuaVal::reset(std::nullptr_t nil)
 void LuaVal::reset(bool b)
 {
 	clear();
-	_type = DataType::INT64;
-	_data.i = (b ? 1 : 0);
+	_type = DataType::BOOLEAN;
+	_data.b = b;
 }
 
 void LuaVal::reset(int8_t i)
@@ -311,9 +398,54 @@ void LuaVal::reset(const std::string& s)
 
 void LuaVal::reset(RefCountObj& obj)
 {
+	if (_type == DataType::REF_OBJ && _data.obj->get() == &obj)
+		return;
+
 	clear();
 	_type = DataType::REF_OBJ;
 	_data.obj = new RefCountPtr<RefCountObj>(&obj);
+}
+
+void LuaVal::reset(RefCountObj* obj)
+{
+	if (_type == DataType::REF_OBJ && _data.obj->get() == obj)
+		return;
+
+	clear();
+	_type = DataType::REF_OBJ;
+	_data.obj = new RefCountPtr<RefCountObj>(obj);
+}
+
+void LuaVal::reset(std::initializer_list<LuaTableConstructHelper> table)
+{
+	clear();
+
+	int index = 1;
+	_type = DataType::TABLE;
+	_data.table = new std::shared_ptr<std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> >(new std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>());
+	std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>& dataTab = *((*_data.table).get());
+
+	std::list<int64_t> usedKey;
+	for (const LuaTableConstructHelper& helper : table)
+	{
+		const LuaVal& key = helper._key;
+		if (key.getType() == DataType::INT64)
+			usedKey.push_back(key.convertInt64());
+	}
+	for (const LuaTableConstructHelper& helper : table)
+	{
+		const LuaVal& key = helper._key;
+		const LuaVal& val = helper._val;
+		if (key.getType() == DataType::NIL)
+		{
+			auto it = usedKey.begin();
+			while ((it = std::find(usedKey.begin(),usedKey.end(),index)) != usedKey.end())
+				++index;
+			dataTab[index++] = val;
+		}
+		else
+			dataTab[key] = val;
+	}
 }
 
 void LuaVal::reset(const LuaVal& other)
@@ -324,9 +456,16 @@ void LuaVal::reset(const LuaVal& other)
 	switch (other._type)
 	{
 	case LuaVal::DataType::NIL:
+		reset(nullptr);
+		break;
+	case DataType::BOOLEAN:
+		reset(other._data.b);
+		break;
 	case LuaVal::DataType::INT64:
-	case LuaVal::DataType::DOUBLE:
 		reset(other._data.i);
+		break;
+	case LuaVal::DataType::DOUBLE:
+		reset(other._data.d);
 		break;
 	case LuaVal::DataType::STRING:
 		reset(other._data.s);
@@ -335,6 +474,7 @@ void LuaVal::reset(const LuaVal& other)
 		reset(*other._data.obj);
 		break;
 	case LuaVal::DataType::TABLE:
+		clear();
 		_data.table = new std::shared_ptr<std::unordered_map<LuaVal,LuaVal,HashFunc,CmpFunc> >(*other._data.table);
 		_type = DataType::TABLE;
 		break;
@@ -351,6 +491,7 @@ void LuaVal::reset(LuaVal&& other)
 	switch (_type)
 	{
 	case LuaVal::DataType::NIL:
+	case LuaVal::DataType::BOOLEAN:
 	case LuaVal::DataType::INT64:
 	case LuaVal::DataType::DOUBLE:
 		_data.i = other._data.i;
@@ -367,6 +508,11 @@ void LuaVal::reset(LuaVal&& other)
 	}
 	other._data.i = 0;
 	other._type = DataType::NIL;
+}
+
+LuaVal::DataType LuaVal::getType() const
+{
+	return _type;
 }
 
 LuaVal LuaVal::getField(const LuaVal& key) const
@@ -408,25 +554,22 @@ std::string LuaVal::toString() const
 	{
 	case LuaVal::DataType::NIL:
 		return "nil";
-		break;
+	case LuaVal::DataType::BOOLEAN:
+		return _data.b ? "true" : "false";
 	case LuaVal::DataType::INT64:
 		return FormatString("%ld", _data.i);
-		break;
 	case LuaVal::DataType::DOUBLE:
 		return FormatString("%.14g", _data.d);
-		break;
 	case LuaVal::DataType::STRING:
 		return _data.s;
-		break;
 	case LuaVal::DataType::REF_OBJ:
 		return FormatString("(Obj:%lX)", (int64_t)(*_data.obj).get());
-		break;
 	case LuaVal::DataType::TABLE:
 		{
+			std::map<LuaVal, LuaVal> sortedTable((*_data.table)->begin(), (*_data.table)->end()); //sort table
 			std::string str = "{";
-			std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>& table = *(*_data.table).get();
 			bool first = true;
-			for (auto pair : table)
+			for (auto pair : sortedTable)
 			{
 				if (first)
 					first = false;
@@ -439,11 +582,193 @@ std::string LuaVal::toString() const
 				str += getValString(val);
 			}
 			str += "}";
+			return str;
 		}
-		break;
 	}
 	TinyAssert(false, "unreachable code");
 	return "";
+}
+
+int32_t LuaVal::convertInt32() const
+{
+	switch (_type)
+	{
+	case LuaVal::DataType::NIL:
+		return 0;
+	case DataType::BOOLEAN:
+		return _data.b ? 1 : 0;
+	case LuaVal::DataType::INT64:
+		return (int32_t)_data.i;
+	case LuaVal::DataType::DOUBLE:
+		return (int32_t)_data.d;
+	case LuaVal::DataType::STRING:
+	case LuaVal::DataType::REF_OBJ:
+	case LuaVal::DataType::TABLE:
+	default:
+		TinyAssert(false, "can't convert LuaVal to int32");
+		break;
+	}
+	return 0;
+}
+
+int64_t LuaVal::convertInt64() const
+{
+	switch (_type)
+	{
+	case LuaVal::DataType::NIL:
+		return 0;
+	case DataType::BOOLEAN:
+		return _data.b ? 1 : 0;
+	case LuaVal::DataType::INT64:
+		return _data.i;
+	case LuaVal::DataType::DOUBLE:
+		return (int64_t)_data.d;
+	case LuaVal::DataType::STRING:
+	case LuaVal::DataType::REF_OBJ:
+	case LuaVal::DataType::TABLE:
+	default:
+		TinyAssert(false, "can't convert LuaVal to int64");
+		break;
+	}
+	return 0;
+}
+
+float LuaVal::convertFloat() const
+{
+	switch (_type)
+	{
+	case LuaVal::DataType::NIL:
+		return 0.f;
+	case DataType::BOOLEAN:
+		return _data.b ? 1.f : 0.f;
+	case LuaVal::DataType::INT64:
+		return (float)_data.i;
+	case LuaVal::DataType::DOUBLE:
+		return (float)_data.d;
+	case LuaVal::DataType::STRING:
+	case LuaVal::DataType::REF_OBJ:
+	case LuaVal::DataType::TABLE:
+	default:
+		TinyAssert(false, "can't convert LuaVal to float");
+		break;
+	}
+	return 0;
+}
+
+double LuaVal::convertDouble() const
+{
+	switch (_type)
+	{
+	case LuaVal::DataType::NIL:
+		return 0.0;
+	case DataType::BOOLEAN:
+		return _data.b ? 1.0 : 0.0;
+	case LuaVal::DataType::INT64:
+		return (double)_data.i;
+	case LuaVal::DataType::DOUBLE:
+		return _data.d;
+	case LuaVal::DataType::STRING:
+	case LuaVal::DataType::REF_OBJ:
+	case LuaVal::DataType::TABLE:
+	default:
+		TinyAssert(false, "can't convert LuaVal to double");
+		break;
+	}
+	return 0;
+}
+
+const char* LuaVal::convertCharPointer() const
+{
+	switch (_type)
+	{
+	case LuaVal::DataType::STRING:
+		return _data.s;
+	case LuaVal::DataType::NIL:
+	case LuaVal::DataType::BOOLEAN:
+	case LuaVal::DataType::INT64:
+	case LuaVal::DataType::DOUBLE:
+	case LuaVal::DataType::REF_OBJ:
+	case LuaVal::DataType::TABLE:
+	default:
+		TinyAssert(false, "can't convert LuaVal to char pointer");
+		break;
+	}
+	return "";
+}
+
+std::string LuaVal::converString() const
+{
+	switch (_type)
+	{
+	case LuaVal::DataType::NIL:
+		return "";
+	case DataType::BOOLEAN:
+		return _data.b ? "true" : "false";
+	case LuaVal::DataType::STRING:
+		return _data.s;
+	case LuaVal::DataType::INT64:
+		return FormatString("%ld", _data.i);
+	case LuaVal::DataType::DOUBLE:
+		return FormatString("%.14g", _data.d);
+	case LuaVal::DataType::REF_OBJ:
+	case LuaVal::DataType::TABLE:
+	default:
+		TinyAssert(false, "can't convert LuaVal to string");
+		break;
+	}
+	return "";
+}
+
+RefCountObj* LuaVal::convertRefObj() const
+{
+	if (_type == DataType::NIL)
+		return nullptr;
+
+	if (_type == DataType::REF_OBJ)
+		return _data.obj->get();
+
+	TinyAssert(false, "can't convert a LuaVal to RefObj");
+	return nullptr;
+}
+
+bool LuaVal::isNumber() const
+{
+	return isInt64() || isDouble();
+}
+
+bool LuaVal::isNil() const
+{
+	return _type == DataType::NIL;
+}
+
+bool LuaVal::isBoolean() const
+{
+	return _type == DataType::BOOLEAN;
+}
+
+bool LuaVal::isInt64() const
+{
+	return _type == DataType::INT64;
+}
+
+bool LuaVal::isDouble() const
+{
+	return _type == DataType::DOUBLE;
+}
+
+bool LuaVal::isString() const
+{
+	return _type == DataType::STRING;
+}
+
+bool LuaVal::isRefObj() const
+{
+	return _type == DataType::REF_OBJ;
+}
+
+bool LuaVal::isTable() const
+{
+	return _type == DataType::TABLE;
 }
 
 LuaVal LuaVal::clone() const
@@ -452,6 +777,7 @@ LuaVal LuaVal::clone() const
 	switch (_type)
 	{
 	case LuaVal::DataType::NIL:
+	case LuaVal::DataType::BOOLEAN:
 	case LuaVal::DataType::INT64:
 	case LuaVal::DataType::DOUBLE:
 	case LuaVal::DataType::STRING:
@@ -472,16 +798,25 @@ LuaVal LuaVal::clone() const
 
 bool LuaVal::equal(const LuaVal& other) const
 {
+	if (_type == DataType::INT64 && other._type == DataType::INT64)
+		return _data.i == other._data.i;
+
+	if (isNumber() && other.isNumber())
+		return isEqual(convertDouble(), other.convertDouble());
+
 	if (_type != other._type)
 		return false;
+
 	switch (_type)
 	{
 	case LuaVal::DataType::NIL:
 		return true;
+	case LuaVal::DataType::BOOLEAN:
+		return _data.b == other._data.b;
 	case LuaVal::DataType::INT64:
-		return _data.i == other._data.i;
 	case LuaVal::DataType::DOUBLE:
-		return isEqual(_data.d, other._data.d);
+		// unreachable
+		break;
 	case LuaVal::DataType::STRING:
 		return strcmp(_data.s, other._data.s) == 0;
 	case LuaVal::DataType::REF_OBJ:
@@ -490,7 +825,7 @@ bool LuaVal::equal(const LuaVal& other) const
 		return _data.table->get() == other._data.table->get();
 	}
 	TinyAssert(false, "unreachable code");
-	return "";
+	return false;
 }
 
 void LuaVal::clear()
@@ -498,6 +833,7 @@ void LuaVal::clear()
 	switch (_type)
 	{
 	case DataType::NIL:
+	case LuaVal::DataType::BOOLEAN:
 	case LuaVal::DataType::INT64:
 	case LuaVal::DataType::DOUBLE:
 		// base type, nothing to do
@@ -506,10 +842,10 @@ void LuaVal::clear()
 		delete[] _data.s;
 		break;
 	case LuaVal::DataType::REF_OBJ:
-		_data.obj->~RefCountPtr();
+		delete _data.obj;
 		break;
 	case LuaVal::DataType::TABLE:
-		_data.table->~shared_ptr();
+		delete _data.table;
 		break;
 	}
 	_data.i = 0;
@@ -518,26 +854,24 @@ void LuaVal::clear()
 
 std::string LuaVal::getKeyString(const LuaVal& key) const
 {
-	switch (_type)
+	switch (key._type)
 	{
 	case LuaVal::DataType::NIL:
 		return "nil";
-		break;
+	case LuaVal::DataType::BOOLEAN:
+		return _data.b ? "[true]" : "[false]";
 	case LuaVal::DataType::INT64:
 		return FormatString("[%ld]", key._data.i);
-		break;
 	case LuaVal::DataType::DOUBLE:
 		return FormatString("[%.14g]", key._data.d);
-		break;
 	case LuaVal::DataType::STRING:
+		if (key._data.s[0] == 0 || (key._data.s[0] > '0' && key._data.s[0] < '9'))
+			return FormatString("[\"%s\"]", key._data.s);
 		return key._data.s;
-		break;
 	case LuaVal::DataType::REF_OBJ:
 		return FormatString("[(Obj:%lX)]", (int64_t)(*_data.obj).get());
-		break;
 	case LuaVal::DataType::TABLE:
 		return FormatString("[(Table:%lX)]", (int64_t)(*_data.table).get());
-		break;
 	}
 	TinyAssert(false, "unreachable code");
 	return "";
@@ -545,28 +879,92 @@ std::string LuaVal::getKeyString(const LuaVal& key) const
 
 std::string LuaVal::getValString(const LuaVal& val) const
 {
-	switch (_type)
+	switch (val._type)
 	{
 	case LuaVal::DataType::NIL:
 		return "nil";
-		break;
+	case LuaVal::DataType::BOOLEAN:
+		return _data.b ? "true" : "false";
 	case LuaVal::DataType::INT64:
 		return FormatString("%ld", val._data.i);
-		break;
 	case LuaVal::DataType::DOUBLE:
 		return FormatString("%.14g", val._data.d);
-		break;
 	case LuaVal::DataType::STRING:
 		return FormatString("\"%s\"", val._data.s);
-		break;
 	case LuaVal::DataType::REF_OBJ:
 		return FormatString("(Obj:%lX)", (int64_t)(*_data.obj).get());
-		break;
 	case LuaVal::DataType::TABLE:
 		return val.toString();
-		break;
 	}
 	TinyAssert(false, "unreachable code");
 	return "";
 }
 
+LuaTableConstructHelper::LuaTableConstructHelper(const LuaVal& key, const LuaVal& val) : _key(key), _val(val)
+{
+	TinyAssert(key != LuaVal::NIL, "Key can't be nil!");
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(std::nullptr_t nil) : _key(nullptr), _val(nullptr)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(bool b) : _key(LuaVal::NIL), _val(b)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(int8_t i) : _key(LuaVal::NIL), _val(i)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(uint8_t i) : _key(LuaVal::NIL), _val(i)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(int16_t i) : _key(LuaVal::NIL), _val(i)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(uint16_t i) : _key(LuaVal::NIL), _val(i)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(int32_t i) : _key(LuaVal::NIL), _val(i)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(uint32_t i) : _key(LuaVal::NIL), _val(i)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(int64_t i) : _key(LuaVal::NIL), _val(i)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(uint64_t i) : _key(LuaVal::NIL), _val(i)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(float f) : _key(LuaVal::NIL), _val(f)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(double d) : _key(LuaVal::NIL), _val(d)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(const char* s) : _key(LuaVal::NIL), _val(s)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(const std::string& s) : _key(LuaVal::NIL), _val(s)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(RefCountObj& obj) : _key(LuaVal::NIL), _val(obj)
+{
+}
+
+LuaTableConstructHelper::LuaTableConstructHelper(RefCountObj* obj) : _key(LuaVal::NIL), _val(obj)
+{
+}

@@ -5,6 +5,8 @@
 #include <functional>
 #include "TinyEngine/Other/Timer.h"
 #include "Math/shape/Rect.h"
+#include "TinyEngine/ScriptManager/LuaVal.h"
+#include "TinyEngine/Objects/Object.h"
 void Common()
 {
 	float o = 1.0f;
@@ -447,6 +449,65 @@ void TestRect()
 		int a = 0;
 	}
 }
+void TestLuaVal()
+{
+	LuaVal val;
+	LuaVal vall(nullptr);
+	std::string str0 = vall.toString();
+	LuaVal valll(false);
+	std::string str1 = valll.toString();
+	LuaVal val0('a');
+	LuaVal val1((signed char)1);
+	LuaVal val2(unsigned char(1));
+	LuaVal val3((unsigned short)2);
+	LuaVal val4((wchar_t)2);
+	LuaVal val5((long)1);
+	LuaVal val6(unsigned int(44));
+	LuaVal val7(long long(33));
+	LuaVal val8((unsigned long long) 443);
+	std::string str2 = val8.toString();
+	LuaVal val9(1.3f);
+	LuaVal val10(1.4);
+	std::string str3 = val10.toString();
+	LuaVal val11("abc");
+	LuaVal val12("");
+	LuaVal val13(std::string("456"));
+	std::string str4 = val13.toString();
+	ObjectPtr obj = Object::create();
+	LuaVal val14(obj);
+	LuaVal val15(obj.get());
+	LuaVal val16(*obj.get());
+	std::string str5 = val16.toString();
+	LuaVal val17 = {1, {1.1, "mmm"}, "abc", {"1", 234}, {2, 1}, {"x", 123}, {"y", 456}, {"tab", {1, 2, 3}}};
+	std::string str6 = val17.toString();
+	LuaVal val18 = val17;
+	val18.setField(2,999);
+	val18.setField(6, "def");
+	LuaVal val19 = val18.clone();
+	val19.setField("z", { 4,5,6 });
+	val14 = val19.getField("z");
+	LuaVal val20 = std::move(val19);
+	std::string str7 = val20.toString();
+
+	if (val20 != val18)
+	{
+		int a = 0;
+	}
+	if (val17 == val18)
+	{
+		int a = 0;
+	}
+	LuaVal val21 = 1;
+	LuaVal val22 = 1.00000001;
+	if (val21 == val22)
+	{
+		int a = 0;
+	}
+
+	LuaVal val23 = val21 + val22;
+	LuaVal val24 = val21 - val22;
+
+}
 void UnitTest()
 {
 	Common();
@@ -455,4 +516,5 @@ void UnitTest()
 	TestQuaternion();
 	//TestTimer();
 	TestRect();
+	TestLuaVal();
 }
