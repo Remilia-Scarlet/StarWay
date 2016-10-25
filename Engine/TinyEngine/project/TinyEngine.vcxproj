@@ -300,6 +300,8 @@
     <ClCompile Include="..\Components\TransformComponent.cpp" />
     <ClCompile Include="..\Engine\Engine.cpp" />
     <ClCompile Include="..\Engine\LocalSetting.cpp" />
+    <ClCompile Include="..\FileSystem\Path.cpp" />
+    <ClCompile Include="..\FileSystem\File.cpp" />
     <ClCompile Include="..\Input\InputManager.cpp" />
     <ClCompile Include="..\Input\Windows\InputManagerWin.cpp" />
     <ClCompile Include="..\Objects\Object.cpp" />
@@ -356,6 +358,8 @@
     <ClInclude Include="..\Engine\EngineDefs.h" />
     <ClInclude Include="..\Engine\LocalSetting.h" />
     <ClInclude Include="..\Engine\TinyAssert.h" />
+    <ClInclude Include="..\FileSystem\Path.h" />
+    <ClInclude Include="..\FileSystem\File.h" />
     <ClInclude Include="..\Input\InputManager.h" />
     <ClInclude Include="..\Input\VirtualButton.h" />
     <ClInclude Include="..\Input\Windows\InputManagerWin.h" />

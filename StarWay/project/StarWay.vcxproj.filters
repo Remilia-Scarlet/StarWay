@@ -63,4 +63,12 @@
       <Filter>Script</Filter>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Script\common.lua">
+      <Filter>Script</Filter>
+    </None>
+    <None Include="..\Script\main_sceen.lua">
+      <Filter>Script</Filter>
+    </None>
+  </ItemGroup>
 </Project>

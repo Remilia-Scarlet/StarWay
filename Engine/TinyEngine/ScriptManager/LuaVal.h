@@ -213,7 +213,8 @@ protected:
 	{
 		size_t operator()(const LuaVal& key) const
 		{
-			return (size_t)(int64_t(key._type) ^ key._data.i);
+			static std::hash<int64_t> hash;
+			return hash(key._data.i);
 		}
 	};
 	struct CmpFunc

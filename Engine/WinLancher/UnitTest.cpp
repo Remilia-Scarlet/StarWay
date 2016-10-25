@@ -7,6 +7,7 @@
 #include "Math/shape/Rect.h"
 #include "TinyEngine/ScriptManager/LuaVal.h"
 #include "TinyEngine/Objects/Object.h"
+#include "TinyEngine/FileSystem/Path.h"
 void Common()
 {
 	float o = 1.0f;
@@ -508,6 +509,22 @@ void TestLuaVal()
 	LuaVal val24 = val21 - val22;
 
 }
+void TestFileSystem()
+{
+	Path path("D:\\dango\\document\\Visual Studio 2015\\Projects\\StarWay\\Engine\\TinyEngine");
+	bool aaa = path.isDirectory();
+	auto list = path.getSubPath();
+
+	Path path2("game:Script");
+	bool aaa2 = path2.isDirectory();
+	auto list2 = path2.getSubPath();
+
+	Path path3("game:asdt");
+	bool aaa3 = path3.isDirectory();
+	auto list3 = path3.getSubPath();
+
+	int a = 0;
+}
 void UnitTest()
 {
 	Common();
@@ -517,4 +534,5 @@ void UnitTest()
 	//TestTimer();
 	TestRect();
 	TestLuaVal();
+	TestFileSystem();
 }
