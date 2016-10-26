@@ -1,105 +1,14 @@
 #include <iostream>
 #include <windows.h>
-#include <fstream>
-#include "..\..\..\Engine\ThirdParty\rapidjson\document.h"
-#include "..\..\..\Engine\ThirdParty\rapidjson\writer.h"
-#include "..\..\..\Engine\ThirdParty\rapidjson\fwd.h"
-#include "..\..\..\Engine\ThirdParty\rapidjson\stringbuffer.h"
 
-using namespace rapidjson;
+#include "CommonCompiler.h"
+
+
 
 void showHelp()
 {
 	printf("Useage:\n");
 	printf("\tCommonCompiler [/? | /config configFilePath]\n\n");
-}
-
-void errorArg()
-{
-	showHelp();
-	system("pause");
-}
-
-bool parseArg(int argc, char* argv[], std::string& config)
-{
-	if (argc <= 1)
-	{
-		errorArg();
-		return false;
-	}
-
-	for (int i = 1; i < argc; ++i)
-	{
-		if (strcmp(argv[i], "/?") == 0)
-		{
-			showHelp();
-			return false;
-		}
-		else if (strcmp(argv[i], "/config") == 0)
-		{
-			if (i + 1 < argc)
-			{
-				config = argv[i + 1];
-				return true;
-			}
-			else
-			{
-				errorArg();
-				return false;
-			}
-		}
-	}
-	return false;
-}
-
-bool getFileData(const std::string& fileName, std::string& fileData)
-{
-	std::ifstream file(fileName);
-	if (!file)
-	{
-		std::string msg = "Can't open file [";
-		msg += fileName + "]\n";
-		printf(msg.c_str());
-		system("pause");
-		return false;
-	}
-	file.seekg(0, std::ios::end);
-	std::streampos len = file.tellg();
-	file.seekg(0, std::ios::beg);
-	char* data = new char[(int)len + 1];
-	memset(data, 0, (int)len + 1);
-	file.read(data, len);
-	file.close();
-	fileData = data;
-	delete[] data;
-	return true;
-}
-
-bool parseJson(const std::string& fileData, std::string& sourcepath, std::string& sourcefilter, std::string& tempfile, std::string& dependency, std::string& output, std::string& cmd)
-{
-	Document json;
-	json.Parse(fileData.c_str());
-	if (json.HasParseError())
-		return false;
-
-	if (json.HasMember("sourcepath"))
-		sourcepath = json["sourcepath"].GetString();
-
-	if (json.HasMember("sourcefilter"))
-		sourcefilter = json["sourcefilter"].GetString();
-
-	if (json.HasMember("tempfile"))
-		tempfile = json["tempfile"].GetString();
-
-	if (json.HasMember("dependency"))
-		dependency = json["dependency"].GetString();
-
-	if (json.HasMember("output"))
-		output = json["output"].GetString();
-
-	if (json.HasMember("cmd"))
-		cmd = json["cmd"].GetString();
-	return true;
 }
 
 std::string getMD5(const std::string& str)
@@ -150,38 +59,24 @@ std::string getMD5(const std::string& str)
 
 int main(int argc, char* argv[])
 {
-	std::string config;
-	if (!parseArg(argc, argv, config))
-		return 1;
-	
-	std::string fileData;
-	if (!getFileData(config, fileData))
-		return 2;
-
-	std::string sourcepath, sourcefilter, tempfile, dependency, output, cmd;
-	if (!parseJson(fileData, sourcepath, sourcefilter, tempfile, dependency, output, cmd))
-		return 3;
-
-	Document log;
-	log.Parse(tempfile.c_str());
-	if (log.HasParseError())
+	CommonCompiler compiler;
+	if (!compiler.parseArg(argc, argv))
 	{
-		std::ofstream logfile(tempfile, std::ios::out | std::ios::trunc);
-		if (!logfile)
-		{
-			std::string msg = "Can't open ";
-			msg += tempfile + "\n";
-			printf(msg.c_str());
-			system("pause");
-			exit(5);
-		}
-		StringBuffer strbuffer;
-		Writer<StringBuffer> writer(strbuffer);
-		log.Clear();
-		log.Accept(writer);
-
+		showHelp();
+		system("pause");
+		return 1;
 	}
-
+	
+	if (!compiler.readConfigFile())
+	{
+		std::string msg = "Can't open json config file [";
+		msg += compiler.getConfigFilePath().getOriginPath();
+		msg += "]\n";
+		printf(msg.c_str());
+		system("pause");
+		return 2;
+	}
+	/*
 	WIN32_FIND_DATA att;
 	HANDLE hFind = FindFirstFile((sourcepath + sourcefilter).c_str(),&att);
 	if (hFind == INVALID_HANDLE_VALUE)
@@ -203,7 +98,7 @@ int main(int argc, char* argv[])
 			}
 		}
 	} while (::FindNextFile(hFind, &att));
-	FindClose(hFind);
+	FindClose(hFind);*/
 
 	return 0;
 }

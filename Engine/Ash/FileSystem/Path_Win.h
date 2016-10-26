@@ -1,8 +1,13 @@
 #pragma once
 #include <list>
 
+#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+
+#include <windows.h>
+
 static const char* GAME_PATH = "game:";
 
+class File;
 class Path
 {
 public:
@@ -14,10 +19,15 @@ public:
 	bool isFile() const;
 
 	std::list<Path> getSubFile() const;
-	const std::string& getResolvedPath() const;
+	const std::string& getOriginPath() const;
+	const std::string& getAbsolutePath() const;
+	const std::string& getRelativePath() const;
 protected:
 	std::string _path;
-	mutable std::string _resolvedPath;
+	mutable std::string _absolutePath;
+	mutable std::string _relativePath;
 
 	void _getSubFile(std::list<Path>& list) const;
 };
+
+#endif

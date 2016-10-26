@@ -1,6 +1,6 @@
 #include "TinyEngine\precomp.h"
 #include "LuaManager.h"
-#include "Ash\FileSystem\Path.h"
+#include "Ash\FileSystem\Path_Win.h"
 
 LuaManager* LuaManager::s_instance = nullptr;
 
@@ -46,7 +46,7 @@ bool LuaManager::init()
 		Path scriptPath("game:Script");
 		std::list<Path> scripts = scriptPath.getSubFile();
 		for (auto& file : scripts)
-			doFile(file.getResolvedPath().c_str());
+			doFile(file.getAbsolutePath().c_str());
 
 		return true;
 	} while (0);

@@ -7,7 +7,7 @@
 #include "Math/shape/Rect.h"
 #include "TinyEngine/ScriptManager/LuaVal.h"
 #include "TinyEngine/Objects/Object.h"
-#include "Ash/FileSystem/Path.h"
+#include "Ash/FileSystem/Path_Win.h"
 
 void Common()
 {
@@ -520,9 +520,15 @@ void TestFileSystem()
 	bool aaa2 = path2.isDirectory();
 	auto list2 = path2.getSubFile();
 
-	Path path3("game:asdt");
+	Path path3("game:/../..\\Tools/luac/src/../build/luac_32.exe");
 	bool aaa3 = path3.isDirectory();
+	bool aaa33 = path3.isFile();
 	auto list3 = path3.getSubFile();
+
+	Path path4("game:../Script");
+	bool aaa4 = path4.isDirectory();
+	bool aaa44 = path3.isFile();
+	auto list4 = path4.getSubFile();
 
 	int a = 0;
 }

@@ -16,13 +16,13 @@
     <ClInclude Include="..\RefCountPointer\RefCountPtr.h">
       <Filter>RefCountPointer</Filter>
     </ClInclude>
-    <ClInclude Include="..\FileSystem\File.h">
-      <Filter>FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\FileSystem\Path.h">
-      <Filter>FileSystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\precomp.h" />
+    <ClInclude Include="..\FileSystem\File_Win.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FileSystem\Path_Win.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\RefCountPointer\RefCountObj.cpp">
@@ -31,13 +31,13 @@
     <ClCompile Include="..\RefCountPointer\RefCountPtr.cpp">
       <Filter>RefCountPointer</Filter>
     </ClCompile>
-    <ClCompile Include="..\FileSystem\File.cpp">
-      <Filter>FileSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\FileSystem\Path.cpp">
-      <Filter>FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\precomp.cpp" />
+    <ClCompile Include="..\FileSystem\Path_Win.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FileSystem\File_Win.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\RefCountPointer\RefCountPtr.inl">
