@@ -7,7 +7,8 @@
 #include "Math/shape/Rect.h"
 #include "TinyEngine/ScriptManager/LuaVal.h"
 #include "TinyEngine/Objects/Object.h"
-#include "TinyEngine/FileSystem/Path.h"
+#include "Ash/FileSystem/Path.h"
+
 void Common()
 {
 	float o = 1.0f;
@@ -513,15 +514,15 @@ void TestFileSystem()
 {
 	Path path("D:\\dango\\document\\Visual Studio 2015\\Projects\\StarWay\\Engine\\TinyEngine");
 	bool aaa = path.isDirectory();
-	auto list = path.getSubPath();
+	auto list = path.getSubFile();
 
 	Path path2("game:Script");
 	bool aaa2 = path2.isDirectory();
-	auto list2 = path2.getSubPath();
+	auto list2 = path2.getSubFile();
 
 	Path path3("game:asdt");
 	bool aaa3 = path3.isDirectory();
-	auto list3 = path3.getSubPath();
+	auto list3 = path3.getSubFile();
 
 	int a = 0;
 }

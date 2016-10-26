@@ -1,0 +1,8 @@
+{
+  "sourcepath": "..\\..\\..\\StarWay\\Script\\",
+  "sourcefilter": "*.lua",
+  "tempfile": "..\\..\\..\\output\\_temp\\CommonCompiler\\log.json",
+  "dependency": "",
+  "output": "..\\..\\..\\output\\Win32\\Script\\$(sourcename).out",
+  "cmd": "..\\..\\luac\\build\\luac_32.exe -o \"$(output)\" \"%(source)\""
+}

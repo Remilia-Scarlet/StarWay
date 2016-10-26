@@ -1,4 +1,5 @@
 #pragma once
+#include <list>
 
 static const char* GAME_PATH = "game:";
 
@@ -12,11 +13,11 @@ public:
 	bool isDirectory() const;
 	bool isFile() const;
 
-	std::list<Path> getSubPath() const;
+	std::list<Path> getSubFile() const;
 	const std::string& getResolvedPath() const;
 protected:
 	std::string _path;
 	mutable std::string _resolvedPath;
 
-	void _getSubPath(std::list<Path>& list) const;
+	void _getSubFile(std::list<Path>& list) const;
 };

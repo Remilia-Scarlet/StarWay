@@ -1,3 +1,4 @@
+#include "Ash/precomp.h"
 #include "RefCountObj.h"
 #include <assert.h>
 

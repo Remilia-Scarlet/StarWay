@@ -152,12 +152,6 @@
     <ClCompile Include="..\ScriptManager\LuaVal.cpp">
       <Filter>ScriptManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\FileSystem\File.cpp">
-      <Filter>FileSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\FileSystem\Path.cpp">
-      <Filter>FileSystem</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -301,12 +295,6 @@
     <ClInclude Include="..\ScriptManager\LuaVal.h">
       <Filter>ScriptManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\FileSystem\File.h">
-      <Filter>FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\FileSystem\Path.h">
-      <Filter>FileSystem</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Objects">
@@ -341,9 +329,6 @@
     </Filter>
     <Filter Include="ScriptManager">
       <UniqueIdentifier>{84ecb51d-1398-4016-b571-1531081763f6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="FileSystem">
-      <UniqueIdentifier>{c0680134-de2c-44d8-bb62-4282009ca260}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

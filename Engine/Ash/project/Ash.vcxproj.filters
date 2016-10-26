@@ -5,6 +5,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="FileSystem">
+      <UniqueIdentifier>{c1aa1912-e757-4c23-bcf9-fe1ec3dfad54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\RefCountPointer\RefCountObj.h">
@@ -13,6 +16,13 @@
     <ClInclude Include="..\RefCountPointer\RefCountPtr.h">
       <Filter>RefCountPointer</Filter>
     </ClInclude>
+    <ClInclude Include="..\FileSystem\File.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\FileSystem\Path.h">
+      <Filter>FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\precomp.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\RefCountPointer\RefCountObj.cpp">
@@ -21,6 +31,13 @@
     <ClCompile Include="..\RefCountPointer\RefCountPtr.cpp">
       <Filter>RefCountPointer</Filter>
     </ClCompile>
+    <ClCompile Include="..\FileSystem\File.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FileSystem\Path.cpp">
+      <Filter>FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\precomp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\RefCountPointer\RefCountPtr.inl">

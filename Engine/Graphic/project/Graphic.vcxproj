@@ -153,53 +153,53 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)output\_temp\lib\</OutDir>
-    <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\..\..\output\_temp\lib\</OutDir>
+    <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\Engine;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)output\_temp\lib\</OutDir>
-    <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\..\..\output\_temp\lib\</OutDir>
+    <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\Engine;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">
-    <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\Engine;$(Console_SdkIncludeRoot)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(Console_SdkIncludeRoot)</IncludePath>
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>$(Console_SdkRoot)bin;$(VCInstallDir)bin\x86_amd64;$(VCInstallDir)bin;$(WindowsSDK_ExecutablePath_x86);$(VSInstallDir)Common7\Tools\bin;$(VSInstallDir)Common7\tools;$(VSInstallDir)Common7\ide;$(ProgramFiles)\HTML Help Workshop;$(MSBuildToolsPath32);$(FxCopDir);$(PATH);</ExecutablePath>
     <ReferencePath>$(Console_SdkLibPath);$(Console_SdkWindowsMetadataPath)</ReferencePath>
     <LibraryPath>$(Console_SdkLibPath)</LibraryPath>
     <LibraryWPath>$(Console_SdkLibPath);$(Console_SdkWindowsMetadataPath)</LibraryWPath>
-    <OutDir>$(SolutionDir)output\_temp\lib\</OutDir>
+    <OutDir>$(ProjectDir)..\..\..\output\_temp\lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)output\_temp\lib\</OutDir>
-    <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\..\..\output\_temp\lib\</OutDir>
+    <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\Engine;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)output\_temp\lib\</OutDir>
-    <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)..\..\..\output\_temp\lib\</OutDir>
+    <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\Engine;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">
-    <IntDir>$(SolutionDir)output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\Engine;$(Console_SdkIncludeRoot)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(Console_SdkIncludeRoot)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <ExecutablePath>$(Console_SdkRoot)bin;$(VCInstallDir)bin\x86_amd64;$(VCInstallDir)bin;$(WindowsSDK_ExecutablePath_x86);$(VSInstallDir)Common7\Tools\bin;$(VSInstallDir)Common7\tools;$(VSInstallDir)Common7\ide;$(ProgramFiles)\HTML Help Workshop;$(MSBuildToolsPath32);$(FxCopDir);$(PATH);</ExecutablePath>
     <ReferencePath>$(Console_SdkLibPath);$(Console_SdkWindowsMetadataPath)</ReferencePath>
     <LibraryPath>$(Console_SdkLibPath)</LibraryPath>
     <LibraryWPath>$(Console_SdkLibPath);$(Console_SdkWindowsMetadataPath)</LibraryWPath>
-    <OutDir>$(SolutionDir)output\_temp\lib\</OutDir>
+    <OutDir>$(ProjectDir)..\..\..\output\_temp\lib\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

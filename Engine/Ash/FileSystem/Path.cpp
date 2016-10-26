@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "Ash/precomp.h"
 #include "Path.h"
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
@@ -7,7 +7,8 @@
 	#error not support
 #endif
 
-void Path::_getSubPath(std::list<Path>& list) const
+
+void Path::_getSubFile(std::list<Path>& list) const
 {
 	if (!isDirectory())
 		return;
@@ -24,7 +25,7 @@ void Path::_getSubPath(std::list<Path>& list) const
 		{
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
-				Path(getResolvedPath() + "\\" + findFileData.cFileName)._getSubPath(list);
+				Path(getResolvedPath() + "\\" + findFileData.cFileName)._getSubFile(list);
 			}
 			else
 			{
@@ -86,10 +87,10 @@ bool Path::isFile() const
 #endif
 }
 
-std::list<Path> Path::getSubPath() const
+std::list<Path> Path::getSubFile() const
 {
 	std::list<Path> ret;
-	_getSubPath(ret);
+	_getSubFile(ret);
 	return ret;
 }
 
