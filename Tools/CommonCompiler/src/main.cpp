@@ -45,7 +45,7 @@ std::string getMD5(const std::string& str)
 
 	MD5_CTX ctx;
 	MD5Init(&ctx);
-	MD5Update(&ctx, (unsigned char*)str.c_str(), str.length());
+	MD5Update(&ctx, (unsigned char*)str.c_str(), (unsigned int)str.length());
 	MD5Final(&ctx);
 	char ASC[32 + 1];
 	ASC[32] = '\0';
@@ -76,6 +76,19 @@ int main(int argc, char* argv[])
 		system("pause");
 		return 2;
 	}
+
+	if (!compiler.readConfigFile())
+	{
+		std::string msg = "Can't open json config file [";
+		msg += compiler.getConfigFilePath().getOriginPath();
+		msg += "]\n";
+		printf(msg.c_str());
+		system("pause");
+		return 2;
+	}
+
+	if (!compiler.compile())
+		return 3;
 	/*
 	WIN32_FIND_DATA att;
 	HANDLE hFind = FindFirstFile((sourcepath + sourcefilter).c_str(),&att);

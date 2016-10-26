@@ -5,6 +5,7 @@
 #include "..\..\..\Engine\ThirdParty\rapidjson\fwd.h"
 #include "..\..\..\Engine\ThirdParty\rapidjson\stringbuffer.h"
 #include "..\..\..\Engine\Ash\FileSystem\File_Win.h"
+#include "..\..\..\Engine\TinyEngine\Engine\EngineDefs.h"
 using namespace rapidjson;
 
 CommonCompiler::CommonCompiler()
@@ -71,7 +72,7 @@ bool CommonCompiler::readConfigFile()
 		else if (arr.IsArray())
 		{
 			for (Value& val : arr.GetArray())
-				_dependency.push_back(Path(val.GetString()));
+				_dependency.push_back(val.GetString());
 		}
 	}
 
@@ -83,6 +84,16 @@ bool CommonCompiler::readConfigFile()
 	return true;
 }
 
+
+bool CommonCompiler::compile()
+{
+	_define["SourcePath"] = _sourcePath;
+	_define["SourceFilter"] = _sourceFilter;
+	_define["TempFile"] = _tempFile;
+	_define["Output"] = _output;
+	_define["Cmd"] = _cmd;
+
+}
 
 const Path& CommonCompiler::getConfigFilePath() const
 {

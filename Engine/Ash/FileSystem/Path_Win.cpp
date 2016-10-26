@@ -7,12 +7,12 @@
 #include <stack>
 #include "Ash/CommonFunc.h"
 
-void Path::_getSubFile(std::list<Path>& list) const
+void Path::_getSubFile(std::list<Path>& list, const std::string& filter) const
 {
 	if (!isDirectory())
 		return;
 
-	std::string path = getAbsolutePath() + "*.*";
+	std::string path = getAbsolutePath() + filter;
 	WIN32_FIND_DATA findFileData;
 	HANDLE hFind = ::FindFirstFile(path.c_str(), &findFileData);
 	if (INVALID_HANDLE_VALUE == hFind)
@@ -96,11 +96,16 @@ bool Path::isFile() const
 	return _isFile;
 }
 
-std::list<Path> Path::getSubFile() const
+std::list<Path> Path::getSubFile(const std::string& filter) const
 {
 	std::list<Path> ret;
-	_getSubFile(ret);
+	_getSubFile(ret, filter);
 	return ret;
+}
+
+std::list<Path> Path::getSubFile() const
+{
+	return getSubFile("*.*");
 }
 
 const std::string& Path::getOriginPath() const

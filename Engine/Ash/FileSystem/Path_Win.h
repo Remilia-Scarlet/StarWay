@@ -19,6 +19,7 @@ public:
 	bool isFile() const;
 
 	std::list<Path> getSubFile() const;
+	std::list<Path> getSubFile(const std::string& filter) const;
 	const std::string& getOriginPath() const;
 	const std::string& getAbsolutePath() const;
 	const std::string& getRelativePath() const;
@@ -35,7 +36,7 @@ protected:
 	mutable bool _isFile;
 	mutable bool _isDirectoryFileDirty;
 
-	void _getSubFile(std::list<Path>& list) const;
+	void _getSubFile(std::list<Path>& list,const std::string& filter) const;
 	void _getIsDirectory(DWORD att) const;
 };
 
