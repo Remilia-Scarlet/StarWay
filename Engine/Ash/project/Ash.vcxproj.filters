@@ -23,6 +23,7 @@
     <ClInclude Include="..\FileSystem\Path_Win.h">
       <Filter>FileSystem</Filter>
     </ClInclude>
+    <ClInclude Include="..\CommonFunc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\RefCountPointer\RefCountObj.cpp">
@@ -38,6 +39,7 @@
     <ClCompile Include="..\FileSystem\File_Win.cpp">
       <Filter>FileSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\CommonFunc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\RefCountPointer\RefCountPtr.inl">

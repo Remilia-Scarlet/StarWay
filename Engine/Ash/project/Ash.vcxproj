@@ -228,6 +228,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\CommonFunc.h" />
     <ClInclude Include="..\FileSystem\File_Win.h" />
     <ClInclude Include="..\FileSystem\Path_Win.h" />
     <ClInclude Include="..\precomp.h" />
@@ -235,6 +236,7 @@
     <ClInclude Include="..\RefCountPointer\RefCountPtr.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\CommonFunc.cpp" />
     <ClCompile Include="..\FileSystem\File_Win.cpp" />
     <ClCompile Include="..\FileSystem\Path_Win.cpp" />
     <ClCompile Include="..\precomp.cpp">

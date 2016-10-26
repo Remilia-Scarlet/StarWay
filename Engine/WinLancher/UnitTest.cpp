@@ -8,6 +8,7 @@
 #include "TinyEngine/ScriptManager/LuaVal.h"
 #include "TinyEngine/Objects/Object.h"
 #include "Ash/FileSystem/Path_Win.h"
+#include "Ash/CommonFunc.h"
 
 void Common()
 {
@@ -77,6 +78,11 @@ void Common()
 
 	float d30 = degToRad(30.0f);
 	float r30 = radToDeg(d30);
+
+	std::string str = "1231231231233";
+	auto spl = split(str, "123");
+
+	int dfsafdsa = 0;
 
 }
 
@@ -515,20 +521,28 @@ void TestFileSystem()
 	Path path("D:\\dango\\document\\Visual Studio 2015\\Projects\\StarWay\\Engine\\TinyEngine");
 	bool aaa = path.isDirectory();
 	auto list = path.getSubFile();
+	auto dsafdsa = path.getRelativePath();
+	auto fsafdsa = path.getAbsolutePath();
 
 	Path path2("game:Script");
 	bool aaa2 = path2.isDirectory();
 	auto list2 = path2.getSubFile();
+	auto dsafdsa2 = path2.getRelativePath();
+	auto fsafdsa2 = path2.getAbsolutePath();
 
 	Path path3("game:/../..\\Tools/luac/src/../build/luac_32.exe");
 	bool aaa3 = path3.isDirectory();
 	bool aaa33 = path3.isFile();
 	auto list3 = path3.getSubFile();
+	auto dsafdsa3 = path3.getRelativePath();
+	auto fsafdsa3 = path3.getAbsolutePath();
 
 	Path path4("game:../Script");
 	bool aaa4 = path4.isDirectory();
 	bool aaa44 = path3.isFile();
 	auto list4 = path4.getSubFile();
+	auto dsafdsa4 = path4.getRelativePath();
+	auto fsafdsa4 = path4.getAbsolutePath();
 
 	int a = 0;
 }

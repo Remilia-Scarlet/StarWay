@@ -5,5 +5,6 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
-
-void DebugString(std::string format, ...);
+#include "Ash/CommonFunc.h"
+#include "Ash/RefCountPointer/RefCountPtr.h"
+#include "Ash/RefCountPointer/RefCountObj.h"
