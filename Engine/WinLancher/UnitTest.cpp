@@ -81,6 +81,20 @@ void Common()
 
 	std::string str = "1231231231233";
 	auto spl = split(str, "123");
+//	auto sp2 = split(str, "");
+	auto sp22 = split("", "123");
+	auto sp3 = split(str, "fdsa");
+	std::string str2 = str;
+	replaceSubstr(str2, "123", "abcdef");
+	std::string str3 = str;
+	replaceSubstr(str3, "123", "ab");
+	std::string str4 = "";
+	replaceSubstr(str4, "123", "ab");
+	std::string str5 = str;
+	replaceSubstr(str5, "", "ab");
+	std::string str6 = str;
+	replaceSubstr(str6, "123", "");
+
 
 	int dfsafdsa = 0;
 
@@ -520,27 +534,33 @@ void TestFileSystem()
 {
 	Path path("D:\\dango\\document\\Visual Studio 2015\\Projects\\StarWay\\Engine\\TinyEngine");
 	bool aaa = path.isDirectory();
-	auto list = path.getSubFile();
+	bool aaaa = path.isFile();
+	bool aaaaa = path.isValid();
+	auto list = path.getFileList();
 	auto dsafdsa = path.getRelativePath();
 	auto fsafdsa = path.getAbsolutePath();
 
 	Path path2("game:Script");
 	bool aaa2 = path2.isDirectory();
-	auto list2 = path2.getSubFile();
+	bool aaaa2 = path2.isFile();
+	bool aaaaa2 = path2.isValid();
+	auto list2 = path2.getFileList();
 	auto dsafdsa2 = path2.getRelativePath();
 	auto fsafdsa2 = path2.getAbsolutePath();
 
 	Path path3("game:/../..\\Tools/luac/src/../build/luac_32.exe");
 	bool aaa3 = path3.isDirectory();
-	bool aaa33 = path3.isFile();
-	auto list3 = path3.getSubFile();
+	bool aaaa3 = path3.isFile();
+	bool aaaaa3 = path3.isValid();
+	auto list3 = path3.getFileList();
 	auto dsafdsa3 = path3.getRelativePath();
 	auto fsafdsa3 = path3.getAbsolutePath();
 
 	Path path4("game:../Script");
 	bool aaa4 = path4.isDirectory();
-	bool aaa44 = path3.isFile();
-	auto list4 = path4.getSubFile();
+	bool aaaa4 = path4.isFile();
+	bool aaaaa4 = path4.isValid();
+	auto list4 = path4.getFileList();
 	auto dsafdsa4 = path4.getRelativePath();
 	auto fsafdsa4 = path4.getAbsolutePath();
 

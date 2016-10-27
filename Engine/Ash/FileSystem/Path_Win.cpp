@@ -12,7 +12,7 @@ void Path::_getSubFile(std::list<Path>& list, const std::string& filter) const
 	if (!isDirectory())
 		return;
 
-	std::string path = getAbsolutePath() + filter;
+	std::string path = getAbsolutePath() + "\\" +  filter;
 	WIN32_FIND_DATA findFileData;
 	HANDLE hFind = ::FindFirstFile(path.c_str(), &findFileData);
 	if (INVALID_HANDLE_VALUE == hFind)
@@ -21,16 +21,34 @@ void Path::_getSubFile(std::list<Path>& list, const std::string& filter) const
 	{
 		if (strcmp(findFileData.cFileName,".") != 0 && strcmp(findFileData.cFileName, "..") != 0)
 		{
+			std::string currentPath = getAbsolutePath() + "\\" + findFileData.cFileName;
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-			{
-				Path(getAbsolutePath() + findFileData.cFileName)._getSubFile(list);
+			{				
+				Path(
+					currentPath,
+					currentPath,
+					false,
+					"",
+					true,
+					true,
+					false,
+					false					
+					)._getSubFile(list, filter);
 			}
 			else
 			{
-				Path p;
-				p._path = getAbsolutePath() + findFileData.cFileName;
-				p._absolutePath = p._path;
-				list.push_back(p);
+				list.push_back(
+					Path(
+						currentPath,
+						currentPath,
+						false,
+						"",
+						true,
+						false,
+						true,
+						false
+					)
+				);
 			}
 		}
 	} while (::FindNextFile(hFind, &findFileData));
@@ -46,6 +64,34 @@ void Path::_getIsDirectory(DWORD att) const
 		_isFile = ((att & FILE_ATTRIBUTE_DIRECTORY) == 0);
 	}
 	_isDirectoryFileDirty = false;
+}
+
+bool Path::createDirectory()
+{
+	if (getAbsolutePath() == "")
+		return false;
+
+	BOOL ret = CreateDirectory(getAbsolutePath().c_str(), NULL);
+	if (ret || GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		_isDirectory = true;
+		_isFile = false;
+		_isDirectoryFileDirty = false;
+		return true;
+	}
+
+	if (!getParentDirectory().createDirectory())
+		return false;
+	
+	ret = CreateDirectory(getAbsolutePath().c_str(), NULL);
+	if (ret || GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		_isDirectory = true;
+		_isFile = false;
+		_isDirectoryFileDirty = false;
+		return true;
+	}
+	return false;
 }
 
 Path::Path()
@@ -74,14 +120,33 @@ Path::Path(const char* path)
 
 }
 
+Path::Path(const std::string& path,
+		   const std::string& absolutePath,
+		   bool absolutePathDirty,
+		   const std::string& relativePath,
+		   bool relativePathDirty,
+		   bool isDirectory,
+		   bool isFile,
+		   bool isDirectoryFileDirty)
+	: _path(path)
+	, _absolutePath(absolutePath)
+	, _absolutePathDirty(absolutePathDirty)
+	, _relativePath(relativePath)
+	, _relativePathDirty(relativePathDirty)
+	, _isDirectory(isDirectory)
+	, _isFile(isFile)
+	, _isDirectoryFileDirty(isDirectoryFileDirty)
+{
+}
+
 bool Path::isDirectory() const
 {
 	if (!_isDirectoryFileDirty)
 		return _isDirectory;
 
-	getRelativePath();
+	getAbsolutePath();
 	if (_isDirectoryFileDirty)
-		_getIsDirectory(GetFileAttributes(getRelativePath().c_str()));
+		_getIsDirectory(GetFileAttributes(getAbsolutePath().c_str()));
 	return _isDirectory;
 }
 
@@ -90,22 +155,27 @@ bool Path::isFile() const
 	if (!_isDirectoryFileDirty)
 		return _isFile;
 
-	getRelativePath();
+	getAbsolutePath();
 	if (_isDirectoryFileDirty)
-		_getIsDirectory(GetFileAttributes(getRelativePath().c_str()));
+		_getIsDirectory(GetFileAttributes(getAbsolutePath().c_str()));
 	return _isFile;
 }
 
-std::list<Path> Path::getSubFile(const std::string& filter) const
+bool Path::isValid() const
+{
+	return isDirectory() || isFile();
+}
+
+std::list<Path> Path::getFileList(const std::string& filter) const
 {
 	std::list<Path> ret;
 	_getSubFile(ret, filter);
 	return ret;
 }
 
-std::list<Path> Path::getSubFile() const
+std::list<Path> Path::getFileList() const
 {
-	return getSubFile("*.*");
+	return getFileList("*.*");
 }
 
 const std::string& Path::getOriginPath() const
@@ -131,13 +201,6 @@ const std::string& Path::getAbsolutePath() const
 	_fullpath(path, _absolutePath.c_str(), 1024);
 	_absolutePath = path;
 	delete[] path;
-	DWORD att = GetFileAttributes(_absolutePath.c_str());
-	if (att == (DWORD)FILE_INVALID_FILE_ID)
-		_absolutePath = "";
-	else if ((att & FILE_ATTRIBUTE_DIRECTORY) != 0)
-		_absolutePath += "\\";
-	if(_isDirectoryFileDirty)
-		_getIsDirectory(att);
 	return _absolutePath;
 }
 
@@ -148,7 +211,10 @@ const std::string& Path::getRelativePath() const
 	_relativePathDirty = false;
 
 	if (getAbsolutePath().empty())
+	{
+		_relativePath = "";
 		return _relativePath;
+	}
 
 	char* path = new char[1024];
 	std::string myPath = _fullpath(path, ".", 1024);
@@ -170,11 +236,33 @@ const std::string& Path::getRelativePath() const
 		_relativePath += path2[i];
 		_relativePath += "\\";
 	}
+
 	if (_relativePath.length() == 0)
-		_relativePath = ".\\";
-	if (isFile())
-		_relativePath = _relativePath.substr(0, _relativePath.length() - 1);
+		_relativePath = ".";
+	else if (_relativePath[_relativePath.length() - 1] == '\\')
+		_relativePath.erase(_relativePath.length() - 1, 1);
+
 	return _relativePath;
+}
+
+Path Path::getParentDirectory() const
+{
+	size_t pos = getAbsolutePath().find_last_of('\\');;
+	if (pos != -1 && pos != 0)
+	{
+		std::string path = _absolutePath.substr(0, pos);
+		return Path(
+			path,
+			path,
+			false,
+			"",
+			true,
+			true,
+			false,
+			_isDirectoryFileDirty
+			);
+	}
+	return Path();
 }
 
 #endif //#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS

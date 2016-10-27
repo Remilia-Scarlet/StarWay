@@ -2,13 +2,12 @@
 #include <windows.h>
 
 #include "CommonCompiler.h"
-
-
+#include "Engine\Ash\CommonFunc.h"
 
 void showHelp()
 {
-	printf("Useage:\n");
-	printf("\tCommonCompiler [/? | /config configFilePath]\n\n");
+	DebugString("Useage:\n");
+	DebugString("\tCommonCompiler [/? | /config configFilePath]\n\n");
 }
 
 std::string getMD5(const std::string& str)
@@ -34,7 +33,7 @@ std::string getMD5(const std::string& str)
 		hDll = LoadLibrary("advapi32.dll");
 		if (hDll < 0)
 		{
-			printf("unable to load advapi32.dll\n");
+			DebugString("unable to load advapi32.dll\n");
 			system("pause");
 			exit(4);
 		}
@@ -59,59 +58,36 @@ std::string getMD5(const std::string& str)
 
 int main(int argc, char* argv[])
 {
+	DebugString("Common compiler start\n");
+
 	CommonCompiler compiler;
-	if (!compiler.parseArg(argc, argv))
+	int result = compiler.run(argc, argv);
+	switch (result)
 	{
+	case 1:
 		showHelp();
 		system("pause");
-		return 1;
-	}
-	
-	if (!compiler.readConfigFile())
-	{
-		std::string msg = "Can't open json config file [";
-		msg += compiler.getConfigFilePath().getOriginPath();
-		msg += "]\n";
-		printf(msg.c_str());
+		break;
+	case 2:
+		DebugString("Can't parse json config file:\n[%s]\n", compiler.getConfigFilePath().c_str());
 		system("pause");
-		return 2;
-	}
-
-	if (!compiler.readConfigFile())
-	{
-		std::string msg = "Can't open json config file [";
-		msg += compiler.getConfigFilePath().getOriginPath();
-		msg += "]\n";
-		printf(msg.c_str());
+		break;
+	case 3:
+		DebugString("Find loop define in json config file:\n[%s]\n", compiler.getConfigFilePath().c_str());
 		system("pause");
-		return 2;
+		break;
+	case 4:
+		DebugString("Can't open log file:\n[%s]\n", compiler.getLogFilePath().c_str());
+		system("pause");
+		break;
+	case 5:
+		DebugString("Can't find source path:\n[%s]\n", compiler.getSourcePath().c_str());
+		system("pause");
+		break;
+	default:
+		break;
 	}
 
-	if (!compiler.compile())
-		return 3;
-	/*
-	WIN32_FIND_DATA att;
-	HANDLE hFind = FindFirstFile((sourcepath + sourcefilter).c_str(),&att);
-	if (hFind == INVALID_HANDLE_VALUE)
-	{
-		return 0;
-	}
-	do 
-	{
-		if (att.cFileName[0] != '.')
-		{
-			if (att.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-			{
-				
-			}
-			else
-			{
-				std::string filename = sourcepath + att.cFileName;
-
-			}
-		}
-	} while (::FindNextFile(hFind, &att));
-	FindClose(hFind);*/
 
 	return 0;
 }

@@ -27,17 +27,34 @@ public:
 	};
 public:
 	File();
-	File(const Path& path, AccessMode accessMode = AccessMode::READ_WRITE, CreateMode createMode = CreateMode::ALWAYS_CREATE);
 	//Can't copy. use std::move(file)
 	File(const File& other) = delete;
 	File(File&& other);
 	~File();
 
-	bool open();
-	bool open(const Path& path);
+	// Before you can use a File, you must open it. And remember to close() it when you don't need it. Destructor will also call close() automaticlly.
+	bool open(const Path& path, AccessMode accessMode = AccessMode::READ_WRITE, CreateMode createMode = CreateMode::ALWAYS_CREATE);
+
+	// Close a file and release it's resource.
 	void close();
 
+	// Seek to a special position. Read and write will start from this position.
+	void seek(int pos);
+
+	// Get current position
+	int pos();
+
+	// Get the directory of this file
+	Path getDirectory();
+
 	std::vector<char> readAll();
+
+	// write data
+	bool write(const void* data, int len);
+
+	// Can't copy, close this file and call setFilePath(newPath) if you need to open a new file
+	File& operator=(const File& other) = delete;
+	File& operator=(File&& other) = delete;
 
 	bool isValid() const;
 	bool isOpened() const;

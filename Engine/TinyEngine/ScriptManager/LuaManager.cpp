@@ -44,7 +44,7 @@ bool LuaManager::init()
 		luaL_openlibs(_LuaState);
 	
 		Path scriptPath("game:Script");
-		std::list<Path> scripts = scriptPath.getSubFile();
+		std::list<Path> scripts = scriptPath.getFileList();
 		for (auto& file : scripts)
 			doFile(file.getAbsolutePath().c_str());
 

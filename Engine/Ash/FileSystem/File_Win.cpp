@@ -3,17 +3,11 @@
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 
+#include <windows.h>
+
 File::File() 
 	: _accessMode(AccessMode::READ_WRITE)
 	, _createMode(CreateMode::ALWAYS_CREATE)
-	, _fileHandle(INVALID_HANDLE_VALUE)
-{
-}
-
-File::File(const Path& path, AccessMode accessMode /* = AccessMode::READ_WRITE*/, CreateMode createMode /* = CreateMode::ALWAYS_CREATE*/)
-	: _filePath(path)
-	, _accessMode(accessMode)
-	, _createMode(createMode)
 	, _fileHandle(INVALID_HANDLE_VALUE)
 {
 }
@@ -53,18 +47,24 @@ int CreateModeToWinCreateMode(File::CreateMode createMode)
 	}
 	return CREATE_ALWAYS;
 }
-bool File::open()
+
+bool File::open(const Path& path, AccessMode accessMode /*= AccessMode::READ_WRITE*/, CreateMode createMode /*= CreateMode::ALWAYS_CREATE*/)
 {
 	if (isOpened())
-		return true;
+	{
+		TinyAssert(false, "you can't open a file twice");
+		return false;
+	}
+	_filePath = path;
+	_accessMode = accessMode;
+	_createMode = createMode;
+
+	Path folder = Path(getDirectory());
+	if (!folder.isDirectory() && !folder.createDirectory())
+		return false;
+	
 	_fileHandle = CreateFile(_filePath.getAbsolutePath().c_str(), AccessModeToWinAccessMode(_accessMode), 0, NULL, CreateModeToWinCreateMode(_createMode), 0, NULL);
 	return isOpened();
-}
-
-bool File::open(const Path & path)
-{
-	setFilePath(path);
-	return open();
 }
 
 void File::close()
@@ -75,6 +75,21 @@ void File::close()
 }
 
 
+void File::seek(int pos)
+{
+//	SetFilePointer(_fileHandle, pos, NULL, FILE_BEGIN);
+}
+
+int File::pos()
+{
+	return SetFilePointer(_fileHandle, 0, NULL, FILE_END);
+}
+
+Path File::getDirectory()
+{
+	return _filePath.getParentDirectory();
+}
+
 std::vector<char> File::readAll()
 {
 	std::vector<char> data;
@@ -83,7 +98,7 @@ std::vector<char> File::readAll()
 		TinyAssert(false, "You must open file first");
 		return data;
 	}
-	
+	seek(0);
 	DWORD size = GetFileSize(_fileHandle, NULL);
 	data.resize((size_t)size);
 	DWORD readByte = 0;
@@ -93,6 +108,20 @@ std::vector<char> File::readAll()
 	return std::vector<char>();
 }
 
+bool File::write(const void* data, int len)
+{
+	if (!isOpened())
+	{
+		TinyAssert(false, "you need to open first");
+		return false;
+	}
+	int filePos = pos();
+	LockFile(_fileHandle, filePos, 0, len, 0);
+	DWORD writenBytes = 0;
+	WriteFile(_fileHandle, data, len, &writenBytes, NULL);
+	UnlockFile(_fileHandle, filePos, 0, len, 0);
+	return false;
+}
 
 bool File::isValid() const
 {
@@ -106,6 +135,11 @@ bool File::isOpened() const
 
 bool File::setFilePath(const Path& path)
 {
+	if (isOpened())
+	{
+		TinyAssert(false, "You can't change file path when file is opened");
+		return false;
+	}
 	_filePath = path;
 	return _filePath.isFile();
 }

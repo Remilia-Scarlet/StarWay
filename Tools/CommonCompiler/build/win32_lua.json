@@ -1,8 +1,8 @@
 {
-  "SourcePath": "..\\..\\..\\StarWay\\Script\\",
-  "SourceFilter": "*.lua",
-  "TempFile": "..\\..\\..\\output\\_temp\\CommonCompiler\\log.json",
-  "Dependency": [ ],
-  "Output": "..\\..\\..\\output\\Win32\\Script\\$(SourceName).out",
-  "Cmd": "..\\..\\luac\\build\\luac_32.exe -o \"$(Output)\" \"%(SourcePath)\""
+  "$(SourcePath)": "..\\..\\..\\StarWay\\Script\\",
+  "$(SourceFilter)": "*.lua",
+  "$(LogFile)": "..\\..\\..\\output\\_temp\\CommonCompiler\\a\\b\\log.json",
+  "$(Dependency)": [ ],
+  "$(Output)": "..\\..\\..\\output\\Win32\\Script\\$(SourceName).out",
+  "$(Cmd)": "..\\..\\luac\\build\\luac_32.exe -o \"$(Output)\" \"$(SourcePath)\\$(SourceName).$(SourceExt)\""
 }

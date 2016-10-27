@@ -34,6 +34,12 @@ std::string FormatString(const char* format, ...)
 std::vector<std::string> split(const std::string& src, const std::string& separator)
 {
 	std::vector<std::string> ret;
+	if (separator.empty())
+	{
+		TinyAssert(false, "split must take a separator not empty");
+		return ret;
+	}
+
 	size_t pos = 0;
 	size_t oldPos = pos;
 
@@ -51,4 +57,22 @@ std::vector<std::string> split(const std::string& src, const std::string& separa
 		oldPos = pos + separator.length();
 	}
 	return ret;
+}
+
+std::string& replaceSubstr(std::string& src, const std::string& searchKey, const std::string& targetStr)
+{
+	if (src.empty() || searchKey.empty())
+		return src;
+
+	size_t pos = 0;
+	size_t oldPos = pos;
+	while (1)
+	{
+		pos = src.find(searchKey, oldPos);
+		if(pos == -1)
+			break;
+		src.replace(pos, searchKey.length(), targetStr);
+		oldPos = pos + targetStr.length();
+	}
+	return src;
 }
