@@ -12,8 +12,25 @@ class Path
 {
 public:
 	Path();
+
+	// Init with given path
 	Path(const std::string& path);
 	Path(const char* path);
+
+	// Init a Path with given status. Be careful you must provide the exactly right status. DON'T use this constructor unless you understand what you are doing.
+	Path(
+		const std::string& path,
+
+		const std::string& absolutePath,
+		bool absolutePathDirty,
+
+		const std::string& relativePath,
+		bool relativePathDirty,
+
+		bool isDirectory,
+		bool isFile,
+		bool isDirectoryFileDirty
+		);
 
 	// Check if path is directoy
 	bool isDirectory() const;
@@ -49,21 +66,6 @@ public:
 
 
 protected:
-	Path(
-		const std::string& path,
-
-		const std::string& absolutePath,
-		bool absolutePathDirty,
-
-		const std::string& relativePath,
-		bool relativePathDirty,
-
-		bool isDirectory,
-		bool isFile,
-		bool isDirectoryFileDirty
-		);
-	 
-	
 	std::string _path;
 
 	mutable std::string _absolutePath;
@@ -76,7 +78,6 @@ protected:
 	mutable bool _isFile;
 	mutable bool _isDirectoryFileDirty;
 
-	void _getSubFile(std::list<Path>& list,const std::string& filter) const;
 	void _getIsDirectory(DWORD att) const;
 
 };

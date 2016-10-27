@@ -25,9 +25,9 @@ protected:
 	bool openLogFile();
 	bool buildSourcePath();
 
-	bool folderWalker(const std::string& path,const std::string& filter);
-	bool compileFile(const WIN32_FIND_DATA& info,const std::string& path);
+	bool compileFile(const WIN32_FIND_DATA& info,const Path& path);
 	bool flushLog();
+	std::string fixRuntimeDefine(const WIN32_FIND_DATA& info,const std::string& def);
 
 	Path _configFilePath;
 	std::vector<std::string> _dependency;
@@ -36,6 +36,6 @@ protected:
 	File _logFile;
 
 	std::map<std::string, std::string> _define;
-
+	std::map<std::string, std::string> _runtimeDefine;
 };
 

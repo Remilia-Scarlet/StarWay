@@ -9,11 +9,13 @@
 #include "Engine\TinyEngine\Engine\EngineDefs.h"
 #include "Engine\Ash\CommonFunc.h"
 #include <list>
+#include <stack>
 using namespace rapidjson;
 
 const char* SOURCE_PATH_NAME = "$(SourcePath)";
 const char* SOURCE_FILE_NAME = "$(SourceName)";
 const char* SOURCE_EXT_NAME = "$(SourceExt)";
+const char* SOURCE_ORIGIN_NAME = "$(SourceOrigin)";
 const char* SOURCE_FILTER_NAME = "$(SourceFilter)";
 const char* LOG_FILE_NAME = "$(LogFile)";
 const char* DEPENDENCY_NAME = "$(Dependency)";
@@ -152,32 +154,66 @@ bool CommonCompiler::changeDefine()
 
 bool CommonCompiler::compile()
 {
-	return folderWalker(_sourcePath.getAbsolutePath(), _define[SOURCE_FILTER_NAME]);
-}
-
-bool CommonCompiler::folderWalker(const std::string& path, const std::string& filter)
-{
-	WIN32_FIND_DATA att;
-	HANDLE hFind = FindFirstFile((path + _define[SOURCE_FILTER_NAME]).c_str(), &att);
-	if (hFind == INVALID_HANDLE_VALUE)
-		return true;
-	do
+	std::stack<std::string> stack;
+	stack.push(_sourcePath.getAbsolutePath());
+	std::string filter = _define[SOURCE_FILTER_NAME];
+	bool ret = true;
+	while (!stack.empty())
 	{
-		if (strcmp(att.cFileName, ".") == 0 || strcmp(att.cFileName, "..") == 0)
+		std::string path = stack.top();
+		stack.pop();
+		WIN32_FIND_DATA att;
+		HANDLE hFind = FindFirstFile((path + "\\" + filter).c_str(), &att);
+		if (hFind == INVALID_HANDLE_VALUE)
 			continue;
+		do
+		{
+			if (strcmp(att.cFileName, ".") == 0 || strcmp(att.cFileName, "..") == 0)
+				continue;
 
-		if (att.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-			folderWalker(path + att.cFileName, filter);
-		else
-			compileFile(att, path);
-
-	} while (::FindNextFile(hFind, &att));
-	FindClose(hFind);
-	return true;
+			std::string current = path + "\\" + att.cFileName;
+			if (att.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				stack.push(current);
+			else
+			{
+				bool result = compileFile(att, 
+					Path(
+						current,
+						current,
+						false,
+						"",
+						true,
+						false,
+						true,
+						false
+					));
+				ret = ret && result;
+			}
+		} while (::FindNextFile(hFind, &att));
+		FindClose(hFind);
+	}
+	return ret;
 }
 
-bool CommonCompiler::compileFile(const WIN32_FIND_DATA& info, const std::string& path)
+bool CommonCompiler::compileFile(const WIN32_FIND_DATA& info, const Path& path)
 {
+	auto& key = path.getRelativePath();
+	auto it = _logDoc.FindMember(key.c_str());
+	if (it != _logDoc.MemberEnd())
+	{
+		Value& logItem = it->value;
+		if (logItem.IsArray() && logItem.Size() == 2)
+		{
+			auto arr = logItem.GetArray();
+			DWORD l = arr[0].GetInt();
+			DWORD h = arr[1].GetInt();
+			if (info.ftLastWriteTime.dwHighDateTime == h && info.ftLastWriteTime.dwHighDateTime == l)
+				return true;
+		}
+	}
+	std::string cmd = fixRuntimeDefine(info, _define[CMD_NAME]);
+	int result = system(cmd.c_str());
+
 	return false;
 }
 
@@ -189,9 +225,43 @@ bool CommonCompiler::flushLog()
 	const char* fileData = buffer.GetString();
 	_logFile.open(_logFile.getFilePath());
 	_logFile.seek(0);
-	_logFile.write(fileData, (int)strlen(fileData));
+	_logFile.write(fileData, (int)buffer.GetLength());
+	_logFile.setEndOfFile();
 	_logFile.close();
 	return true;
+}
+
+std::string CommonCompiler::fixRuntimeDefine(const WIN32_FIND_DATA& info, const std::string& def)
+{
+	std::string& file = (_runtimeDefine[SOURCE_ORIGIN_NAME] = info.cFileName);
+	size_t pos = file.find_last_of('.');
+	if (pos == -1)
+	{
+		_runtimeDefine[SOURCE_FILE_NAME] = file;
+		_runtimeDefine[SOURCE_EXT_NAME] = "";
+	}
+	else 
+	{
+		_runtimeDefine[SOURCE_FILE_NAME] = file.substr(0, pos);
+		_runtimeDefine[SOURCE_EXT_NAME] = file.substr(pos + 1);
+	}
+	std::string copyDef = def;
+	bool loop = false;
+	do 
+	{
+		loop = false;
+		for (auto& pair : _runtimeDefine)
+		{
+			if (copyDef.find(pair.first) != -1)
+			{
+				loop = true;
+				replaceSubstr(copyDef, pair.first, pair.second);
+			}
+		}
+	} while (loop);
+	
+
+	return copyDef;
 }
 
 bool CommonCompiler::openLogFile()

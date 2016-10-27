@@ -9,6 +9,7 @@
 #include "TinyEngine/Objects/Object.h"
 #include "Ash/FileSystem/Path_Win.h"
 #include "Ash/CommonFunc.h"
+#include "../Ash/FileSystem/File_Win.h"
 
 void Common()
 {
@@ -564,6 +565,17 @@ void TestFileSystem()
 	auto dsafdsa4 = path4.getRelativePath();
 	auto fsafdsa4 = path4.getAbsolutePath();
 
+	Path path5("C:");
+	bool aaa5 = path5.isDirectory();
+	bool aaaa5 = path5.isFile();
+	bool aaaaa5 = path5.isValid();
+//	auto list5 = path5.getFileList();
+	auto dsafdsa5 = path5.getRelativePath();
+	auto fsafdsa5 = path5.getAbsolutePath();
+
+//	File file;
+//	file.open("E:\\a\\b\\112.txt");
+
 	int a = 0;
 }
 void UnitTest()
@@ -572,7 +584,7 @@ void UnitTest()
 	TestMatrix();
 	TestVector();
 	TestQuaternion();
-	//TestTimer();
+//	TestTimer();
 	TestRect();
 	TestLuaVal();
 	TestFileSystem();

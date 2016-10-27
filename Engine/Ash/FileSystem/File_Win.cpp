@@ -7,7 +7,7 @@
 
 File::File() 
 	: _accessMode(AccessMode::READ_WRITE)
-	, _createMode(CreateMode::ALWAYS_CREATE)
+	, _createMode(CreateMode::OPEN_AWAYS)
 	, _fileHandle(INVALID_HANDLE_VALUE)
 {
 }
@@ -29,9 +29,9 @@ File::~File()
 int AccessModeToWinAccessMode(File::AccessMode accessMode)
 {
 	int ret = 0;
-	if ((int)accessMode | (int)File::AccessMode::READ)
+	if ((int)accessMode & (int)File::AccessMode::READ)
 		ret |= GENERIC_READ;
-	if ((int)accessMode | (int)File::AccessMode::WRITE)
+	if ((int)accessMode & (int)File::AccessMode::WRITE)
 		ret |= GENERIC_WRITE;
 	return ret;
 }
@@ -40,8 +40,8 @@ int CreateModeToWinCreateMode(File::CreateMode createMode)
 {
 	switch (createMode)
 	{
-	case File::CreateMode::ALWAYS_CREATE:
-		return CREATE_ALWAYS;
+	case File::CreateMode::OPEN_AWAYS:
+		return OPEN_ALWAYS;
 	case File::CreateMode::OPEN_EXIST:
 		return OPEN_EXISTING;
 	}
@@ -77,12 +77,32 @@ void File::close()
 
 void File::seek(int pos)
 {
-//	SetFilePointer(_fileHandle, pos, NULL, FILE_BEGIN);
+	if (!isOpened())
+	{
+		TinyAssert(false, "You must open file first");
+		return;
+	}
+	SetFilePointer(_fileHandle, pos, NULL, FILE_BEGIN);
 }
 
 int File::pos()
 {
-	return SetFilePointer(_fileHandle, 0, NULL, FILE_END);
+	if (!isOpened())
+	{
+		TinyAssert(false, "You must open file first");
+		return 0;
+	}
+	return SetFilePointer(_fileHandle, 0, NULL, FILE_CURRENT);
+}
+
+bool File::setEndOfFile()
+{
+	if (!isOpened())
+	{
+		TinyAssert(false, "You must open file first");
+		return false;
+	}
+	return SetEndOfFile(_fileHandle) != 0;
 }
 
 Path File::getDirectory()

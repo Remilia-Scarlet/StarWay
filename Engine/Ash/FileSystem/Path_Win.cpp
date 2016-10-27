@@ -7,53 +7,6 @@
 #include <stack>
 #include "Ash/CommonFunc.h"
 
-void Path::_getSubFile(std::list<Path>& list, const std::string& filter) const
-{
-	if (!isDirectory())
-		return;
-
-	std::string path = getAbsolutePath() + "\\" +  filter;
-	WIN32_FIND_DATA findFileData;
-	HANDLE hFind = ::FindFirstFile(path.c_str(), &findFileData);
-	if (INVALID_HANDLE_VALUE == hFind)
-		return;
-	do
-	{
-		if (strcmp(findFileData.cFileName,".") != 0 && strcmp(findFileData.cFileName, "..") != 0)
-		{
-			std::string currentPath = getAbsolutePath() + "\\" + findFileData.cFileName;
-			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-			{				
-				Path(
-					currentPath,
-					currentPath,
-					false,
-					"",
-					true,
-					true,
-					false,
-					false					
-					)._getSubFile(list, filter);
-			}
-			else
-			{
-				list.push_back(
-					Path(
-						currentPath,
-						currentPath,
-						false,
-						"",
-						true,
-						false,
-						true,
-						false
-					)
-				);
-			}
-		}
-	} while (::FindNextFile(hFind, &findFileData));
-}
-
 void Path::_getIsDirectory(DWORD att) const
 {
 	if (att == (DWORD)FILE_INVALID_FILE_ID)
@@ -72,11 +25,10 @@ bool Path::createDirectory()
 		return false;
 
 	BOOL ret = CreateDirectory(getAbsolutePath().c_str(), NULL);
-	if (ret || GetLastError() == ERROR_ALREADY_EXISTS)
+	if (ret || (GetLastError() == ERROR_ALREADY_EXISTS))
 	{
-		_isDirectory = true;
-		_isFile = false;
-		_isDirectoryFileDirty = false;
+		if (isFile())
+			return false;
 		return true;
 	}
 
@@ -84,7 +36,7 @@ bool Path::createDirectory()
 		return false;
 	
 	ret = CreateDirectory(getAbsolutePath().c_str(), NULL);
-	if (ret || GetLastError() == ERROR_ALREADY_EXISTS)
+	if (ret)
 	{
 		_isDirectory = true;
 		_isFile = false;
@@ -144,9 +96,7 @@ bool Path::isDirectory() const
 	if (!_isDirectoryFileDirty)
 		return _isDirectory;
 
-	getAbsolutePath();
-	if (_isDirectoryFileDirty)
-		_getIsDirectory(GetFileAttributes(getAbsolutePath().c_str()));
+	_getIsDirectory(GetFileAttributes(getAbsolutePath().c_str()));
 	return _isDirectory;
 }
 
@@ -155,9 +105,7 @@ bool Path::isFile() const
 	if (!_isDirectoryFileDirty)
 		return _isFile;
 
-	getAbsolutePath();
-	if (_isDirectoryFileDirty)
-		_getIsDirectory(GetFileAttributes(getAbsolutePath().c_str()));
+	_getIsDirectory(GetFileAttributes(getAbsolutePath().c_str()));
 	return _isFile;
 }
 
@@ -168,9 +116,61 @@ bool Path::isValid() const
 
 std::list<Path> Path::getFileList(const std::string& filter) const
 {
-	std::list<Path> ret;
-	_getSubFile(ret, filter);
-	return ret;
+	std::stack<Path> stack;
+	std::list<Path> list;
+	stack.push(*this);
+	while (!stack.empty())
+	{
+		Path current = stack.top();
+		stack.pop();
+		if (!current.isDirectory())
+			continue;
+
+		std::string path = current.getAbsolutePath() + "\\" + filter;
+		WIN32_FIND_DATA findFileData;
+		HANDLE hFind = ::FindFirstFile(path.c_str(), &findFileData);
+		if (INVALID_HANDLE_VALUE == hFind)
+			continue;
+		do
+		{
+			if (strcmp(findFileData.cFileName, ".") != 0 && strcmp(findFileData.cFileName, "..") != 0)
+			{
+				std::string currentPath = current.getAbsolutePath() + "\\" + findFileData.cFileName;
+				if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				{
+					stack.push(
+						Path(
+							currentPath,
+							currentPath,
+							false,
+							"",
+							true,
+							true,
+							false,
+							false
+							)
+						);
+				}
+				else
+				{
+					list.push_back(
+						Path(
+							currentPath,
+							currentPath,
+							false,
+							"",
+							true,
+							false,
+							true,
+							false
+							)
+						);
+				}
+			}
+		} while (::FindNextFile(hFind, &findFileData));
+		FindClose(hFind);
+	}
+	return list;
 }
 
 std::list<Path> Path::getFileList() const
@@ -201,6 +201,8 @@ const std::string& Path::getAbsolutePath() const
 	_fullpath(path, _absolutePath.c_str(), 1024);
 	_absolutePath = path;
 	delete[] path;
+	if (_absolutePath.length() > 1 && _absolutePath[_absolutePath.length() - 1] == '\\')
+		_absolutePath.erase(_absolutePath.length() - 1, 1);
 	return _absolutePath;
 }
 
@@ -224,14 +226,14 @@ const std::string& Path::getRelativePath() const
 	std::vector<std::string> path2 = split(getAbsolutePath(),"\\");
 	int i = 0;
 
-	while (i < min(path1.size(), path2.size()) && path1[i] == path2[i])
+	while (i < (int)min(path1.size(), path2.size()) && path1[i] == path2[i])
 		++i;
 
 	int j = i;
-	for (; j < path1.size(); ++j)
+	for (; j < (int)path1.size(); ++j)
 		_relativePath += "..\\";
 
-	for (; i < path2.size(); ++i)
+	for (; i < (int)path2.size(); ++i)
 	{
 		_relativePath += path2[i];
 		_relativePath += "\\";
@@ -259,7 +261,7 @@ Path Path::getParentDirectory() const
 			true,
 			true,
 			false,
-			_isDirectoryFileDirty
+			_isDirectoryFileDirty || (!_isFile && !_isDirectory)
 			);
 	}
 	return Path();

@@ -21,7 +21,7 @@ public:
 	enum class CreateMode
 	{
 		// If the file doesn't exist, create it. 
-		ALWAYS_CREATE = 1,
+		OPEN_AWAYS = 1,
 		// Open a file only when it already exist.
 		OPEN_EXIST = 2
 	};
@@ -33,7 +33,7 @@ public:
 	~File();
 
 	// Before you can use a File, you must open it. And remember to close() it when you don't need it. Destructor will also call close() automaticlly.
-	bool open(const Path& path, AccessMode accessMode = AccessMode::READ_WRITE, CreateMode createMode = CreateMode::ALWAYS_CREATE);
+	bool open(const Path& path, AccessMode accessMode = AccessMode::READ_WRITE, CreateMode createMode = CreateMode::OPEN_AWAYS);
 
 	// Close a file and release it's resource.
 	void close();
@@ -43,6 +43,9 @@ public:
 
 	// Get current position
 	int pos();
+
+	// Set current pos to file end. It can increase or decrease file size
+	bool setEndOfFile();
 
 	// Get the directory of this file
 	Path getDirectory();
