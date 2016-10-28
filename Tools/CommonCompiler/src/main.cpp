@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <windows.h>
 
@@ -7,7 +8,7 @@
 void showHelp()
 {
 	DebugString("Useage:\n");
-	DebugString("\tCommonCompiler [/? | /config configFilePath]\n\n");
+	DebugString("\tCommonCompiler [/? | /config configFilePath | /force compile]\n\n");
 }
 
 std::string getMD5(const std::string& str)
@@ -58,36 +59,22 @@ std::string getMD5(const std::string& str)
 
 int main(int argc, char* argv[])
 {
-	DebugString("Common compiler start\n");
+	DebugString("Common compiler start.\n");
 
 	CommonCompiler compiler;
 	int result = compiler.run(argc, argv);
 	switch (result)
 	{
+	case 0:
+		DebugString("Succeed!");
+		break;
 	case 1:
 		showHelp();
 		system("pause");
 		break;
-	case 2:
-		DebugString("Can't parse json config file:\n[%s]\n", compiler.getConfigFilePath().c_str());
-		system("pause");
-		break;
-	case 3:
-		DebugString("Find loop define in json config file:\n[%s]\n", compiler.getConfigFilePath().c_str());
-		system("pause");
-		break;
-	case 4:
-		DebugString("Can't open log file:\n[%s]\n", compiler.getLogFilePath().c_str());
-		system("pause");
-		break;
-	case 5:
-		DebugString("Can't find source path:\n[%s]\n", compiler.getSourcePath().c_str());
-		system("pause");
-		break;
 	default:
+		system("pause");
 		break;
 	}
-
-
-	return 0;
+	return result;
 }

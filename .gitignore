@@ -6,4 +6,8 @@ ipch/*
 *.opendb
 *.ilk
 *.pdb
+*.iobj
+*.ipdb
 
+/Tools/luac/src/.vs
+/Tools/CommonCompiler/src/.vs

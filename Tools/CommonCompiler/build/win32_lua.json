@@ -1,8 +1,9 @@
 {
   "$(SourcePath)": "..\\..\\..\\StarWay\\Script",
-  "$(SourceFilter)": "*.lua",
-  "$(LogFile)": "..\\..\\..\\output\\_temp\\CommonCompiler\\log.json",
+  "$(SourceFilter)": "*.*",
+  "$(TimeStampFile)": "..\\..\\..\\output\\_temp\\CommonCompiler\\compile.json",
   "$(Dependency)": [ ],
-  "$(Output)": "..\\..\\..\\output\\Win32\\Script\\$(SourceName).out",
-  "$(Cmd)": "..\\..\\luac\\build\\luac_32.exe -o \"$(Output)\" \"$(SourcePath)\\$(SourceName).$(SourceExt)\""
+  "$(Output)": "..\\..\\..\\output\\Win32\\Script\\$(SubFolder)\\$(SourceName).out",
+  "$(CompileExe)": "..\\..\\luac\\build\\luac_32.exe",
+  "$(CompileParam)": "-o \"$(Output)\" \"$(SourcePath)\\$(SubFolder)\\$(SourceFullName)\""
 }

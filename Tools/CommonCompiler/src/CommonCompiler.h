@@ -13,26 +13,25 @@ public:
 	~CommonCompiler();
 
 	int run(int argc, char* argv[]);
-
-	const std::string& getConfigFilePath() const;
-	std::string getLogFilePath() const;
-	const std::string& getSourcePath() const;
 protected:
 	bool parseArg(int argc, char* argv[]);
 	bool readConfigFile();
 	bool changeDefine();
+	bool checkPath();
 	bool compile();
-	bool openLogFile();
-	bool buildSourcePath();
 
-	bool compileFile(const WIN32_FIND_DATA& info,const Path& path);
+
+
+	bool compileFile(const WIN32_FIND_DATA& info,const Path& path, const std::string& subFolder);
 	bool flushLog();
-	std::string fixRuntimeDefine(const WIN32_FIND_DATA& info,const std::string& def);
+	std::string fixRuntimeDefine(const WIN32_FIND_DATA& info,const std::string& def, const std::string& subFolder);
+	bool callCmdAndWaitFinish(const WIN32_FIND_DATA& info, const std::string& cmd, const std::string& subFolder);
 
-	Path _configFilePath;
+	std::string _configFilePath;
 	std::vector<std::string> _dependency;
 	rapidjson::Document _logDoc;
 	Path _sourcePath;
+	Path _cmdExe;
 	File _logFile;
 
 	std::map<std::string, std::string> _define;
