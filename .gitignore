@@ -13,3 +13,4 @@ ipch/*
 /Tools/CommonCompiler/src/.vs
 /Tools/CommonCompiler/build/log.txt
 *.ipch
+*.db

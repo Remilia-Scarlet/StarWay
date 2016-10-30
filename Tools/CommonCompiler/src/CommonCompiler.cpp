@@ -12,6 +12,7 @@
 #include "Engine\Ash\CommonFunc.h"
 #include <list>
 #include <stack>
+#include "..\..\..\Engine\ThirdParty\rapidjson\error\en.h"
 using namespace rapidjson;
 
 const char* SOURCE_PATH_NAME = "$(SourcePath)";
@@ -85,49 +86,24 @@ bool CommonCompiler::readConfigFile()
 	File file;
 	if (!file.open(_configFilePath, File::AccessMode::READ, File::CreateMode::OPEN_EXIST))
 	{
-		DebugString("Can't open json config file:\n%s", _configFilePath.c_str());
+		DebugString("Can't open json config file:\n%s", file.getFilePath().getAbsolutePath().c_str());
 		return false;
 	}
 
 	Document json;
 	std::vector<char> data = file.readAll();
 	json.Parse(data.data(),data.size());
-	auto asd = json.GetParseError();
 	if (json.GetParseError())
 	{
-		DebugString("Can't parse json config file:\n%s", _configFilePath.c_str());
+		DebugString("Can't parse json config file:\n%s\nError:%s", _configFilePath.c_str(), GetParseError_En(json.GetParseError()));
 		return false;
 	}
 
-	if (json.HasMember(SOURCE_PATH_NAME))
-		_define[SOURCE_PATH_NAME] = json[SOURCE_PATH_NAME].GetString();
-
-	if (json.HasMember(SOURCE_FILTER_NAME))
-		_define[SOURCE_FILTER_NAME] = json[SOURCE_FILTER_NAME].GetString();
-
-	if (json.HasMember(TIME_STAMP_FILE_NAME))
-		_define[TIME_STAMP_FILE_NAME] = json[TIME_STAMP_FILE_NAME].GetString();
-
-	if (json.HasMember(DEPENDENCY_NAME))
+	for (auto it = json.MemberBegin(); it != json.MemberEnd(); ++it)
 	{
-		Value& arr = json[DEPENDENCY_NAME];
-		if (arr.IsString())
-			_dependency.push_back(arr.GetString());
-		else if (arr.IsArray())
-		{
-			for (Value& val : arr.GetArray())
-				_dependency.push_back(val.GetString());
-		}
+		if (it->name.IsString() && it->value.IsString())
+			_define[it->name.GetString()] = it->value.GetString();
 	}
-
-	if (json.HasMember(OUTPUT_NAME))
-		_define[OUTPUT_NAME] = json[OUTPUT_NAME].GetString();
-
-	if (json.HasMember(COMPILE_EXE_NAME))
-		_define[COMPILE_EXE_NAME] = json[COMPILE_EXE_NAME].GetString();
-
-	if (json.HasMember(COMPILE_PARAM_NAME))
-		_define[COMPILE_PARAM_NAME] = json[COMPILE_PARAM_NAME].GetString();
 	return true;
 }
 
@@ -174,13 +150,13 @@ bool CommonCompiler::checkPath()
 	_sourcePath = _define[SOURCE_PATH_NAME];
 	if (!_sourcePath.isDirectory())
 	{
-		DebugString("Can't open source path:\n%s", _define[SOURCE_PATH_NAME].c_str());
+		DebugString("Can't open source path:\n%s", _sourcePath.getAbsolutePath().c_str());
 		return false;
 	}
 
 	if (!_logFile.open(_define[TIME_STAMP_FILE_NAME]))
 	{
-		DebugString("Can't open time stamp file:\n%s", _define[TIME_STAMP_FILE_NAME]);
+		DebugString("Can't open time stamp file:\n%s", _logFile.getFilePath().getAbsolutePath().c_str());
 		return false;
 	}
 	std::vector<char> data = _logFile.readAll();
@@ -193,7 +169,7 @@ bool CommonCompiler::checkPath()
 	_cmdExe = _define[COMPILE_EXE_NAME];
 	if (!_cmdExe.isFile())
 	{
-		DebugString("Can't find [%s]", _define[COMPILE_EXE_NAME].c_str());
+		DebugString("Can't find [%s]", _cmdExe.getAbsolutePath().c_str());
 		return false;
 	}
 

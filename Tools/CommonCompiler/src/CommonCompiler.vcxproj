@@ -71,28 +71,28 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\build\</OutDir>
+    <OutDir>..\build</OutDir>
     <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_32</TargetName>
     <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\build\</OutDir>
+    <OutDir>..\build</OutDir>
     <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_64</TargetName>
     <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\build\</OutDir>
+    <OutDir>..\build</OutDir>
     <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_32</TargetName>
     <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\build\</OutDir>
+    <OutDir>..\build</OutDir>
     <IntDir>$(ProjectDir)..\..\..\output\_temp\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_64</TargetName>
     <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\Engine;$(IncludePath)</IncludePath>
