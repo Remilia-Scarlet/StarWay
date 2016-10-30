@@ -7,6 +7,8 @@
 #include "TinyEngine/Input/InputManager.h"
 
 static const bool SHOW_WIN32_CONSOLE_AT_START = true;
+static const bool AUTO_COMPILE_LUA = true;
+
 void ShowHideWin32Console()
 {
 	static std::vector<char> s_buffer(1024,'\0');
@@ -122,6 +124,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 	if (SHOW_WIN32_CONSOLE_AT_START)
 		ShowHideWin32Console();
+
+	if (AUTO_COMPILE_LUA)
+	{
+		if(TINY_BITWIDE_TARGET == TINY_BITWIDE_X64)
+			system("..\\..\\CompileLua_x64.bat");
+		else
+			system("..\\..\\CompileLua_x32.bat");
+	}
 
 	if (!Engine::createInstance())
 	{

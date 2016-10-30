@@ -28,6 +28,7 @@ const char* SOURCE_FULL_NAME = "$(SourceFullName)";
 const char* SUB_FOLDER_NAME = "$(SubFolder)";
 
 CommonCompiler::CommonCompiler()
+	:_forceRecompile(false)
 {
 }
 
@@ -67,17 +68,16 @@ bool CommonCompiler::parseArg(int argc, char* argv[])
 		else if (strcmp(argv[i], "/config") == 0)
 		{
 			if (i + 1 < argc)
-			{
 				_configFilePath = argv[i + 1];
-				return true;
-			}
 			else
-			{
 				return false;
-			}
+		}
+		else if (strcmp(argv[i], "/force") == 0)
+		{
+			_forceRecompile = true;
 		}
 	}
-	return false;
+	return !_configFilePath.empty();
 }
 
 bool CommonCompiler::readConfigFile()
@@ -245,20 +245,10 @@ bool CommonCompiler::compile()
 
 bool CommonCompiler::compileFile(const WIN32_FIND_DATA& info, const Path& path, const std::string& subFolder)
 {
-	auto& key = path.getRelativePath();
-	auto memberIt = _logDoc.FindMember(key.c_str());
-	if (memberIt != _logDoc.MemberEnd())
-	{
-		Value& logItem = memberIt->value;
-		if (logItem.IsArray() && logItem.Size() == 2)
-		{
-			auto arr = logItem.GetArray();
-			DWORD l = arr[0].GetUint();
-			DWORD h = arr[1].GetUint();
-			if (info.ftLastWriteTime.dwHighDateTime == h && info.ftLastWriteTime.dwLowDateTime == l)
-				return true;
-		}
-	}
+	const auto& key = path.getRelativePath();
+	if (!_forceRecompile && checkTimeStamp(key, info.ftLastWriteTime.dwLowDateTime, info.ftLastWriteTime.dwHighDateTime))
+		return true;
+	
 	std::string cmd = fixRuntimeDefine(info, _define[COMPILE_PARAM_NAME], subFolder);
 	std::string outPut = fixRuntimeDefine(info, _define[OUTPUT_NAME], subFolder);
 	Path outPath = outPut;
@@ -273,24 +263,7 @@ bool CommonCompiler::compileFile(const WIN32_FIND_DATA& info, const Path& path, 
 		return false;
 	}
 
-	WIN32_FIND_DATA att;
-	HANDLE hFind = FindFirstFile(path.getAbsolutePath().c_str(), &att);
-	if (hFind == INVALID_HANDLE_VALUE)
-	{
-		_logDoc.EraseMember(key.c_str());
-		return false;
-	}
-
-	memberIt = _logDoc.FindMember(key.c_str());
-	if (memberIt != _logDoc.MemberEnd())
-		memberIt->value.SetArray();
-	else
-		_logDoc.AddMember(Value(key.c_str(), (SizeType)key.length(), _logDoc.GetAllocator()).Move(), Value(kArrayType).Move(), _logDoc.GetAllocator());
-
-	Value& arr = _logDoc[key.c_str()];
-	arr.PushBack((unsigned int)att.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
-	arr.PushBack((unsigned int)att.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
-	flushLog();
+	writeTimeStamp(path.getAbsolutePath());
 	return true;
 }
 
@@ -369,6 +342,46 @@ bool CommonCompiler::callCmdAndWaitFinish(const WIN32_FIND_DATA& info, const std
 	return exitCode == 0;
 }
 
+
+bool CommonCompiler::checkTimeStamp(const Path& path, DWORD low, DWORD high)
+{
+	auto memberIt = _logDoc.FindMember(path.getRelativePath().c_str());
+	if (memberIt != _logDoc.MemberEnd())
+	{
+		Value& logItem = memberIt->value;
+		if (logItem.IsArray() && logItem.Size() == 2)
+		{
+			auto arr = logItem.GetArray();
+			DWORD l = arr[0].GetUint();
+			DWORD h = arr[1].GetUint();
+			if (high == h && low == l)
+				return true;
+		}
+	}
+	return false;
+}
+
+bool CommonCompiler::writeTimeStamp(const Path& path)
+{
+	WIN32_FIND_DATA att;
+	HANDLE hFind = FindFirstFile(path.getAbsolutePath().c_str(), &att);
+	if (hFind == INVALID_HANDLE_VALUE)
+	{
+		_logDoc.EraseMember(path.getRelativePath().c_str());
+		return false;
+	}
+	Value* arr = nullptr;
+	auto memberIt = _logDoc.FindMember(path.getRelativePath().c_str());
+	if (memberIt != _logDoc.MemberEnd())
+		arr = &memberIt->value.SetArray();
+	else
+		arr = &_logDoc.AddMember(Value(path.getRelativePath().c_str(), (SizeType)path.getRelativePath().length(), _logDoc.GetAllocator()).Move(), Value(kArrayType).Move(), _logDoc.GetAllocator());
+
+	arr->PushBack((unsigned int)att.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
+	arr->PushBack((unsigned int)att.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
+
+	return flushLog();
+}
 
 bool CommonCompiler::flushLog()
 {

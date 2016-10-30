@@ -1,6 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Ash/precomp.h"
 #include "CommonFunc.h"
-#define _CRT_SECURE_NO_WARNINGS
+#include <fstream>
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 #include <windows.h>
@@ -16,6 +17,14 @@ void DebugString(std::string format, ...)
 	va_end(args);
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 	OutputDebugStringA(buffer);
+#endif
+#if !NO_LOG_FILE 
+	std::ofstream logFile("log.txt", std::ios::out | std::ios::app);
+	if (logFile)
+	{
+		logFile << buffer << std::endl;
+		logFile.close();
+	}
 #endif
 	printf(buffer);
 }

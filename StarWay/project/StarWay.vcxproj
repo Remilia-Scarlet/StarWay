@@ -382,11 +382,6 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\Script\init.lua">
-      <FileType>Document</FileType>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="..\Script\common.lua">
       <FileType>Document</FileType>
     </CustomBuild>

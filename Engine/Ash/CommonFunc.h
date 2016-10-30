@@ -1,5 +1,8 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
+
+static const int NO_LOG_FILE = 0;
+
 #include <string>
 #include <vector>
 void DebugString(std::string format, ...);

@@ -1,0 +1,9 @@
+{
+  "$(SourcePath)": "..\\..\\..\\StarWay\\Script",
+  "$(SourceFilter)": "*.*",
+  "$(TimeStampFile)": "..\\..\\..\\output\\_temp\\CommonCompiler\\compile.json",
+  "$(Dependency)": [ ],
+  "$(Output)": "..\\..\\..\\output\\Win32\\Script\\$(SubFolder)\\$(SourceName).out",
+  "$(CompileExe)": "..\\..\\luac\\build\\luac_64.exe",
+  "$(CompileParam)": "-o \"$(Output)\" \"$(SourcePath)\\$(SubFolder)\\$(SourceFullName)\""
+}
