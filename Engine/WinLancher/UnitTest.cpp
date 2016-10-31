@@ -10,6 +10,7 @@
 #include "Ash/FileSystem/Path_Win.h"
 #include "Ash/CommonFunc.h"
 #include "../Ash/FileSystem/File_Win.h"
+#include "../TinyEngine/ScriptManager/LuaManager.h"
 
 void Common()
 {
@@ -96,9 +97,7 @@ void Common()
 	std::string str6 = str;
 	replaceSubstr(str6, "123", "");
 
-
-	int dfsafdsa = 0;
-
+	int adsafds = 0;
 }
 
 void TestMatrix()
@@ -502,6 +501,19 @@ void TestLuaVal()
 	LuaVal val16(*obj.get());
 	std::string str5 = val16.toString();
 	LuaVal val17 = {1, {1.1, "mmm"}, "abc", {"1", 234}, {2, 1}, {"x", 123}, {"y", 456}, {"tab", {1, 2, 3}}};
+	for (auto& pair : val17)
+	{
+		const LuaVal& key = pair.first;
+		LuaVal& val = pair.second;
+		//	DebugString("%s,%s", key.toString().c_str(), val.toString().c_str());
+	}
+	const LuaVal valconst = val17;
+	for (auto it = valconst.begin(); it != valconst.end(); ++it)
+	{
+		//it->second = 1;
+	}
+
+
 	std::string str6 = val17.toString();
 	LuaVal val18 = val17;
 	val18.setField(2,999);
@@ -529,6 +541,17 @@ void TestLuaVal()
 
 	LuaVal val23 = val21 + val22;
 	LuaVal val24 = val21 - val22;
+
+	std::list<LuaVal> ret = LuaManager::instance()->call("add", 1, 2, "abc", 1.1f, 1.2);
+
+	LuaVal aaasd =  { 123, {1,1,1 } } ;
+	LuaVal asddf = { 1,2,3 };
+	LuaVal dfds = { 1,2 };
+	LuaVal fdsa = { 1 };
+
+	std::list<LuaVal> ret3 = LuaManager::instance()->call("Foo2", LuaVal{ "tab",123 });
+	std::list<LuaVal> ret2 = LuaManager::instance()->call("Foo", 123, "abc", 1.1, LuaVal{ "tab",{1,2,3} }, LuaVal{ "mm",999 });
+
 
 }
 void TestFileSystem()

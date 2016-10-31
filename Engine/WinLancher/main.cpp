@@ -159,7 +159,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	//create Scene
 	{
 		ScenePtr scene = MainScene::create();
-		Engine::instance()->startScene(scene);
+		Engine::instance()->start(scene);
 	}
 
 	// Main message loop

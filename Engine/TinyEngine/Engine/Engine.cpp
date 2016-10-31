@@ -112,8 +112,9 @@ float Engine::getTime() const
 	return _currentTime;
 }
 
-void Engine::startScene(ScenePtr scene)
+void Engine::start(ScenePtr scene)
 {
+
 	_currentScene = scene;
 	scene->start();
 }

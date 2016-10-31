@@ -53,9 +53,15 @@
 #include "Ash\RefCountPointer\RefCountObj.h"
 #include <memory>
 #include <unordered_map>
+
 struct LuaTableConstructHelper;
+class LuaValTabIt;
+class ConstLuaValTabIt;
+
 class LuaVal
 {
+	friend class LuaValTabIt;
+	friend class ConstLuaValTabIt;
 public:
 	enum class DataType : int8_t
 	{
@@ -90,6 +96,7 @@ public:
 	template <class T>
 	LuaVal(const RefCountPtr<T>& obj);  // obj
 	LuaVal(std::initializer_list<LuaTableConstructHelper> table);//table
+//	LuaVal(const LuaVal& key, const LuaVal& val);//table
 	LuaVal(const LuaVal& other);  // copy
 	LuaVal(LuaVal&& other);  // move
 
@@ -161,10 +168,21 @@ public:
 	// Convert type to table, and set field by index. Return this.
 	LuaVal& setField(int index, const LuaVal& value);
 
+	// only aviliable for Table
+	LuaValTabIt begin();
+	ConstLuaValTabIt begin() const;
+	ConstLuaValTabIt cbegin() const;
+
+	// only aviliable for Table
+	LuaValTabIt end();
+	ConstLuaValTabIt end() const;
+	ConstLuaValTabIt cend() const;
+
 	// get describe of this LuaVal
 	std::string toString() const;
 
 	/* convert LuaVal to a certain type. If convertion can not be done, an assert will be given, and a default value will be returned.*/
+	bool			convertBoolean() const;//Like all tests in Lua, convertBoolean() returns true for any Lua value different from false and nil; otherwise it returns false.
 	int32_t			convertInt32() const; //low 32 bit of this int64 value
 	int64_t			convertInt64() const;
 	float			convertFloat() const;
@@ -239,6 +257,8 @@ protected:
 		std::shared_ptr<std::unordered_map<LuaVal,LuaVal,HashFunc,CmpFunc> >* table;
 	} _data;
 	DataType _type = DataType::NIL;
+
+	static std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> s_getItWrongRet;
 };
 
 template <class T>
@@ -270,18 +290,19 @@ template<class T>
 RefCountPtr<T> LuaVal::convertRefPtr() const
 {
 	if (_type == DataType::NIL)
-		return nullptr;
+		return RefCountPtr<RefCountObj>();
 
 	if (_type == DataType::REF_OBJ)
 		return RefCountPtr<T>(_data.obj->get());
 
 	TinyAssert(false, "can't convert a LuaVal to RefPtr");
-	return nullptr;
+	return RefCountPtr<RefCountObj>();
 }
 
 struct LuaTableConstructHelper
 {
 	LuaTableConstructHelper(const LuaVal& key, const LuaVal& val);
+	LuaTableConstructHelper(std::initializer_list<LuaTableConstructHelper> table);
 	LuaTableConstructHelper(std::nullptr_t nil);  // nil
 	LuaTableConstructHelper(bool b);  // boolean
 	LuaTableConstructHelper(int8_t i);  // int
@@ -311,3 +332,43 @@ LuaTableConstructHelper::LuaTableConstructHelper(const RefCountPtr<T>& obj)
 {
 
 }
+
+class LuaValTabIt
+{
+	friend class LuaVal;
+public:
+	LuaValTabIt operator++();
+	LuaValTabIt& operator++(int);
+	LuaValTabIt operator--();
+	LuaValTabIt& operator--(int);
+	std::pair<const LuaVal, LuaVal>* operator->();
+	std::pair<const LuaVal, LuaVal>& operator*();
+	bool operator==(const LuaValTabIt& other) const;
+	bool operator!=(const LuaValTabIt& other) const;
+	LuaValTabIt& operator=(const LuaValTabIt& other);
+protected:
+	LuaValTabIt() = delete;
+	LuaValTabIt(const std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::iterator& it);
+
+	std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::iterator _it;
+};
+
+class ConstLuaValTabIt
+{
+	friend class LuaVal;
+public:
+	ConstLuaValTabIt operator++();
+	ConstLuaValTabIt& operator++(int);
+	ConstLuaValTabIt operator--();
+	ConstLuaValTabIt& operator--(int);
+	const std::pair<const LuaVal, LuaVal>* operator->();
+	const std::pair<const LuaVal, LuaVal>& operator*();
+	bool operator==(const ConstLuaValTabIt& other) const;
+	bool operator!=(const ConstLuaValTabIt& other) const;
+	ConstLuaValTabIt& operator=(const ConstLuaValTabIt& other);
+protected:
+	ConstLuaValTabIt() = delete;
+	ConstLuaValTabIt(const std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::const_iterator& it);
+
+	std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::const_iterator _it;
+};

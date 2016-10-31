@@ -8,7 +8,7 @@ public:
 	static Engine* instance();
 
 	bool createManagers();
-	void startScene(ScenePtr scene);
+	void start(ScenePtr scene);
 	void cleanUp();
 
 	void mainLoop(float dt);

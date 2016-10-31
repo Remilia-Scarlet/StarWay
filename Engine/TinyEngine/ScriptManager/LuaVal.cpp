@@ -8,6 +8,7 @@
 // Member fucntion
 //////////////////////////////////////////////////////////////////////////
 const LuaVal LuaVal::NIL;
+std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc> LuaVal::s_getItWrongRet;
 
 LuaVal::LuaVal()
 {
@@ -107,6 +108,11 @@ LuaVal::LuaVal(LuaVal&& other)
 	reset(other);
 }
 
+
+//LuaVal::LuaVal(const LuaVal& key, const LuaVal& val)
+//{
+//	int a = 0;
+//}
 
 LuaVal::~LuaVal()
 {
@@ -548,6 +554,56 @@ LuaVal& LuaVal::setField(int index, const LuaVal& value)
 	return setField(LuaVal(index),value);
 }
 
+LuaValTabIt LuaVal::begin()
+{
+	if (_type != DataType::TABLE)
+	{
+		TinyAssert(false, "It's not table");
+		return LuaValTabIt(s_getItWrongRet.begin());
+	}
+	return LuaValTabIt(_data.table->get()->begin());
+}
+
+ConstLuaValTabIt LuaVal::begin() const
+{
+	return cbegin();
+}
+
+ConstLuaValTabIt LuaVal::cbegin() const
+{
+	if (_type != DataType::TABLE)
+	{
+		TinyAssert(false, "It's not table");
+		return ConstLuaValTabIt(s_getItWrongRet.cbegin());
+	}
+	return ConstLuaValTabIt(_data.table->get()->cbegin());
+}
+
+LuaValTabIt LuaVal::end()
+{
+	if (_type != DataType::TABLE)
+	{
+		TinyAssert(false, "It's not table");
+		return LuaValTabIt(s_getItWrongRet.end());
+	}
+	return LuaValTabIt(_data.table->get()->end());
+}
+
+ConstLuaValTabIt LuaVal::end() const
+{
+	return cend();
+}
+
+ConstLuaValTabIt LuaVal::cend() const
+{
+	if (_type != DataType::TABLE)
+	{
+		TinyAssert(false, "It's not table");
+		return ConstLuaValTabIt(s_getItWrongRet.cend());
+	}
+	return ConstLuaValTabIt(_data.table->get()->cend());
+}
+
 std::string LuaVal::toString() const
 {
 	switch (_type)
@@ -587,6 +643,27 @@ std::string LuaVal::toString() const
 	}
 	TinyAssert(false, "unreachable code");
 	return "";
+}
+
+bool LuaVal::convertBoolean() const
+{
+	switch (_type)
+	{
+	case LuaVal::DataType::NIL:
+		return false;
+	case LuaVal::DataType::BOOLEAN:
+		return _data.b;
+	case LuaVal::DataType::INT64:
+	case LuaVal::DataType::DOUBLE:
+	case LuaVal::DataType::STRING:
+	case LuaVal::DataType::REF_OBJ:
+	case LuaVal::DataType::TABLE:
+		return true;
+	default:
+		TinyAssert(false, "can't convert LuaVal to boolean");
+		break;
+	}
+	return false;
 }
 
 int32_t LuaVal::convertInt32() const
@@ -905,6 +982,10 @@ LuaTableConstructHelper::LuaTableConstructHelper(const LuaVal& key, const LuaVal
 	TinyAssert(key != LuaVal::NIL, "Key can't be nil!");
 }
 
+LuaTableConstructHelper::LuaTableConstructHelper(std::initializer_list<LuaTableConstructHelper> table) : _key(LuaVal::NIL), _val(table)
+{
+}
+
 LuaTableConstructHelper::LuaTableConstructHelper(std::nullptr_t nil) : _key(nullptr), _val(nullptr)
 {
 }
@@ -967,4 +1048,120 @@ LuaTableConstructHelper::LuaTableConstructHelper(RefCountObj& obj) : _key(LuaVal
 
 LuaTableConstructHelper::LuaTableConstructHelper(RefCountObj* obj) : _key(LuaVal::NIL), _val(obj)
 {
+}
+
+LuaValTabIt LuaValTabIt::operator++()
+{
+	LuaValTabIt itCopy = *this;
+	++_it;
+	return itCopy;
+}
+
+LuaValTabIt& LuaValTabIt::operator++(int)
+{
+	++_it;
+	return *this;
+}
+
+LuaValTabIt LuaValTabIt::operator--()
+{
+	LuaValTabIt itCopy = *this;
+	--_it;
+	return itCopy;
+}
+
+LuaValTabIt& LuaValTabIt::operator--(int)
+{
+	--_it;
+	return *this;
+}
+
+std::pair<const LuaVal, LuaVal>* LuaValTabIt::operator->()
+{
+	return &(*_it);
+}
+
+std::pair<const LuaVal, LuaVal>& LuaValTabIt::operator*()
+{
+	return *_it;
+}
+
+LuaValTabIt::LuaValTabIt(const std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::iterator& it)
+	:_it(it)
+{
+	
+}
+
+bool LuaValTabIt::operator!=(const LuaValTabIt& other) const
+{
+	return _it != other._it;
+}
+
+bool LuaValTabIt::operator==(const LuaValTabIt& other) const
+{
+	return _it == other._it;
+}
+
+LuaValTabIt& LuaValTabIt::operator=(const LuaValTabIt& other)
+{
+	_it = other._it;
+	return *this;
+}
+
+ConstLuaValTabIt ConstLuaValTabIt::operator++()
+{
+	ConstLuaValTabIt itCopy = *this;
+	++_it;
+	return itCopy;
+}
+
+ConstLuaValTabIt& ConstLuaValTabIt::operator++(int)
+{
+	++_it;
+	return *this;
+}
+
+ConstLuaValTabIt ConstLuaValTabIt::operator--()
+{
+	ConstLuaValTabIt itCopy = *this;
+	--_it;
+	return itCopy;
+}
+
+ConstLuaValTabIt& ConstLuaValTabIt::operator--(int)
+{
+	--_it;
+	return *this;
+}
+
+const std::pair<const LuaVal, LuaVal>* ConstLuaValTabIt::operator->()
+{
+	return &(*_it);
+}
+
+const std::pair<const LuaVal, LuaVal>& ConstLuaValTabIt::operator*()
+{
+	return *_it;
+}
+
+ConstLuaValTabIt::ConstLuaValTabIt(const std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::const_iterator& it)
+	:_it(it)
+{
+
+}
+
+bool ConstLuaValTabIt::operator!=(const ConstLuaValTabIt& other) const
+{
+	return _it != other._it;
+}
+
+bool ConstLuaValTabIt::operator==(const ConstLuaValTabIt& other) const
+{
+	return _it == other._it;
+}
+
+ConstLuaValTabIt& ConstLuaValTabIt::operator=(const ConstLuaValTabIt& other)
+{
+	_it = other._it;
+	return *this;
 }

@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinLancher", "Engine\WinLancher\project\WinLancher.vcxproj", "{B3F2281A-571F-489C-B66B-1DE6C11A99FF}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Graphic", "Engine\Graphic\project\Graphic.vcxproj", "{7070F552-7801-44E1-923F-5FDD391906BB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TinyEngine", "Engine\TinyEngine\project\TinyEngine.vcxproj", "{FDC4E310-0F62-4301-8645-2D0A34A92703}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinLancher", "Engine\WinLancher\project\WinLancher.vcxproj", "{B3F2281A-571F-489C-B66B-1DE6C11A99FF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StarWay", "StarWay\project\StarWay.vcxproj", "{5B406D90-1356-43B0-8322-1AEA0E86F3F1}"
 EndProject
