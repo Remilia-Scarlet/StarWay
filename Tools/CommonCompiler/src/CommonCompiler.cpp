@@ -219,27 +219,29 @@ bool CommonCompiler::compile()
 	return ret;
 }
 
-bool CommonCompiler::compileFile(const WIN32_FIND_DATA& info, const Path& path, const std::string& subFolder)
+bool CommonCompiler::compileFile(const WIN32_FIND_DATA& infoSrc, const Path& path, const std::string& subFolder)
 {
-	const auto& key = path.getRelativePath();
-	if (!_forceRecompile && checkTimeStamp(key, info.ftLastWriteTime.dwLowDateTime, info.ftLastWriteTime.dwHighDateTime))
-		return true;
-	
-	std::string cmd = fixRuntimeDefine(info, _define[COMPILE_PARAM_NAME], subFolder);
-	std::string outPut = fixRuntimeDefine(info, _define[OUTPUT_NAME], subFolder);
-	Path outPath = outPut;
+	Path outPath = fixRuntimeDefine(infoSrc, _define[OUTPUT_NAME], subFolder);
 	if (!outPath.getParentDirectory().createDirectory())
 	{
-		DebugString("Can't open output file:\n%s", outPath.getAbsolutePath().c_str());
+		DebugString("Can't create output path:\n%s", outPath.getAbsolutePath().c_str());
 		return false;
 	}
-	if (!callCmdAndWaitFinish(info, cmd, subFolder))
+
+
+	const auto& key = path.getRelativePath();
+	if (!_forceRecompile && checkTimeStamp(key, infoSrc, outPath))
+		return true;
+	
+	std::string cmd = fixRuntimeDefine(infoSrc, _define[COMPILE_PARAM_NAME], subFolder);
+	
+	if (!callCmdAndWaitFinish(infoSrc, cmd, subFolder))
 	{
 		_logDoc.EraseMember(key.c_str());
 		return false;
 	}
 
-	writeTimeStamp(path.getAbsolutePath());
+	writeTimeStamp(path, infoSrc, outPath);
 	return true;
 }
 
@@ -319,43 +321,64 @@ bool CommonCompiler::callCmdAndWaitFinish(const WIN32_FIND_DATA& info, const std
 }
 
 
-bool CommonCompiler::checkTimeStamp(const Path& path, DWORD low, DWORD high)
+bool CommonCompiler::checkTimeStamp(const Path& srcPath, const WIN32_FIND_DATA& srcInfo, const Path& desPath)
 {
-	auto memberIt = _logDoc.FindMember(path.getRelativePath().c_str());
-	if (memberIt != _logDoc.MemberEnd())
-	{
-		Value& logItem = memberIt->value;
-		if (logItem.IsArray() && logItem.Size() == 2)
-		{
-			auto arr = logItem.GetArray();
-			DWORD l = arr[0].GetUint();
-			DWORD h = arr[1].GetUint();
-			if (high == h && low == l)
-				return true;
-		}
-	}
-	return false;
+	auto memberIt = _logDoc.FindMember(srcPath.getRelativePath().c_str());
+	if (memberIt == _logDoc.MemberEnd())
+		return false;
+	Value& logItem = memberIt->value;
+	if (!logItem.IsArray() || logItem.Size() != 4)
+		return false;
+	
+	auto arr = logItem.GetArray();
+	DWORD srcl = arr[0].GetUint();
+	DWORD srch = arr[1].GetUint();
+	if (srcl != srcInfo.ftLastWriteTime.dwLowDateTime || srch != srcInfo.ftLastWriteTime.dwHighDateTime)
+		return false;
+
+	DWORD desl = arr[2].GetUint();
+	DWORD desh = arr[3].GetUint();
+	WIN32_FIND_DATA desInfo;
+	HANDLE findHandle = FindFirstFile(desPath.getAbsolutePath().c_str(), &desInfo);
+	if (findHandle == INVALID_HANDLE_VALUE)
+		return false;
+	FindClose(findHandle);
+	if (desl != desInfo.ftLastWriteTime.dwLowDateTime || desh != desInfo.ftLastWriteTime.dwHighDateTime)
+		return false;
+	
+	return true;
 }
 
-bool CommonCompiler::writeTimeStamp(const Path& path)
+bool CommonCompiler::writeTimeStamp(const Path& srcPath, const WIN32_FIND_DATA& srcInfo, const Path& desPath)
 {
-	WIN32_FIND_DATA att;
-	HANDLE hFind = FindFirstFile(path.getAbsolutePath().c_str(), &att);
+	WIN32_FIND_DATA desInfo;
+	HANDLE hFind = FindFirstFile(desPath.getAbsolutePath().c_str(), &desInfo);
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
-		_logDoc.EraseMember(path.getRelativePath().c_str());
+		auto it = _logDoc.FindMember(srcPath.getRelativePath().c_str());
+		if(it != _logDoc.MemberEnd())
+			_logDoc.EraseMember(it);
 		return false;
 	}
-	Value* arr = nullptr;
-	auto memberIt = _logDoc.FindMember(path.getRelativePath().c_str());
+	FindClose(hFind);
+	auto memberIt = _logDoc.FindMember(srcPath.getRelativePath().c_str());
 	if (memberIt != _logDoc.MemberEnd())
-		arr = &memberIt->value.SetArray();
+	{
+		Value& arr = memberIt->value.SetArray();
+		arr.PushBack((unsigned int)srcInfo.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
+		arr.PushBack((unsigned int)srcInfo.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
+		arr.PushBack((unsigned int)desInfo.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
+		arr.PushBack((unsigned int)desInfo.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
+	}
 	else
-		arr = &_logDoc.AddMember(Value(path.getRelativePath().c_str(), (SizeType)path.getRelativePath().length(), _logDoc.GetAllocator()).Move(), Value(kArrayType).Move(), _logDoc.GetAllocator());
-
-	arr->PushBack((unsigned int)att.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
-	arr->PushBack((unsigned int)att.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
-
+	{
+		Value arr(kArrayType);
+		arr.PushBack((unsigned int)srcInfo.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
+		arr.PushBack((unsigned int)srcInfo.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
+		arr.PushBack((unsigned int)desInfo.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
+		arr.PushBack((unsigned int)desInfo.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
+		_logDoc.AddMember(Value(srcPath.getRelativePath().c_str(), (SizeType)srcPath.getRelativePath().length(), _logDoc.GetAllocator()).Move(), arr.Move(), _logDoc.GetAllocator());
+	}
 	return flushLog();
 }
 

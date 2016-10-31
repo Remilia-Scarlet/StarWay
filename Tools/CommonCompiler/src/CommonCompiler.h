@@ -26,12 +26,11 @@ protected:
 	bool flushLog();
 	std::string fixRuntimeDefine(const WIN32_FIND_DATA& info,const std::string& def, const std::string& subFolder);
 	bool callCmdAndWaitFinish(const WIN32_FIND_DATA& info, const std::string& cmd, const std::string& subFolder);
-	bool checkTimeStamp(const Path& path, DWORD low, DWORD high);
-	bool writeTimeStamp(const Path& path);
+	bool checkTimeStamp(const Path& srcPath, const WIN32_FIND_DATA& srcInfo, const Path& desPath);
+	bool writeTimeStamp(const Path& srcPath, const WIN32_FIND_DATA& srcInfo, const Path& desPath);
 
 	bool _forceRecompile;
 	std::string _configFilePath;
-	std::vector<std::string> _dependency;
 	rapidjson::Document _logDoc;
 	Path _sourcePath;
 	Path _cmdExe;

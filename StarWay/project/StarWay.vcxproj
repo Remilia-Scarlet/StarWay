@@ -381,14 +381,6 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="..\Script\common.lua">
-      <FileType>Document</FileType>
-    </CustomBuild>
-    <CustomBuild Include="..\Script\main_sceen.lua">
-      <FileType>Document</FileType>
-    </CustomBuild>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

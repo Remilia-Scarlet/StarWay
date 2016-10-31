@@ -1,10 +1,11 @@
 {
+  "$(Platform)": "x64",
   "$(GameRoot)": "..\\..",
   "$(SourcePath)": "$(GameRoot)\\StarWay\\Script",
   "$(SourceFilter)": "*.*",
-  "$(TimeStampFile)": "$(GameRoot)\\output\\_temp\\CommonCompiler\\compile.json",
+  "$(TimeStampFile)": "$(GameRoot)\\output\\_temp\\CommonCompiler\\compile_$(Platform).json",
   "$(Dependency)": "",
-  "$(Output)": "$(GameRoot)\\output\\Win32\\Script\\$(SubFolder)\\$(SourceName).out",
-  "$(CompileExe)": "$(GameRoot)\\Tools\\luac\\build\\luac_64.exe",
+  "$(Output)": "$(GameRoot)\\output\\$(Platform)\\Script\\$(SubFolder)\\$(SourceName).out",
+  "$(CompileExe)": "$(GameRoot)\\Tools\\luac\\build\\luac_$(Platform).exe",
   "$(CompileParam)": "-o \"$(Output)\" \"$(SourcePath)\\$(SubFolder)\\$(SourceFullName)\""
 }
