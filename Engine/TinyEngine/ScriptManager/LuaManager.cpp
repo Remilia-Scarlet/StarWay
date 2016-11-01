@@ -1,9 +1,11 @@
 #include "TinyEngine\precomp.h"
 #include "LuaManager.h"
 #include "Ash/FileSystem/Path_Win.h"
+#include <functional>
+#include "LuaFuncs.h"
 
 LuaManager* LuaManager::s_instance = nullptr;
-
+class LuaFuns;
 bool LuaManager::createInstance()
 {
 	TinyAssert(s_instance == nullptr);
@@ -67,6 +69,11 @@ bool LuaManager::pushVal(const LuaVal& val)
 		lua_settop(_LuaState, oldStack);
 		return false;
 	}
+	return true;
+}
+
+bool LuaManager::pushVal()
+{
 	return true;
 }
 
@@ -144,6 +151,7 @@ bool LuaManager::init()
 		luaL_openlibs(_LuaState);
 
 		lua_register(_LuaState, "Print", printVal);
+		LuaFuns::instance()->registerFuncsToLua();
 		return true;
 	} while (0);
 	return false;

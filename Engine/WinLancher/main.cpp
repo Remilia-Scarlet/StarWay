@@ -1,7 +1,6 @@
 #include "WinLancher/precomp.h"
 #include <windows.h>
 #include "TinyEngine/TinyEngine.h"
-#include "StarWay/Scene/MainScene.h"
 #include <d3d11sdklayers.h>
 #include "TinyEngine/Engine/LocalSetting.h"
 #include "TinyEngine/Input/InputManager.h"
@@ -156,11 +155,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		return 0;
 	}
 
-	//create Scene
-	{
-		ScenePtr scene = MainScene::create();
-		Engine::instance()->start(scene);
-	}
+	//start
+	Engine::instance()->start();
 
 	// Main message loop
 	LARGE_INTEGER freq;

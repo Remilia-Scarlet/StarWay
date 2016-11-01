@@ -56,6 +56,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\Vertex\CommonVertex.cpp" />
+    <ClCompile Include="..\Vertex\DefaultVertex.cpp" />
+    <ClCompile Include="..\Vertex\InputLayoutDefine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DX11\DDSTextureLoader.h" />
@@ -72,9 +75,11 @@
     <ClInclude Include="..\gfx\GfxVertexBuffer.h" />
     <ClInclude Include="..\Manager\ConstantBufferManager.h" />
     <ClInclude Include="..\Manager\GraphicMgr.h" />
-    <ClInclude Include="..\Manager\InputLayoutDefine.h" />
     <ClInclude Include="..\Manager\ShaderMgr.h" />
     <ClInclude Include="..\precomp.h" />
+    <ClInclude Include="..\Vertex\CommonVertex.h" />
+    <ClInclude Include="..\Vertex\DefaultVertex.h" />
+    <ClInclude Include="..\Vertex\InputLayoutDefine.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Ash\project\Ash.vcxproj">
@@ -236,7 +241,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxguid.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">

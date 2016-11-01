@@ -44,6 +44,15 @@
     <ClCompile Include="..\DX11\DX11Wrapper.cpp">
       <Filter>DX11</Filter>
     </ClCompile>
+    <ClCompile Include="..\Vertex\CommonVertex.cpp">
+      <Filter>Vertex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Vertex\InputLayoutDefine.cpp">
+      <Filter>Vertex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Vertex\DefaultVertex.cpp">
+      <Filter>Vertex</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -81,9 +90,6 @@
     <ClInclude Include="..\DX11\DX11ConstantBufferManager.h">
       <Filter>DX11</Filter>
     </ClInclude>
-    <ClInclude Include="..\Manager\InputLayoutDefine.h">
-      <Filter>Manager</Filter>
-    </ClInclude>
     <ClInclude Include="..\DX11\DX11Texture.h">
       <Filter>DX11</Filter>
     </ClInclude>
@@ -92,6 +98,15 @@
     </ClInclude>
     <ClInclude Include="..\DX11\DX11Wrapper.h">
       <Filter>DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Vertex\CommonVertex.h">
+      <Filter>Vertex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Vertex\InputLayoutDefine.h">
+      <Filter>Vertex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Vertex\DefaultVertex.h">
+      <Filter>Vertex</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -103,6 +118,9 @@
     </Filter>
     <Filter Include="Manager">
       <UniqueIdentifier>{3af4344e-ff5c-40aa-b6aa-0c136bb80327}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vertex">
+      <UniqueIdentifier>{30613ab7-cdba-4024-85dc-9e5fdaeb4781}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

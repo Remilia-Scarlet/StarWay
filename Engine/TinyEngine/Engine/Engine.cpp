@@ -112,11 +112,9 @@ float Engine::getTime() const
 	return _currentTime;
 }
 
-void Engine::start(ScenePtr scene)
+void Engine::start()
 {
-
-	_currentScene = scene;
-	scene->start();
+	LuaManager::instance()->call("start");
 }
 
 void Engine::drawScene()

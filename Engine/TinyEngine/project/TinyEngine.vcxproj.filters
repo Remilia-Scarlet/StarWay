@@ -152,6 +152,12 @@
     <ClCompile Include="..\ScriptManager\LuaVal.cpp">
       <Filter>ScriptManager</Filter>
     </ClCompile>
+    <ClCompile Include="..\ScriptManager\LuaFuncs.cpp">
+      <Filter>ScriptManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Other\GeometryGenerator.cpp">
+      <Filter>Other</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -294,6 +300,12 @@
     </ClInclude>
     <ClInclude Include="..\ScriptManager\LuaVal.h">
       <Filter>ScriptManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ScriptManager\LuaFuncs.h">
+      <Filter>ScriptManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Other\GeometryGenerator.h">
+      <Filter>Other</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

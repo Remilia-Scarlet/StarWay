@@ -303,6 +303,7 @@
     <ClCompile Include="..\Input\InputManager.cpp" />
     <ClCompile Include="..\Input\Windows\InputManagerWin.cpp" />
     <ClCompile Include="..\Objects\Object.cpp" />
+    <ClCompile Include="..\Other\GeometryGenerator.cpp" />
     <ClCompile Include="..\Other\Timer.cpp" />
     <ClCompile Include="..\Other\TimerManager.cpp" />
     <ClCompile Include="..\precomp.cpp">
@@ -314,6 +315,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\Scene\Scene.cpp" />
+    <ClCompile Include="..\ScriptManager\LuaFuncs.cpp" />
     <ClCompile Include="..\ScriptManager\LuaManager.cpp" />
     <ClCompile Include="..\ScriptManager\LuaVal.cpp" />
   </ItemGroup>
@@ -360,10 +362,12 @@
     <ClInclude Include="..\Input\VirtualButton.h" />
     <ClInclude Include="..\Input\Windows\InputManagerWin.h" />
     <ClInclude Include="..\Objects\Object.h" />
+    <ClInclude Include="..\Other\GeometryGenerator.h" />
     <ClInclude Include="..\Other\Timer.h" />
     <ClInclude Include="..\Other\TimerManager.h" />
     <ClInclude Include="..\precomp.h" />
     <ClInclude Include="..\Scene\Scene.h" />
+    <ClInclude Include="..\ScriptManager\LuaFuncs.h" />
     <ClInclude Include="..\ScriptManager\LuaManager.h" />
     <ClInclude Include="..\ScriptManager\LuaVal.h" />
     <ClInclude Include="..\TinyEngine.h" />

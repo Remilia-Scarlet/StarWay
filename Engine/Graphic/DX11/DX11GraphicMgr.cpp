@@ -7,6 +7,7 @@
 #include "TinyEngine/Engine/LocalSetting.h"
 #include <functional>
 #include "DX11Wrapper.h"
+#include "Graphic/Vertex/InputLayoutDefine.h"
 
 const float DX11GraphicMgr::s_clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 void DX11GraphicMgr::setViewPort(const ViewPort& viewPort)
@@ -111,7 +112,8 @@ bool DX11GraphicMgr::initInputLayout()
 			"{\n"
 			;
 		int valueNumber = 0;
-		for (const InputLayoutStruct& desc : INPUT_LAYOUT_DESCS[i])
+		std::vector<std::vector<InputLayoutStruct> > desc = GetInputLayoutDescs();
+		for (const InputLayoutStruct& desc : desc[i])
 		{
 			layout.push_back({desc._semanticName.c_str(), 0, convertInputLayoutEleTypeFun(desc._type)._format, 0, (UINT)valueNumber, D3D11_INPUT_PER_VERTEX_DATA, 0});
 			shaderCode += convertInputLayoutEleTypeFun(desc._type)._typeInfo;

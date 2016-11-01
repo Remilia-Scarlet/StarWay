@@ -317,8 +317,6 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\graph\StarVertex.cpp" />
-    <ClCompile Include="..\Object\Sun.cpp" />
     <ClCompile Include="..\precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -327,13 +325,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\Scene\MainScene.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\graph\StarVertex.h" />
-    <ClInclude Include="..\Object\Sun.h" />
     <ClInclude Include="..\precomp.h" />
-    <ClInclude Include="..\Scene\MainScene.h" />
     <ClInclude Include="..\shader\common.h" />
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,7 @@
 
 class LuaManager
 {
+	friend class LuaFuns;
 public:
 	static bool createInstance();
 	static LuaManager* instance();
@@ -16,14 +17,6 @@ public:
 	template<typename... Args>
 	std::list<LuaVal> call(const char* funcName, Args... args);
 	
-
-protected:
-	// load all script file under game:Script
-	bool loadFile();
-
-	bool init();
-	std::list<LuaVal> doCall(int oldStackDeep, int paramNum);
-
 	// you can push a LuaVal to the top of stack
 	bool pushVal(const LuaVal& val);
 
@@ -38,6 +31,13 @@ protected:
 
 	// get a value at index. If index is negative, -1 is stack top, -size is stack bottom. If index is non-negative, 1 is statck bottom and size is stack top
 	LuaVal getVal(int index);
+protected:
+	// load all script file under game:Script
+	bool loadFile();
+
+	bool init();
+	std::list<LuaVal> doCall(int oldStackDeep, int paramNum);
+	bool pushVal();
 
 	LuaManager();
 	~LuaManager();

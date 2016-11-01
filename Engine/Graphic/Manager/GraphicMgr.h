@@ -2,7 +2,7 @@
 #include "Graphic/gfx/GfxShaderVertex.h"
 #include "Graphic/gfx/GfxShaderPixel.h"
 #include "Math/vector/Vector.h"
-#include "Graphic/Manager/InputLayoutDefine.h"
+#include "Graphic/Vertex/InputLayoutDefine.h"
 
 #if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
 	class DX11GraphicMgr;
