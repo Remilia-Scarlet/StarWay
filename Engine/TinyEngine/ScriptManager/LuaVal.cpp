@@ -93,7 +93,7 @@ LuaVal::LuaVal(RefCountObj* obj)
 	reset(obj);
 }
 
-LuaVal::LuaVal(std::initializer_list<LuaTableConstructHelper> table)
+LuaVal::LuaVal(std::initializer_list<_K> table)
 {
 	reset(table);
 }
@@ -105,7 +105,7 @@ LuaVal::LuaVal(const LuaVal& other)
 
 LuaVal::LuaVal(LuaVal&& other)
 {
-	reset(other);
+	reset(std::move(other));
 }
 
 
@@ -215,7 +215,7 @@ LuaVal& LuaVal::operator=(RefCountObj* obj)
 	return *this;
 }
 
-LuaVal& LuaVal::operator=(std::initializer_list<LuaTableConstructHelper> table)
+LuaVal& LuaVal::operator=(std::initializer_list<_K> table)
 {
 	reset(table);
 	return *this;
@@ -229,7 +229,7 @@ LuaVal& LuaVal::operator=(const LuaVal& other)
 
 LuaVal& LuaVal::operator=(LuaVal&& other)
 {
-	reset(other);
+	reset(std::move(other));
 	return *this;
 }
 
@@ -422,7 +422,7 @@ void LuaVal::reset(RefCountObj* obj)
 	_data.obj = new RefCountPtr<RefCountObj>(obj);
 }
 
-void LuaVal::reset(std::initializer_list<LuaTableConstructHelper> table)
+void LuaVal::reset(std::initializer_list<_K> table)
 {
 	clear();
 
@@ -432,13 +432,13 @@ void LuaVal::reset(std::initializer_list<LuaTableConstructHelper> table)
 	std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>& dataTab = *((*_data.table).get());
 
 	std::list<int64_t> usedKey;
-	for (const LuaTableConstructHelper& helper : table)
+	for (const _K& helper : table)
 	{
 		const LuaVal& key = helper._key;
 		if (key.getType() == DataType::INT64)
 			usedKey.push_back(key.convertInt64());
 	}
-	for (const LuaTableConstructHelper& helper : table)
+	for (const _K& helper : table)
 	{
 		const LuaVal& key = helper._key;
 		const LuaVal& val = helper._val;
@@ -617,7 +617,7 @@ std::string LuaVal::toString() const
 	case LuaVal::DataType::DOUBLE:
 		return FormatString("%.14g", _data.d);
 	case LuaVal::DataType::STRING:
-		return _data.s;
+		return FormatString("\"%s\"",_data.s);
 	case LuaVal::DataType::REF_OBJ:
 		return FormatString("(Obj:%lX)", (int64_t)(*_data.obj).get());
 	case LuaVal::DataType::TABLE:
@@ -635,7 +635,7 @@ std::string LuaVal::toString() const
 				const LuaVal& val = pair.second;
 				str += getKeyString(key);
 				str += "=";
-				str += getValString(val);
+				str += val.toString();
 			}
 			str += "}";
 			return str;
@@ -954,100 +954,86 @@ std::string LuaVal::getKeyString(const LuaVal& key) const
 	return "";
 }
 
-std::string LuaVal::getValString(const LuaVal& val) const
-{
-	switch (val._type)
-	{
-	case LuaVal::DataType::NIL:
-		return "nil";
-	case LuaVal::DataType::BOOLEAN:
-		return _data.b ? "true" : "false";
-	case LuaVal::DataType::INT64:
-		return FormatString("%ld", val._data.i);
-	case LuaVal::DataType::DOUBLE:
-		return FormatString("%.14g", val._data.d);
-	case LuaVal::DataType::STRING:
-		return FormatString("\"%s\"", val._data.s);
-	case LuaVal::DataType::REF_OBJ:
-		return FormatString("(Obj:%lX)", (int64_t)(*_data.obj).get());
-	case LuaVal::DataType::TABLE:
-		return val.toString();
-	}
-	TinyAssert(false, "unreachable code");
-	return "";
-}
-
-LuaTableConstructHelper::LuaTableConstructHelper(const LuaVal& key, const LuaVal& val) : _key(key), _val(val)
-{
-	TinyAssert(key != LuaVal::NIL, "Key can't be nil!");
-}
-
-LuaTableConstructHelper::LuaTableConstructHelper(std::initializer_list<LuaTableConstructHelper> table) : _key(LuaVal::NIL), _val(table)
+_K::_K(_K&& other)
+	:_key(std::move(other._key))
+	,_val(std::move(other._val))
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(std::nullptr_t nil) : _key(nullptr), _val(nullptr)
+_K::_K(std::initializer_list<_K> table) : _key(LuaVal::NIL), _val(table)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(bool b) : _key(LuaVal::NIL), _val(b)
+_K::_K(std::nullptr_t nil) : _key(nullptr), _val(nullptr)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(int8_t i) : _key(LuaVal::NIL), _val(i)
+_K::_K(bool b) : _key(LuaVal::NIL), _val(b)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(uint8_t i) : _key(LuaVal::NIL), _val(i)
+_K::_K(int8_t i) : _key(LuaVal::NIL), _val(i)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(int16_t i) : _key(LuaVal::NIL), _val(i)
+_K::_K(uint8_t i) : _key(LuaVal::NIL), _val(i)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(uint16_t i) : _key(LuaVal::NIL), _val(i)
+_K::_K(int16_t i) : _key(LuaVal::NIL), _val(i)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(int32_t i) : _key(LuaVal::NIL), _val(i)
+_K::_K(uint16_t i) : _key(LuaVal::NIL), _val(i)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(uint32_t i) : _key(LuaVal::NIL), _val(i)
+_K::_K(int32_t i) : _key(LuaVal::NIL), _val(i)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(int64_t i) : _key(LuaVal::NIL), _val(i)
+_K::_K(uint32_t i) : _key(LuaVal::NIL), _val(i)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(uint64_t i) : _key(LuaVal::NIL), _val(i)
+_K::_K(int64_t i) : _key(LuaVal::NIL), _val(i)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(float f) : _key(LuaVal::NIL), _val(f)
+_K::_K(uint64_t i) : _key(LuaVal::NIL), _val(i)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(double d) : _key(LuaVal::NIL), _val(d)
+_K::_K(float f) : _key(LuaVal::NIL), _val(f)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(const char* s) : _key(LuaVal::NIL), _val(s)
+_K::_K(double d) : _key(LuaVal::NIL), _val(d)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(const std::string& s) : _key(LuaVal::NIL), _val(s)
+_K::_K(const char* s) : _key(LuaVal::NIL), _val(s)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(RefCountObj& obj) : _key(LuaVal::NIL), _val(obj)
+_K::_K(const std::string& s) : _key(LuaVal::NIL), _val(s)
 {
 }
 
-LuaTableConstructHelper::LuaTableConstructHelper(RefCountObj* obj) : _key(LuaVal::NIL), _val(obj)
+_K::_K(RefCountObj& obj) : _key(LuaVal::NIL), _val(obj)
 {
+}
+
+_K::_K(RefCountObj* obj) : _key(LuaVal::NIL), _val(obj)
+{
+}
+
+_K&& _K::operator=(_K&& other)
+{
+	TinyAssert(_key.isNil() && other._key.isNil());
+	_key = std::move(_val);
+	_val = std::move(other._val);
+	return std::move(*this);
 }
 
 LuaValTabIt LuaValTabIt::operator++()

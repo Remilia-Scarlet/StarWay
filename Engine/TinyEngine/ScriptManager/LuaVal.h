@@ -21,24 +21,22 @@
 //
 // table:
 // You can construct table with key-val pair.
-// Notice : in lua, table index starts from 1 not 0.
+// {_K(key) = val} is like lua {[key] = val}
+// For example if you want to construct a table like lua table:
+// {[1] = 999, [2] = "abc", ["x"] = 123, ["y"] = 456, ["tab"] = {[1] = 1,[2] = 2,[3] = 3} }// Notice : in lua, table index starts from 1 not 0.
+// You can construct LuaVal like this:
 // val = {
-//		{1, 1},
-//		{2, "abc"},
-//		{"x", 123},
-//		{"y", 456},
-//		{"tab",{1,2,3}}
+//		_K(1) = 999,
+//		_K(2) = "abc",
+//		_K("x") = 123,
+//		_K("y") = 456,
+//		_K("tab") = {_K(1) = 1,_K(2) = 2,_K(3) = 3}
 // };
-// This is the same as lua table {1,"abc",x=123,y=456,tab={1,2,3}}
-// Index of table is not needed if it increase from 1. The table is the same as below:
-// val = {
-//		1,
-//		"abc",
-//		{"x", 123},
-//		{"y", 456},
-//		{"tab",{1,2,3}}
-// };
-// Notice : the copy constructor and operator== of LuaVal is shadow copy.
+// Just same as lua table, it can be simplified.
+// The upper lua table can be simplified as : {999,"abc",x=123,y=456,tab={1,2,3}}
+// Also, LuaVal can be construct as : val = {999,"abc",_K("x") = 123, _K("y") = 456, _K("tab") = {1,2,3} }
+
+// Notice : the copy constructor and operator== of LuaVal table are shadow copy.
 // For example, you construct a new LuaVal:
 // LuaVal shadowCopy = val;
 // Now, shadowCopy reference to the same table with val.
@@ -47,6 +45,7 @@
 // If you want deep copy, call clone()
 // LuaVal deepCopy = shadowCopy.clone();
 // Now your modification on deepCopy will not affect shadowCopy and val
+// LuaVal string is treated as basical type. The copy constructor and operator== are deep copy.
 //////////////////////////////////////////////////////////////////////////
 
 #include "Ash\RefCountPointer\RefCountPtr.h"
@@ -54,7 +53,7 @@
 #include <memory>
 #include <unordered_map>
 
-struct LuaTableConstructHelper;
+struct _K;
 class LuaValTabIt;
 class ConstLuaValTabIt;
 
@@ -95,7 +94,7 @@ public:
 	LuaVal(RefCountObj* obj);  // obj
 	template <class T>
 	LuaVal(const RefCountPtr<T>& obj);  // obj
-	LuaVal(std::initializer_list<LuaTableConstructHelper> table);//table
+	LuaVal(std::initializer_list<_K> table);//table
 //	LuaVal(const LuaVal& key, const LuaVal& val);//table
 	LuaVal(const LuaVal& other);  // copy
 	LuaVal(LuaVal&& other);  // move
@@ -120,7 +119,7 @@ public:
 	LuaVal& operator=(RefCountObj* obj);  // obj
 	template <class T>
 	LuaVal& operator=(const RefCountPtr<T>& obj);  // obj
-	LuaVal& operator=(std::initializer_list<LuaTableConstructHelper> table);//table
+	LuaVal& operator=(std::initializer_list<_K> table);//table
 	LuaVal& operator=(const LuaVal& other);  // copy
 	LuaVal& operator=(LuaVal&& other);  // move
 
@@ -149,7 +148,7 @@ public:
 	void reset(RefCountObj* obj);  // obj
 	template <class T>
 	void reset(const RefCountPtr<T>& obj);  // obj
-	void reset(std::initializer_list<LuaTableConstructHelper> table);//table
+	void reset(std::initializer_list<_K> table);//table
 	void reset(const LuaVal& other);  // copy
 	void reset(LuaVal&& other);  // move
 
@@ -225,7 +224,6 @@ public:
 protected:
 	void clear();
 	std::string getKeyString(const LuaVal& key) const;
-	std::string getValString(const LuaVal& val) const;
 protected:
 	struct HashFunc
 	{
@@ -299,35 +297,42 @@ RefCountPtr<T> LuaVal::convertRefPtr() const
 	return RefCountPtr<RefCountObj>();
 }
 
-struct LuaTableConstructHelper
+struct _K
 {
-	LuaTableConstructHelper(const LuaVal& key, const LuaVal& val);
-	LuaTableConstructHelper(std::initializer_list<LuaTableConstructHelper> table);
-	LuaTableConstructHelper(std::nullptr_t nil);  // nil
-	LuaTableConstructHelper(bool b);  // boolean
-	LuaTableConstructHelper(int8_t i);  // int
-	LuaTableConstructHelper(uint8_t i);  // int
-	LuaTableConstructHelper(int16_t i);  // int
-	LuaTableConstructHelper(uint16_t i);  // int
-	LuaTableConstructHelper(int32_t i);  // int
-	LuaTableConstructHelper(uint32_t i);  // int
-	LuaTableConstructHelper(int64_t i);  // int
-	LuaTableConstructHelper(uint64_t i);  // int
-	LuaTableConstructHelper(float f);  // number
-	LuaTableConstructHelper(double d);  // number
-	LuaTableConstructHelper(const char* s);  // string
-	LuaTableConstructHelper(const std::string& s);  // string
-	LuaTableConstructHelper(RefCountObj& obj);  // obj
-	LuaTableConstructHelper(RefCountObj* obj);  // obj
+	friend class LuaVal;
+public:
+	_K()= delete;
+	_K(const _K& other)= delete;
+	_K(_K&& other);
+	_K(std::initializer_list<_K> table);
+	_K(std::nullptr_t nil);  // nil
+	_K(bool b);  // boolean
+	_K(int8_t i);  // int
+	_K(uint8_t i);  // int
+	_K(int16_t i);  // int
+	_K(uint16_t i);  // int
+	_K(int32_t i);  // int
+	_K(uint32_t i);  // int
+	_K(int64_t i);  // int
+	_K(uint64_t i);  // int
+	_K(float f);  // number
+	_K(double d);  // number
+	_K(const char* s);  // string
+	_K(const std::string& s);  // string
+	_K(RefCountObj& obj);  // obj
+	_K(RefCountObj* obj);  // obj
 	template <class T>
-	LuaTableConstructHelper(const RefCountPtr<T>& obj);  // obj
+	_K(const RefCountPtr<T>& obj);  // obj
 
+	_K&& operator=(_K&& other);
+	_K& operator=(const _K& other) = delete;
+private:
 	LuaVal _key;
 	LuaVal _val;
 };
 
 template <class T>
-LuaTableConstructHelper::LuaTableConstructHelper(const RefCountPtr<T>& obj)
+_K::_K(const RefCountPtr<T>& obj)
 	: _key(LuaVal::NIL), _val(obj)
 {
 

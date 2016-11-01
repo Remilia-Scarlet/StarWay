@@ -11,6 +11,7 @@
 #include "Ash/CommonFunc.h"
 #include "../Ash/FileSystem/File_Win.h"
 #include "../TinyEngine/ScriptManager/LuaManager.h"
+#include "ThirdParty/rapidjson/document.h"
 
 void Common()
 {
@@ -500,7 +501,7 @@ void TestLuaVal()
 	LuaVal val15(obj.get());
 	LuaVal val16(*obj.get());
 	std::string str5 = val16.toString();
-	LuaVal val17 = {1, {1.1, "mmm"}, "abc", {"1", 234}, {2, 1}, {"x", 123}, {"y", 456}, {"tab", {1, 2, 3}}};
+	LuaVal val17 = {1, _K(1.1) = "mmm", "abc", _K("1") = 234, _K(2) = 1, _K("x") = 123, _K("y") = 456, _K("tab") = {1, 2, 3}};
 	for (auto& pair : val17)
 	{
 		const LuaVal& key = pair.first;
@@ -542,15 +543,17 @@ void TestLuaVal()
 	LuaVal val23 = val21 + val22;
 	LuaVal val24 = val21 - val22;
 
-	std::list<LuaVal> ret = LuaManager::instance()->call("add", 1, 2, "abc", 1.1f, 1.2);
+//	std::list<LuaVal> ret = LuaManager::instance()->call("add", 1, 2.0, "abc", 1.1f, 1.2);
 
 	LuaVal aaasd =  { 123, {1,1,1 } } ;
+	LuaVal aaasds = { _K(123) = { 1,1,1 } };
 	LuaVal asddf = { 1,2,3 };
-	LuaVal dfds = { 1,2 };
+	LuaVal dfdss = { 1,2 };
+	LuaVal dfds = { _K(1)  = 2 };
 	LuaVal fdsa = { 1 };
 
-	std::list<LuaVal> ret3 = LuaManager::instance()->call("Foo2", LuaVal{ "tab",123 });
-	std::list<LuaVal> ret2 = LuaManager::instance()->call("Foo", 123, "abc", 1.1, LuaVal{ "tab",{1,2,3} }, LuaVal{ "mm",999 });
+//	std::list<LuaVal> ret3 = LuaManager::instance()->call("Foo2", LuaVal{ _K("tab")  = 123 });
+//	std::list<LuaVal> ret2 = LuaManager::instance()->call("Foo", 123, "abc", 1.1, LuaVal{ "tab",{1,2,3} }, LuaVal{ "mm",999 });
 
 
 }

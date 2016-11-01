@@ -8,7 +8,7 @@ bool LuaManager::createInstance()
 {
 	TinyAssert(s_instance == nullptr);
 	s_instance = new LuaManager();
-	if (s_instance && s_instance->init())
+	if (s_instance && s_instance->init() && s_instance->loadFile())
 		return true;
 	TINY_SAFE_DELETE(s_instance);
 	return false;
@@ -119,13 +119,18 @@ LuaVal LuaManager::getVal(int index)
 	return v;
 }
 
-bool LuaManager::doFile(const char* fileName)
+bool LuaManager::loadFile()
 {
-	if (luaL_dofile(_LuaState, fileName))
+	Path scriptPath("game:Script");
+	std::list<Path> scripts = scriptPath.getFileList();
+	for (auto& file : scripts)
 	{
-		DebugString("Lua error : %s", lua_tostring(_LuaState, -1));
-		lua_pop(_LuaState, -1);
-		return false;
+		if (luaL_dofile(_LuaState, file.getAbsolutePath().c_str()))
+		{
+			DebugString("Lua error : %s", lua_tostring(_LuaState, -1));
+			lua_pop(_LuaState, -1);
+			return false;
+		}
 	}
 	return true;
 }
@@ -137,12 +142,8 @@ bool LuaManager::init()
 		_LuaState = luaL_newstate();
 		TINY_BREAK_IF(!_LuaState);
 		luaL_openlibs(_LuaState);
-	
-		Path scriptPath("game:Script");
-		std::list<Path> scripts = scriptPath.getFileList();
-		for (auto& file : scripts)
-			doFile(file.getAbsolutePath().c_str());
 
+		lua_register(_LuaState, "Print", printVal);
 		return true;
 	} while (0);
 	return false;
@@ -181,4 +182,18 @@ LuaManager::~LuaManager()
 	if (_LuaState)
 		lua_close(_LuaState);
 	_LuaState = nullptr;
+}
+
+int LuaManager::printVal(lua_State* L)
+{
+	int num = lua_gettop(L);
+	if (num == 0)
+		return 0;
+
+	for (int i = 1; i <= num; ++i)
+	{
+		LuaVal val = LuaManager::instance()->getVal(i);
+		DebugString("Lua info:%s", val.toString().c_str());
+	}
+	return 0;
 }
