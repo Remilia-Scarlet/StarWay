@@ -9,6 +9,7 @@ public:
 
 	bool createManagers();
 	void start();
+	void startScene(const ScenePtr& scene);
 	void cleanUp();
 
 	void mainLoop(float dt);

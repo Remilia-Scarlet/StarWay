@@ -124,6 +124,10 @@ public:
 	inline ValueType& W();
 	inline const ValueType& W() const;
 
+	inline VectorStorage<ValueType, 2> XY() const;
+	inline VectorStorage<ValueType, 2> ZW() const;
+	inline VectorStorage<ValueType, 3> XYZ() const;
+
 	// Rotate a copy vector by quaternion. See also rotateInPlace(). Notice : you must give a normorized quaternion.
 	inline VectorStorage<ValueType, Size> rotate(const QuaternionStorage<ValueType>& normedQuaternion) const;
 

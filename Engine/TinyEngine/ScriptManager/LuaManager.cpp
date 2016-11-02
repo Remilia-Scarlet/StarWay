@@ -28,45 +28,52 @@ void LuaManager::destroyInstance()
 
 bool LuaManager::pushVal(const LuaVal& val)
 {
-	int oldStack = lua_gettop(_LuaState);
+	return _pushVal(_LuaState, val);
+}
+
+bool LuaManager::_pushVal(lua_State* L, const LuaVal& val)
+{
+	int oldStack = lua_gettop(L);
 	switch (val.getType())
 	{
 	case LuaVal::DataType::NIL:
-		lua_pushnil(_LuaState);
+		lua_pushnil(L);
 		break;
 	case LuaVal::DataType::BOOLEAN:
-		lua_pushboolean(_LuaState, val.convertBoolean());
+		lua_pushboolean(L, val.convertBoolean());
 		break;
 	case LuaVal::DataType::INT64:
-		lua_pushinteger(_LuaState, val.convertInt64());
+		lua_pushinteger(L, val.convertInt64());
 		break;
 	case LuaVal::DataType::DOUBLE:
-		lua_pushnumber(_LuaState, val.convertDouble());
+		lua_pushnumber(L, val.convertDouble());
 		break;
 	case LuaVal::DataType::STRING:
-		lua_pushstring(_LuaState, val.convertCharPointer());
+		lua_pushstring(L, val.convertCharPointer());
 		break;
 	case LuaVal::DataType::REF_OBJ:
-		lua_pushlightuserdata(_LuaState, val.convertRefObj());
-		_usingRefObj.push_back(val.convertRefPtr<RefCountObj>());
+		lua_getglobal(L, CPP_LUA_POTABLE);
+		lua_rawgeti(L, -1, lua_Integer(val.convertRefObj()));
+		lua_replace(L, -2);
+		_usingRefObj.push_back(val.convertRefPtr_static<RefCountObj>());
 		break;
 	case LuaVal::DataType::TABLE:
-		lua_newtable(_LuaState);
+		lua_newtable(L);
 		for (auto& pair : val)
 		{
 			pushVal(pair.first);
 			pushVal(pair.second);
-			lua_rawset(_LuaState, -3);
+			lua_rawset(L, -3);
 		}
 		break;
 	default:
 		return false;
 	}
-	int newTop = lua_gettop(_LuaState);
+	int newTop = lua_gettop(L);
 	if (newTop != oldStack + 1)
 	{
 		TinyAssert(false, "lua stack disdtroyed");
-		lua_settop(_LuaState, oldStack);
+		lua_settop(L, oldStack);
 		return false;
 	}
 	return true;
@@ -76,48 +83,66 @@ bool LuaManager::pushVal()
 {
 	return true;
 }
-
 LuaVal LuaManager::getVal(int index)
 {
+	return getVal(_LuaState, index);
+}
+
+lua_State* LuaManager::getLuaMachine()
+{
+	return _LuaState;
+}
+
+LuaVal LuaManager::getVal(lua_State* L, int index)
+{
 	LuaVal v;
-	switch (lua_type(_LuaState, index))
+	switch (lua_type(L, index))
 	{
 	case LUA_TNONE:
 	case LUA_TNIL:
 		;//nothing to do
 		break;
 	case LUA_TBOOLEAN:
-		v = lua_toboolean(_LuaState, 1) == 0 ? false : true;
+		v = lua_toboolean(L, 1) == 0 ? false : true;
 		break;
 	case LUA_TNUMBER:
-		if (lua_isinteger(_LuaState, index))
-			v = lua_tointeger(_LuaState, index);
+		if (lua_isinteger(L, index))
+			v = lua_tointeger(L, index);
 		else
-			v = lua_tonumber(_LuaState, index);
+			v = lua_tonumber(L, index);
 		break;
 	case LUA_TSTRING:
-		v = lua_tostring(_LuaState, index);
+		v = lua_tostring(L, index);
 		break;
 	case LUA_TLIGHTUSERDATA:
 	case LUA_TUSERDATA:
-	{
-		RefCountObj* obj = (RefCountObj*)lua_touserdata(_LuaState, index);
-		v = obj;
-	}
-	break;
-	case LUA_TTABLE:
-	{
-		int tabPos = (index >= 0 ? index : index - 1);
-		lua_pushnil(_LuaState); //key
-		while (lua_next(_LuaState, tabPos) != 0)
 		{
-			LuaVal value = getVal(-1);
-			LuaVal key = getVal(-2);
-			v.setField(key, value);
-			lua_pop(_LuaState, 1);
+			RefCountObj* obj = (RefCountObj*)lua_touserdata(L, index);
+			v = obj;
 		}
-	}
-	break;
+		break;
+	case LUA_TTABLE:
+		{
+			if (lua_getfield(L, index, LUA_CPP_REF_NAME) == LUA_TLIGHTUSERDATA)
+			{
+				RefCountObj* obj = (RefCountObj*)lua_touserdata(L, -1);
+				v = obj;
+				lua_pop(L, 1);
+			}
+			else
+			{
+				int tabPos = (index >= 0 ? index : index - 1);
+				lua_pushnil(L); //key
+				while (lua_next(L, tabPos) != 0)
+				{
+					LuaVal value = getVal(L, -1);
+					LuaVal key = getVal(L, -2);
+					v.setField(key, value);
+					lua_pop(L, 1);
+				}
+			}
+		}
+		break;
 	case LUA_TFUNCTION:
 		break;
 	default:
@@ -151,6 +176,9 @@ bool LuaManager::init()
 		luaL_openlibs(_LuaState);
 
 		lua_register(_LuaState, "Print", printVal);
+		lua_newtable(_LuaState);
+		lua_setglobal(_LuaState, CPP_LUA_POTABLE);
+
 		LuaFuns::instance()->registerFuncsToLua();
 		return true;
 	} while (0);

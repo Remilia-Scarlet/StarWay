@@ -115,6 +115,7 @@ MeshComponentPtr GeometryGenerator::createSphereMeshData(InputLayoutType layoutT
 	else if (layoutType == InputLayoutType::COMMON)
 	{
 		std::vector<CommonVertex> vertexBuffer;
+		vertexBuffer.reserve(pos.size());
 		// Project vertices onto sphere and scale.
 		for (int i = 0; i < int(pos.size()); ++i)
 		{
@@ -125,12 +126,10 @@ MeshComponentPtr GeometryGenerator::createSphereMeshData(InputLayoutType layoutT
 			// Project onto sphere.
 			Vector4 p = radius * normal;
 
-			vertexBuffer[i].pos = { p.X(),p.Y(),p.Z() };
-		//	float theta = MathHelper::AngleFromXY(p.X(), p.Z());
-			float theta = 30;
-
+			float theta = atan2(p.X(), p.Z());
 			float phi = acosf(p.Y() / radius);
-			vertexBuffer[i].uv = { theta / float(2*M_PI), phi / float(M_PI) };
+
+			vertexBuffer.push_back(CommonVertex(p.XYZ(), Vector2(theta / float(2 * M_PI), phi / float(M_PI))));
 		}
 		return MeshComponent::create(layoutType, vertexBuffer, indices, shaderName);
 	}

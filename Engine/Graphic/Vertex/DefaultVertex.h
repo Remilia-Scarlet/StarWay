@@ -7,6 +7,7 @@ struct InputLayoutStruct;
 class DefaultVertex
 {
 public:
+	DefaultVertex() {}
 	DefaultVertex(const Vector3& pos)
 		:pos(pos)
 	{}

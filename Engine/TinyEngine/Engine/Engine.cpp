@@ -11,6 +11,8 @@
 #include "TinyEngine/Other/TimerManager.h"
 #include "TinyEngine/Input/InputManager.h"
 #include "TinyEngine/ScriptManager/LuaManager.h"
+#include "../Other/GeometryGenerator.h"
+#include "../Components/CameraComponent.h"
 
 const int SOLUTION_WIDTH = 640;
 const int SOLUTION_HEIGHT = 480;
@@ -115,6 +117,12 @@ float Engine::getTime() const
 void Engine::start()
 {
 	LuaManager::instance()->call("start");
+}
+
+void Engine::startScene(const ScenePtr& scene)
+{
+	_currentScene = scene;
+	scene->start();
 }
 
 void Engine::drawScene()

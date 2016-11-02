@@ -11,6 +11,8 @@
 #define TINY_SAFE_DELETE(PTR) do{if(PTR != nullptr){delete PTR;PTR = nullptr;}}while(0)
 #define TINY_SAFE_RELEASE(PTR) do{if(PTR != nullptr){PTR->Release();PTR = nullptr;}}while(0)
 
+#define TO_STRING(_NAME_) (#_NAME_)
+
 typedef int64_t ObjectID;
 const static ObjectID INVALID_OBJECT_ID = 0;
 

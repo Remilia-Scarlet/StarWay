@@ -190,7 +190,9 @@ public:
 	std::string		converString() const;
 	RefCountObj*	convertRefObj() const; // Only when type is NIL or REF_OBJ can call this function
 	template<class T>
-	RefCountPtr<T>	convertRefPtr() const; // Only when type is NIL or REF_OBJ can call this function. 
+	RefCountPtr<T>	convertRefPtr_static() const; // Only when type is NIL or REF_OBJ can call this function. StaticCast to T pointer
+	template<class T>
+	RefCountPtr<T>	convertRefPtr_dynamic() const; // Only when type is NIL or REF_OBJ can call this function. DynamicCast to T pointer
 
 	
 	bool isNumber() const;// to check if type is INT64 || DOUBLE
@@ -229,8 +231,25 @@ protected:
 	{
 		size_t operator()(const LuaVal& key) const
 		{
-			static std::hash<int64_t> hash;
-			return hash(key._data.i);
+			switch (key._type)
+			{
+			case DataType::NIL:
+				return 99999999;
+			case DataType::BOOLEAN:
+				return key._data.b ? 1234567 : 7654321;
+			case DataType::INT64:
+				return std::hash<int64_t>()(key._data.i);
+			case DataType::DOUBLE:
+				return std::hash<float>()(float(key._data.d));
+			case DataType::STRING:
+				return std::hash<std::string>()(key._data.s);
+			case DataType::REF_OBJ:
+				return std::hash<void*>()(key._data.obj->get());
+			case DataType::TABLE:
+				return std::hash<void*>()(key._data.table->get());
+			default:
+				return 0;
+			}
 		}
 	};
 	struct CmpFunc
@@ -285,16 +304,29 @@ void LuaVal::reset(const RefCountPtr<T>& obj)
 
 
 template<class T>
-RefCountPtr<T> LuaVal::convertRefPtr() const
+RefCountPtr<T> LuaVal::convertRefPtr_static() const
 {
 	if (_type == DataType::NIL)
-		return RefCountPtr<RefCountObj>();
+		return RefCountPtr<T>();
 
 	if (_type == DataType::REF_OBJ)
-		return RefCountPtr<T>(_data.obj->get());
+		return StaticRefCountCast<T>(*_data.obj);
 
 	TinyAssert(false, "can't convert a LuaVal to RefPtr");
-	return RefCountPtr<RefCountObj>();
+	return RefCountPtr<T>();
+}
+
+template<class T>
+RefCountPtr<T> LuaVal::convertRefPtr_dynamic() const
+{
+	if (_type == DataType::NIL)
+		return RefCountPtr<T>();
+
+	if (_type == DataType::REF_OBJ)
+		return DynamicRefCountCast<T>(*_data.obj);
+
+	TinyAssert(false, "can't convert a LuaVal to RefPtr");
+	return RefCountPtr<T>();
 }
 
 struct _K

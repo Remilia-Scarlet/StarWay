@@ -15,6 +15,13 @@ ObjectPtr Object::create()
 	return ptr;
 }
 
+int Object::L_create(lua_State* L)
+{
+	ObjectPtr ret = Object::create();
+	LuaManager::instance()->pushVal(ret);
+	return 1;
+}
+
 void Object::addChild(ObjectPtr child)
 {
 	if (!child.isValid())
@@ -42,6 +49,20 @@ void Object::addComponent(const BaseComponentPtr& component)
 	}
 	else
 		TinyAssert(false,"Object::addComponent ptr is not valid");
+}
+
+int Object::L_addComponent(lua_State* L)
+{
+	LuaVal obj = LuaManager::getVal(L, 1);
+	LuaVal component = LuaManager::getVal(L, 2);
+	if (!obj.isRefObj() || !component.isRefObj())
+		return LUA_PARAM_ERROR(AddComponent);
+	ObjectPtr objPtr = obj.convertRefPtr_dynamic<Object>();
+	BaseComponentPtr compoPtr = component.convertRefPtr_dynamic<BaseComponent>();
+	if (!objPtr.isValid() || !compoPtr.isValid())
+		return LUA_PARAM_ERROR(AddComponent);
+	objPtr->addComponent(compoPtr);
+	return 0;
 }
 
 BaseComponentPtr Object::getComponent(ObjectID componentId)
@@ -94,6 +115,28 @@ bool Object::getFlag(ObjectFlag flagType)
 	return _flag[static_cast<size_t>(flagType)];
 }
 
+
+bool Object::createLuaObj()
+{
+	lua_State* L = LuaManager::instance()->getLuaMachine();
+	int oldSize = lua_gettop(L);
+	lua_getglobal(L, CPP_LUA_POTABLE);
+	lua_pushinteger(L, lua_Integer(this));
+
+	lua_newtable(L);
+	lua_getglobal(L, TO_STRING(Object));
+	lua_setmetatable(L, -2);
+
+	lua_pushstring(L, LUA_CPP_REF_NAME);
+	lua_pushlightuserdata(L, this);
+	lua_rawset(L, -3);
+
+	lua_rawset(L, -3);
+	lua_pop(L, 1);
+	TinyAssert(oldSize == lua_gettop(L));
+	return true;
+}
+
 void Object::ensureChildMap()
 {
 	if (!_children)
@@ -110,6 +153,7 @@ bool Object::init()
 {
 	do 
 	{
+		TINY_BREAK_IF(!createLuaObj());
 		return true;
 	} while (0);
 	return false;
@@ -120,7 +164,6 @@ Object::Object()
 {
 }
 
-
 Object::~Object()
 {
 	TINY_SAFE_DELETE(_components);
@@ -130,4 +173,15 @@ Object::~Object()
 void Object::setParent(ObjectPtr parent)
 {
 	_parent = parent;
+}
+
+bool Object::createLuaPrototype()
+{
+	PROTOTYPE_PREPARE();
+
+	PROTOTYPE_REGISTER_FUN(create);
+	PROTOTYPE_REGISTER_FUN(addComponent);
+
+	PROTOTYPE_END(Object);
+	return true;
 }

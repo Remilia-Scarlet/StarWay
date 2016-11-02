@@ -2,6 +2,23 @@
 #include "ThirdParty/lua_5_3_3/lua.hpp"
 #include "LuaVal.h"
 
+#define LUA_PARAM_ERROR(_NAME_) luaL_error(L, "function %s param error", #_NAME_)
+static const char* CPP_LUA_POTABLE = "_ObjList";
+static const char* LUA_CPP_REF_NAME = "c_ref";
+
+#define PROTOTYPE_PREPARE()       \
+	lua_State* L = LuaManager::instance()->getLuaMachine();\
+	lua_newtable(L);              \
+	lua_pushstring(L, "__index"); \
+	lua_pushnil(L);               \
+	lua_copy(L, -3, -1);          \
+	lua_rawset(L, -3);
+
+#define PROTOTYPE_REGISTER_FUN(_FUN_NAME_) do {lua_pushstring(L, #_FUN_NAME_);lua_pushcfunction(L, L_##_FUN_NAME_);lua_rawset(L, -3);} while (0)
+
+#define PROTOTYPE_END(_CLASS_NAME_)\
+	lua_setglobal(L, #_CLASS_NAME_);
+
 class LuaManager
 {
 	friend class LuaFuns;
@@ -31,6 +48,10 @@ public:
 
 	// get a value at index. If index is negative, -1 is stack top, -size is stack bottom. If index is non-negative, 1 is statck bottom and size is stack top
 	LuaVal getVal(int index);
+	static LuaVal getVal(lua_State* L, int index);
+
+	// get lua machine
+	lua_State* getLuaMachine();
 protected:
 	// load all script file under game:Script
 	bool loadFile();
@@ -38,6 +59,8 @@ protected:
 	bool init();
 	std::list<LuaVal> doCall(int oldStackDeep, int paramNum);
 	bool pushVal();
+	bool _pushVal(lua_State* L, const LuaVal& val);
+	
 
 	LuaManager();
 	~LuaManager();

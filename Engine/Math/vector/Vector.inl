@@ -383,6 +383,27 @@ const ValueType& VectorStorage<ValueType, Size>::W() const
 }
 
 template <class ValueType, int Size>
+VectorStorage<ValueType, 2> VectorStorage<ValueType, Size>::XY() const
+{
+	static_assert(Size >= 2, "This is only aviliable when Size >= 2");
+	return VectorStorage<ValueType, 2> (_data[0], _data[1]);
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, 2> VectorStorage<ValueType, Size>::ZW() const
+{
+	static_assert(Size >= 4, "This is only aviliable when Size >= 4");
+	return VectorStorage<ValueType, 2> (_data[2], _data[3]);
+}
+
+template <class ValueType, int Size>
+VectorStorage<ValueType, 3> VectorStorage<ValueType, Size>::XYZ() const
+{
+	static_assert(Size >= 3, "This is only aviliable when Size >= 3");
+	return VectorStorage<ValueType, 3>(_data[0], _data[1], _data[2]);
+}
+
+template <class ValueType, int Size>
 VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::rotate(const QuaternionStorage<ValueType>& normedQuaternion) const
 {
 	VectorStorage<ValueType, Size> ret = *this;

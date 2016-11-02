@@ -7,6 +7,7 @@ struct InputLayoutStruct;
 class CommonVertex
 {
 public:
+	CommonVertex() {}
 	CommonVertex(const Vector3& pos, const Vector2& uv)
 		:pos(pos)
 		,uv(uv)
