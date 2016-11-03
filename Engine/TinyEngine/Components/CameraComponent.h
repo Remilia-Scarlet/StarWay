@@ -4,6 +4,7 @@
 #include "Math/matrix/Matrix.h"
 #include "Graphic/Manager/GraphicMgr.h"
 #include "Math/shape/Rect.h"
+#include "TinyEngine/ScriptManager/LuaManager.h"
 
 TINY_DEFINE_PTR(CameraComponent);
 class CameraComponent : public BaseComponent
@@ -13,9 +14,11 @@ public:
 	const float DEFAULT_NEAR_CLIP_PLANE = 0.02f;
 	const float DEFAULT_FAR_CLIP_PLANE = 400.f;
 public:
-	virtual ~CameraComponent();
+	static bool createLuaPrototype();
 public:
 	static CameraComponentPtr create();
+	LUA_CREATE_FUN_P0(CameraComponent);
+
 public:
 	// set field of view, in degree. Default is DEFAULT_FIELD_OF_VIEW
 	void setFiledOfView(float angle);
@@ -46,6 +49,7 @@ public:
 
 protected:
 	CameraComponent();
+	~CameraComponent();
 	virtual bool init();
 
 	float _fieldOfView;

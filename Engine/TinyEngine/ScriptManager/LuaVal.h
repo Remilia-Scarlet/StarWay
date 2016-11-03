@@ -193,6 +193,8 @@ public:
 	RefCountPtr<T>	convertRefPtr_static() const; // Only when type is NIL or REF_OBJ can call this function. StaticCast to T pointer
 	template<class T>
 	RefCountPtr<T>	convertRefPtr_dynamic() const; // Only when type is NIL or REF_OBJ can call this function. DynamicCast to T pointer
+	template<class T>
+	typename std::remove_reference<typename T>::type convert() const;
 
 	
 	bool isNumber() const;// to check if type is INT64 || DOUBLE
@@ -327,6 +329,68 @@ RefCountPtr<T> LuaVal::convertRefPtr_dynamic() const
 
 	TinyAssert(false, "can't convert a LuaVal to RefPtr");
 	return RefCountPtr<T>();
+}
+
+template<int T,class TAR>
+struct LuaValConverter
+{
+};
+
+template<class TAR>
+struct LuaValConverter<int(LuaVal::DataType::BOOLEAN), TAR>
+{
+	static bool convert(const LuaVal& val) { return val.convertBoolean(); }
+};
+
+template<class TAR>
+struct LuaValConverter<int(LuaVal::DataType::INT64), TAR>
+{
+	static int64_t convert(const LuaVal& val) { return val.convertInt64(); }
+};
+
+template<class TAR>
+struct LuaValConverter<int(LuaVal::DataType::STRING), TAR>
+{
+	static const char* convert(const LuaVal& val) { return val.convertCharPointer(); }
+};
+
+template<class TAR>
+struct LuaValConverter<int(LuaVal::DataType::DOUBLE), TAR>
+{
+	static double convert(const LuaVal& val) { return val.convertDouble(); }
+};
+
+template<class TAR>
+struct LuaValConverter<int(LuaVal::DataType::REF_OBJ), TAR>
+{
+	static typename GetRefPtrInner<typename std::remove_cv<typename std::remove_reference<typename TAR>::type>::type>::type convert(const LuaVal& val)
+	{
+		return typename GetRefPtrInner<typename std::remove_cv<typename std::remove_reference<typename TAR>::type>::type>::type(val.convertRefObj());
+	}
+};
+
+template<class T>
+typename std::remove_reference<typename T>::type LuaVal::convert() const
+{
+	constexpr bool isBool = std::is_same<std::remove_cv<std::remove_reference<T>::type>::type, bool>::value;
+	constexpr bool isFloatPoint = std::is_floating_point<T>::value;
+	constexpr bool isIntegral = std::is_integral<T>::value;
+	constexpr bool isString = std::is_same<T, const char*>::value || std::is_same<std::remove_cv<std::remove_reference<T>::type>::type,std::string>::value;
+	constexpr bool isRefObjPointer = std::is_convertible<std::remove_cv<std::remove_reference<T>::type*>::type, RefCountObj*>::value;
+	constexpr bool isRefPtr = std::is_convertible<std::remove_cv<std::remove_reference<T>::type>::type, RefCountPtr<RefCountObj>&>::value;
+
+	constexpr int type =
+		(isBool ? (int)LuaVal::DataType::BOOLEAN
+			: (isString ? (int)LuaVal::DataType::STRING
+				: (isFloatPoint ? (int)LuaVal::DataType::DOUBLE
+					: (isIntegral ? (int)LuaVal::DataType::INT64
+						: (int)LuaVal::DataType::REF_OBJ
+						)
+					)
+				)
+			);
+
+	return std::remove_reference<T>::type(LuaValConverter<type, T>::convert(*this));
 }
 
 struct _K

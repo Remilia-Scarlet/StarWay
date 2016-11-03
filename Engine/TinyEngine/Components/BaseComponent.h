@@ -15,7 +15,7 @@ public:
 	void setOwner(const RefCountPtr<Object> & owner);
 	WeakRefPtr<Object> getOwner();
 protected:
-	BaseComponent();
+	BaseComponent(const char* luaPrototypeName);
 	ObjectID _id;
 	WeakRefPtr<Object> _owner;
 };

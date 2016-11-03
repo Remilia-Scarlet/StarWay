@@ -1,6 +1,7 @@
 #include "Ash/precomp.h"
 #include "RefCountObj.h"
 #include <assert.h>
+#include "TinyEngine/ScriptManager/LuaManager.h"
 
 RefCountObj::RefCountObj()
 {

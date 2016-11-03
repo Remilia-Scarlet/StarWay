@@ -1,14 +1,26 @@
 #include "TinyEngine/precomp.h"
 #include "Scene.h"
+#include "TinyEngine/Engine/Engine.h"
+
+bool Scene::createLuaPrototype()
+{
+	LUA_PROTOTYPE_PREPARE();
+
+	LUA_PROTOTYPE_REGIST_FUN(create);
+	LUA_PROTOTYPE_REGIST_FUN(addObject);
+
+	LUA_PROTOTYPE_END(Scene);
+	return true;
+}
 
 Scene::Scene()
 {
-
+	LUA_GENERATE_OBJ(TO_STRING(Scene));
 }
 
 Scene::~Scene()
 {
-
+	LUA_REMOVE_OBJ();
 }
 
 ScenePtr Scene::create()
@@ -31,6 +43,16 @@ void Scene::addObject(ObjectPtr obj)
 			_cameras[obj->getObjectId()] = obj;
 	}
 
+}
+
+int Scene::L_addObject(lua_State* L)
+{
+	ScenePtr self = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<Scene>();
+	ObjectPtr para1 = LuaManager::instance()->getVal(L, 2).convertRefPtr_dynamic<Object>();
+	if (!self.isValid() || !para1.isValid())
+		return LUA_PARAM_ERROR(Scene::L_addObject);
+	self->addObject(para1);
+	return 0;
 }
 
 void Scene::update(float dt)

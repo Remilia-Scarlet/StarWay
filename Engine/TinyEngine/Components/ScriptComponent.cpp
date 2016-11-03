@@ -2,6 +2,15 @@
 #include "ScriptComponent.h"
 #include "TinyEngine\ScriptManager\LuaManager.h"
 
+void ScriptComponent::createLuaPrototype()
+{
+	LUA_PROTOTYPE_PREPARE();
+
+	LUA_PROTOTYPE_REGIST_FUN(create);
+
+	LUA_PROTOTYPE_END(ScriptComponent);
+}
+
 ScriptComponentPtr ScriptComponent::create(const std::string& luaFunctionTable)
 {
 	ScriptComponent* ret = new ScriptComponent();
@@ -29,6 +38,7 @@ bool ScriptComponent::init(const std::string& luaFunctionTable)
 }
 
 ScriptComponent::ScriptComponent()
+	:BaseComponent(TO_STRING(ScriptComponent))
 {
 
 }

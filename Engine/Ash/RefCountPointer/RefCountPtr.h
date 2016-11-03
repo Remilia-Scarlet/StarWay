@@ -93,7 +93,18 @@ protected:
 	T* _obj;
 	_RefInfo* _refInfo;
 };
+//////////////////////////////////////////////////////////////////////////
+template<class T>
+struct GetRefPtrInner
+{
+	typedef T type;
+};
 
+template<class T>
+struct GetRefPtrInner<RefCountPtr<T>>
+{
+	typedef T* type;
+};
 
 //////////////////////////////////////////////////////////////////////////
 template <class T1, class T2>

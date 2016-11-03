@@ -22,6 +22,8 @@ public:
 
 	// return time in seconds since game started
 	float getTime() const;
+
+	bool isExiting() const;
 protected:
 	Engine();
 	virtual ~Engine();
@@ -36,5 +38,6 @@ protected:
 	ScenePtr _currentScene;
 	float _currentTime;
 	bool _paused;
+	bool _exit;
 };
 

@@ -24,6 +24,7 @@ Engine::Engine()
 	,_desiredFPS(DESIRED_FPS)
 	, _currentTime(0)
 	, _paused(false)
+	, _exit(false)
 {
 }
 
@@ -80,6 +81,7 @@ bool Engine::createManagers()
 }
 void Engine::cleanUp()
 {
+	_exit = true;
 	LuaManager::destroyInstance();
 	TimerManager::destoryInstance();
 	GraphicMgr::destroyInstance();
@@ -112,6 +114,11 @@ void Engine::mainLoop(float dt)
 float Engine::getTime() const
 {
 	return _currentTime;
+}
+
+bool Engine::isExiting() const
+{
+	return _exit;
 }
 
 void Engine::start()

@@ -10,7 +10,7 @@
 
 
 CameraComponent::CameraComponent()
-	:BaseComponent()
+	:BaseComponent(TO_STRING(CameraComponent))
 	, _fieldOfView(DEFAULT_FIELD_OF_VIEW)
 	, _nearClipPlane(DEFAULT_NEAR_CLIP_PLANE)
 	, _farClipPlane(DEFAULT_FAR_CLIP_PLANE)
@@ -20,6 +20,16 @@ CameraComponent::CameraComponent()
 
 CameraComponent::~CameraComponent()
 {
+}
+
+bool CameraComponent::createLuaPrototype()
+{
+	LUA_PROTOTYPE_PREPARE();
+
+	LUA_PROTOTYPE_REGIST_FUN(create);
+
+	LUA_PROTOTYPE_END(CameraComponent);
+	return true;
 }
 
 CameraComponentPtr CameraComponent::create()

@@ -19,13 +19,26 @@ bool TransformComponent::init()
 }
 
 TransformComponent::TransformComponent()
-	:BaseComponent()
+	:BaseComponent(TO_STRING(TransformComponent))
 	, _scale{1.f,1.f,1.f}
 	, _nodeToParentMatrixDirty(true)
 	, _nodeToParentMatrix(Matrix4::identity())
 {
 }
 
+
+bool TransformComponent::createLuaPrototype()
+{
+	LUA_PROTOTYPE_PREPARE();
+
+	LUA_PROTOTYPE_REGIST_FUN(create);
+	LUA_PROTOTYPE_REGIST_FUN(setLocation);
+	LUA_PROTOTYPE_REGIST_FUN(setRotation);
+	LUA_PROTOTYPE_REGIST_FUN(faceToPoint);
+
+	LUA_PROTOTYPE_END(TransformComponent);
+	return true;
+}
 
 TransformComponent::~TransformComponent()
 {
@@ -51,6 +64,8 @@ void TransformComponent::setLocation(float deltaX, float deltaY, float deltaZ)
 	_location.Z() = deltaZ;
 	_nodeToParentMatrixDirty = true;
 }
+
+LUA_MEMBER_FUN_P3R0_IMPL(TransformComponent, setLocation, float, float, float);
 
 const Vector3& TransformComponent::getLocation()
 {
@@ -82,10 +97,19 @@ void TransformComponent::faceToPoint(const Vector3& point)
 	_rotate = Quaternion(Vector3(0,0,1), vecThis2Point);
 }
 
+void TransformComponent::faceToPoint(float x, float y, float z)
+{
+	faceToPoint({ x,y,z });
+}
+
+LUA_MEMBER_FUN_P3R0_IMPL(TransformComponent, faceToPoint, float, float, float);
+
 void TransformComponent::setRotation(float deltaX, float deltaY, float deltaZ)
 {
 	setRotation(Quaternion(deltaX, deltaY, deltaZ));
 }
+
+LUA_MEMBER_FUN_P3R0_IMPL(TransformComponent, setRotation, float, float, float);
 
 void TransformComponent::setRotation(const Quaternion& rotation)
 {

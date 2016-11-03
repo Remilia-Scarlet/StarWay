@@ -28,10 +28,10 @@ void LuaManager::destroyInstance()
 
 bool LuaManager::pushVal(const LuaVal& val)
 {
-	return _pushVal(_LuaState, val);
+	return pushVal(_LuaState, val);
 }
 
-bool LuaManager::_pushVal(lua_State* L, const LuaVal& val)
+bool LuaManager::pushVal(lua_State* L, const LuaVal& val)
 {
 	int oldStack = lua_gettop(L);
 	switch (val.getType())
@@ -123,6 +123,7 @@ LuaVal LuaManager::getVal(lua_State* L, int index)
 		break;
 	case LUA_TTABLE:
 		{
+			int oldTop = lua_gettop(L);
 			if (lua_getfield(L, index, LUA_CPP_REF_NAME) == LUA_TLIGHTUSERDATA)
 			{
 				RefCountObj* obj = (RefCountObj*)lua_touserdata(L, -1);
@@ -131,22 +132,28 @@ LuaVal LuaManager::getVal(lua_State* L, int index)
 			}
 			else
 			{
-				int tabPos = (index >= 0 ? index : index - 1);
+				v = {};
+				lua_pop(L, 1);
 				lua_pushnil(L); //key
+				int tabPos = (index >= 0 ? index : index - 1);
 				while (lua_next(L, tabPos) != 0)
 				{
-					LuaVal value = getVal(L, -1);
 					LuaVal key = getVal(L, -2);
-					v.setField(key, value);
+					if (!(key.isString() && key == "__index"))
+					{
+						LuaVal value = getVal(L, -1);
+						v.setField(key, value);
+					}
 					lua_pop(L, 1);
 				}
 			}
+			TinyAssert(oldTop == lua_gettop(L));
 		}
 		break;
 	case LUA_TFUNCTION:
 		break;
 	default:
-		TinyAssert(false, "LuaManager::getVal failed");
+		TinyAssert(false, "LuaManager::instance()->getVal failed");
 	}
 	return v;
 }

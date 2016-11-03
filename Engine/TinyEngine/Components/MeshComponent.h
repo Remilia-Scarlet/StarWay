@@ -2,10 +2,13 @@
 #include "BaseComponent.h"
 #include "Graphic\gfx\GfxMesh.h"
 #include "Graphic\Manager\ShaderMgr.h"
+#include "TinyEngine\ScriptManager\LuaManager.h"
 
 TINY_DEFINE_PTR(MeshComponent);
 class MeshComponent : public BaseComponent
 {
+public:
+	static bool createLuaPrototype();
 public:
 	virtual ~MeshComponent();
 public:

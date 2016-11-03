@@ -555,7 +555,23 @@ void TestLuaVal()
 //	std::list<LuaVal> ret3 = LuaManager::instance()->call("Foo2", LuaVal{ _K("tab")  = 123 });
 //	std::list<LuaVal> ret2 = LuaManager::instance()->call("Foo", 123, "abc", 1.1, LuaVal{ "tab",{1,2,3} }, LuaVal{ "mm",999 });
 
+	LuaVal sdsadfsa = 1.1f;
+	auto sdf1 = sdsadfsa.convert<bool>();
+	auto sdf7 = sdsadfsa.convert<char>();
+	auto sdf2 = sdsadfsa.convert<int>();
+	auto sdf3 = sdsadfsa.convert<double>();
+//	auto sdf4 = sdsadfsa.convert<const RefCountPtr<RefCountObj>&>();
+//	auto sdf5 = sdsadfsa.convert<RefCountObj*>();
+//	auto sdf6 = sdsadfsa.convert<RefCountPtr<RefCountObj>>();
 
+	sdsadfsa = Object::create();
+	auto sdf11 = sdsadfsa.convert<bool>();
+//	auto sdf77 = sdsadfsa.convert<char>();
+//	auto sdf22 = sdsadfsa.convert<int>();
+//	auto sdf33 = sdsadfsa.convert<double>();
+	auto sdf44 = sdsadfsa.convert<const RefCountPtr<RefCountObj>&>();
+	auto sdf55 = sdsadfsa.convert<RefCountObj*>();
+	auto sdf66 = sdsadfsa.convert<RefCountPtr<RefCountObj>>();
 }
 void TestFileSystem()
 {

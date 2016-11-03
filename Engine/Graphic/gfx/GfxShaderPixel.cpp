@@ -25,7 +25,7 @@ GfxShaderPixelPtr GfxShaderPixel::create(ShaderBlob* blob, CompiledPSShader* sha
 }
 
 GfxShaderPixel::GfxShaderPixel()
-	: _compiledPSShader(nullptr)
+	:_compiledPSShader(nullptr)
 {
 }
 

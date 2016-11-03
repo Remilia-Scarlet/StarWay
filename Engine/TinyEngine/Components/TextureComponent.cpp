@@ -42,10 +42,20 @@ bool TextureComponent::init(const std::string& fileName, const std::string& shad
 }
 
 TextureComponent::TextureComponent()
-	:BaseComponent()
+	:BaseComponent(TO_STRING(TextureComponent))
 {
 }
 
+
+bool TextureComponent::createLuaPrototype()
+{
+	LUA_PROTOTYPE_PREPARE();
+
+	LUA_PROTOTYPE_REGIST_FUN(create);
+
+	LUA_PROTOTYPE_END(TextureComponent);
+	return true;
+}
 
 TextureComponent::~TextureComponent()
 {

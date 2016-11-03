@@ -1,22 +1,16 @@
-
-
---function Object:addComponent(component)
---	addComponent(self,component)
---end
-
 function start()
 	local scene = Scene:create()
 	
 	--add obj
 	local obj = Object:create()
-
-	local meshComponent = Mesh:generateCube(2,2,2)
+	
+	local meshComponent = GenerateCubeMesh(2,2,2)
 	obj:addComponent(meshComponent)
 	
-	local texture = Texture:create("seafloor.dds","ShaderFirst_PS.cso")
+	local texture = TextureComponent:create("seafloor.dds","ShaderFirst_PS.cso")
 	obj:addComponent(texture)
 	
-	local transform = Transform:create()
+	local transform = TransformComponent:create()
 	obj:addComponent(transform)
 	transform:setLocation(1,0,1)
 	transform:setRotation(0,45,0)
@@ -30,10 +24,10 @@ function start()
 	--add camera
 	local cameraObj = Object:create()
 
-	local cameraComponent = Camera:create()
+	local cameraComponent = CameraComponent:create()
 	cameraObj:addComponent(cameraComponent)
 
-	local cametaTran = Transform:create()
+	local cametaTran = TransformComponent:create()
 	cameraObj:addComponent(cametaTran)
 	cametaTran:setLocation(0, 2, -5)
 	cametaTran:faceToPoint(0, 0, 0)
