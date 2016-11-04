@@ -20,7 +20,10 @@ inline void TinyAssert(bool condition, const char* format, ...)
 		assert(false);
 	}
 }
-inline void TinyAssert(bool condition) {assert(condition);}
+inline void TinyAssert(bool condition) 
+{
+	assert(condition);
+}
 #else
-#define TinyAssert(...) 
+#define TinyAssert(...) do{}while(0)
 #endif

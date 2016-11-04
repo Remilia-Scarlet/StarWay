@@ -13,6 +13,7 @@ bool Object::createLuaPrototype()
 
 	LUA_PROTOTYPE_REGIST_FUN(create);
 	LUA_PROTOTYPE_REGIST_FUN(addComponent);
+	LUA_PROTOTYPE_REGIST_FUN(getComponent);
 
 	LUA_PROTOTYPE_END(Object);
 	return true;
@@ -76,6 +77,32 @@ BaseComponentPtr Object::getComponent(ObjectID componentId)
 			return it->second;
 	}
 	return BaseComponentPtr();
+}
+
+BaseComponentPtr Object::getComponent(const std::string& name)
+{
+	if (_components)
+	{
+		for (auto& pair : *_components)
+		{
+			if (pair.second->getName() == name)
+				return pair.second;
+		}
+	}
+	return BaseComponentPtr();
+}
+
+int Object::L_getComponent(lua_State* L)
+{
+	Object* ooo = nullptr;
+	RefCountObj* fdsa = ooo;
+	ObjectPtr self = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<Object>();
+	LuaVal componentName = LuaManager::instance()->getVal(L, 2);
+	if (!self.isValid() || !componentName.isString())
+		return LUA_PARAM_ERROR(Object::L_getComponent);
+
+	LuaManager::instance()->pushVal(L, self->getComponent(componentName.convertCharPointer()));
+	return 1;
 }
 
 void Object::update(float dt)

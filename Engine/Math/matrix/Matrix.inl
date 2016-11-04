@@ -388,7 +388,7 @@ inline MatrixStorage<ValueType, RowNum, ColNum>& MatrixStorage<ValueType, RowNum
 		row = _data._row[i];
 		for (int j = 0; j < ColNum; ++j)
 		{
-			col = other.getPartOfMatix<RowNum, 1>(0, j).getData();
+			col = other.getPartOfMatix<ColNum, 1>(0, j).getData();
 			_data._row[i](j) = row * col;
 		}
 	}

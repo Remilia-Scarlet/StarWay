@@ -1,6 +1,7 @@
 #include "TinyEngine\precomp.h"
 #include "ScriptComponent.h"
 #include "TinyEngine\ScriptManager\LuaManager.h"
+#include "TinyEngine\Objects\Object.h"
 
 void ScriptComponent::createLuaPrototype()
 {
@@ -20,11 +21,23 @@ ScriptComponentPtr ScriptComponent::create(const std::string& luaFunctionTable)
 	return ScriptComponentPtr();
 }
 
+void ScriptComponent::setOwner(const RefCountPtr<Object> & owner)
+{
+	BaseComponent::setOwner(owner);
+
+	lua_State* L = LuaManager::instance()->getLuaMachine();
+	lua_getglobal(L, _luaFunctionTable.c_str());
+	lua_pushstring(L, SCRIPT_COMPONENT_TABLE_OBJ);
+	LuaManager::instance()->pushVal(L, owner);
+	lua_rawset(L, -3);
+	lua_pop(L, 1);
+}
+
 void ScriptComponent::update(float dt)
 {
 	BaseComponent::update(dt);
-	LuaVal callFunc = {"ObjUpdate","update"};
-	LuaManager::instance()->call("CppCallLua", callFunc);
+	LuaVal callFunc = { _luaFunctionTable.c_str(),"update"};
+	LuaManager::instance()->call(CPP_CALL_LUA_NAME, callFunc, dt);
 }
 
 bool ScriptComponent::init(const std::string& luaFunctionTable)

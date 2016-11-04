@@ -4,6 +4,44 @@
 
 PlatformInputManager* InputManager::s_instance = nullptr;
 
+bool InputManager::createLuaPrototype()
+{
+	LUA_PROTOTYPE_PREPARE();
+
+	LUA_PROTOTYPE_REGIST_FUN(getVitualBtnStatus);
+	LUA_PROTOTYPE_REGIST_FUN(getVitualBtnLastStatus);
+	LUA_PROTOTYPE_REGIST_FUN(getVirtualMouseStatus);
+	LUA_PROTOTYPE_REGIST_FUN(getVirtualMouseLastStatus);
+	LUA_PROTOTYPE_REGIST_FUN(getVirtualMousePos);
+
+#define REGIST_VIRTUAL_BTN(NAME) LUA_PROTOTYPE_REGIST_CONST_VAL("BTN_"###NAME, (int)VirtualButton::##NAME);
+	REGIST_VIRTUAL_BTN(A);
+	REGIST_VIRTUAL_BTN(B);
+	REGIST_VIRTUAL_BTN(X);
+	REGIST_VIRTUAL_BTN(Y); 
+	REGIST_VIRTUAL_BTN(L1);
+	REGIST_VIRTUAL_BTN(L2);
+	REGIST_VIRTUAL_BTN(L3);
+	REGIST_VIRTUAL_BTN(R1);
+	REGIST_VIRTUAL_BTN(R2);
+	REGIST_VIRTUAL_BTN(R3);
+	REGIST_VIRTUAL_BTN(Pause);
+	REGIST_VIRTUAL_BTN(Start);
+	REGIST_VIRTUAL_BTN(UP);
+	REGIST_VIRTUAL_BTN(LEFT);
+	REGIST_VIRTUAL_BTN(RIGHT);
+	REGIST_VIRTUAL_BTN(DOWN);
+#undef REGIST_VIRTUAL_BTN
+
+#define REGIST_VIRTUAL_MOUSE(NAME) LUA_PROTOTYPE_REGIST_CONST_VAL("MOUSE_"###NAME, (int)VirtualMouseBtn::##NAME);
+	REGIST_VIRTUAL_MOUSE(L);
+	REGIST_VIRTUAL_MOUSE(R);
+#undef REGIST_VIRTUAL_MOUSE
+
+	LUA_PROTOTYPE_END(InputManager);
+	return true;
+}
+
 bool InputManager::createInstance()
 {
 	TinyAssert(s_instance == nullptr);
@@ -43,6 +81,17 @@ ButtonStatus InputManager::getVitualBtnStatus(VirtualButton btn)
 	return status;
 }
 
+int InputManager::L_getVitualBtnStatus(lua_State* L)
+{
+	LuaVal btn = LuaManager::instance()->getVal(L, 2);
+	if (!btn.isInt64() || btn.convertInt32() < 0 || btn.convertInt32() >= (int)VirtualButton::VIRTUAL_BTN_NUMBER )
+		return LUA_PARAM_ERROR(InputManager::L_getVitualBtnStatus);
+	ButtonStatus status = InputManager::instance()->getVitualBtnStatus((VirtualButton)btn.convertInt32());
+	LuaVal val = {_K("isDown") = status.isDown, _K("timeStamp") = status.timeStamp, _K("isChangedInThisFrame") = status.isChangedInThisFrame};
+	LuaManager::instance()->pushVal(L, val);
+	return 1;
+}
+
 ButtonStatus InputManager::getVitualBtnLastStatus(VirtualButton btn)
 {
 	ButtonStatus status;
@@ -62,10 +111,23 @@ ButtonStatus InputManager::getVitualBtnLastStatus(VirtualButton btn)
 	return status;
 }
 
+int InputManager::L_getVitualBtnLastStatus(lua_State* L)
+{
+	LuaVal btn = LuaManager::instance()->getVal(L, 2);
+	if (!btn.isInt64() || btn.convertInt32() < 0 || btn.convertInt32() >= (int)VirtualButton::VIRTUAL_BTN_NUMBER)
+		return LUA_PARAM_ERROR(InputManager::L_getVitualBtnLastStatus);
+	ButtonStatus status = InputManager::instance()->getVitualBtnLastStatus((VirtualButton)btn.convertInt32());
+	LuaVal val = { _K("isDown") = status.isDown, _K("timeStamp") = status.timeStamp, _K("isChangedInThisFrame") = status.isChangedInThisFrame };
+	LuaManager::instance()->pushVal(L, val);
+	return 1;
+}
+
 Vector2 InputManager::getVirtualMousePos()
 {
 	return _vMousePos;
 }
+
+LUA_SINGLETON_FUN_P0R1_IMPL(InputManager, getVirtualMousePos);
 
 MouseBtnStatus InputManager::getVirtualMouseStatus(VirtualMouseBtn btn)
 {
@@ -88,6 +150,22 @@ MouseBtnStatus InputManager::getVirtualMouseStatus(VirtualMouseBtn btn)
 	return status;
 }
 
+int InputManager::L_getVirtualMouseStatus(lua_State* L)
+{
+	LuaVal btn = LuaManager::instance()->getVal(L, 2);
+	if (!btn.isInt64() || btn.convertInt32() < 0 || btn.convertInt32() >= (int)VirtualMouseBtn::VIRTUAL_MOUSE_BTN_NUM)
+		return LUA_PARAM_ERROR(InputManager::L_getVirtualMouseStatus);
+	MouseBtnStatus status = InputManager::instance()->getVirtualMouseStatus((VirtualMouseBtn)btn.convertInt32());
+	LuaVal val = {
+		_K("isDown") = status.isDown,
+		_K("timeStamp") = status.timeStamp,
+		_K("isChangedInThisFrame") = status.isChangedInThisFrame ,
+		_K("pos") = {_K("x") = status.position.X(),_K("y") = status.position.Y()}
+	};
+	LuaManager::instance()->pushVal(L, val);
+	return 1;
+}
+
 MouseBtnStatus InputManager::getVirtualMouseLastStatus(VirtualMouseBtn btn)
 {
 	MouseBtnStatus status;
@@ -108,6 +186,23 @@ MouseBtnStatus InputManager::getVirtualMouseLastStatus(VirtualMouseBtn btn)
 	}
 	return status;
 }
+
+int InputManager::L_getVirtualMouseLastStatus(lua_State* L)
+{
+	LuaVal btn = LuaManager::instance()->getVal(L, 2);
+	if (!btn.isInt64() || btn.convertInt32() < 0 || btn.convertInt32() >= (int)VirtualMouseBtn::VIRTUAL_MOUSE_BTN_NUM)
+		return LUA_PARAM_ERROR(InputManager::getVirtualMouseLastStatus);
+	MouseBtnStatus status = InputManager::instance()->getVirtualMouseLastStatus((VirtualMouseBtn)btn.convertInt32());
+	LuaVal val = {
+		_K("isDown") = status.isDown,
+		_K("timeStamp") = status.timeStamp,
+		_K("isChangedInThisFrame") = status.isChangedInThisFrame ,
+		_K("pos") = { _K("x") = status.position.X(),_K("y") = status.position.Y() }
+	};
+	LuaManager::instance()->pushVal(L, val);
+	return 1;
+}
+
 
 void InputManager::update(float dt)
 {

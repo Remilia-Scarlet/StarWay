@@ -96,6 +96,23 @@ VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueTyp
 	_data[3] = w;
 }
 
+template<class ValueType, int Size>
+inline VectorStorage<ValueType, Size>::VectorStorage(const LuaVal & luaval)
+{
+	static_assert(Size <= 4, "only Vector size <= 4 can convert");
+	reset();
+	if (!luaval.isTable())
+	{
+		TinyAssert(false, "LuaVal to Vector failed");
+		return;
+	}
+	for (int i = 0; i < Size; ++i)
+	{
+		const char* name[4] = { "x","y","z","w" };
+		_data[i] = luaval.getField(name[i]).convert<ValueType>();
+	}
+}
+
 template <class ValueType, int Size>
 ValueType& VectorStorage<ValueType, Size>::operator()(int index)
 {
@@ -134,6 +151,19 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const 
 {
 	reset(other);
 	return *this;
+}
+
+template<class ValueType, int Size>
+inline VectorStorage<ValueType, Size>::operator LuaVal() const
+{
+	static_assert(Size <= 4, "only Vector size <= 4 can convert");
+	LuaVal ret;
+	for (int i = 0; i < Size; ++i)
+	{
+		const char* name[4] = { "x","y","z","w" };
+		ret.setField(name[i], _data[i]);
+	}
+	return ret;
 }
 
 template <class ValueType, int Size>

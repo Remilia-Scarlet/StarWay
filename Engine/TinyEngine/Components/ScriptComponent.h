@@ -11,6 +11,8 @@ public:
 	static ScriptComponentPtr create(const std::string& luaFunctionTable);
 	LUA_CREATE_FUN_P1(ScriptComponent, const std::string&);
 
+	void setOwner(const RefCountPtr<Object> & owner) override;
+
 	virtual void update(float dt) override;
 protected:
 	virtual bool init(const std::string& luaFunctionTable);

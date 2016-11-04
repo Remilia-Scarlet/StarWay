@@ -307,6 +307,9 @@
     <ClInclude Include="..\Other\GeometryGenerator.h">
       <Filter>Other</Filter>
     </ClInclude>
+    <ClInclude Include="..\ScriptManager\LuaDefines.h">
+      <Filter>ScriptManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Objects">

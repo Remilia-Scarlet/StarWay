@@ -37,6 +37,8 @@ public:
 	template<class T> RefCountPtr<T> getComponent();
 	BaseComponentPtr getComponent(ObjectID componentId);
 	template<class T> std::vector<RefCountPtr<T> > getComponents();
+	BaseComponentPtr getComponent(const std::string& name);
+	static int L_getComponent(lua_State* L);
 
 	virtual void update(float dt);
 	virtual void render();

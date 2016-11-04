@@ -1,5 +1,0 @@
-ObjUpdate = {
-	update = function()
-		
-	end
-}

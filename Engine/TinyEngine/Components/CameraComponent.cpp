@@ -96,8 +96,7 @@ void CameraComponent::render()
 	GraphicMgr::instance()->setViewPort(_viewPort);
 
 	// set view matrix
-	Matrix4 viewMatrix = trans->getRotation().conjugate().toRotationMatrix();
-	viewMatrix.dotInPlace(CreateTranslaionMatrixFromVector(Vector3(0, 0, 0) - trans->getLocation()));
+	Matrix4 viewMatrix = trans->getParentToNodeMatrix();
 	ConstantBufferManager::instance()->setVSMatrix(0, viewMatrix);
 
 	// set proj matrix

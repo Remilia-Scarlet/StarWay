@@ -367,6 +367,7 @@
     <ClInclude Include="..\Other\TimerManager.h" />
     <ClInclude Include="..\precomp.h" />
     <ClInclude Include="..\Scene\Scene.h" />
+    <ClInclude Include="..\ScriptManager\LuaDefines.h" />
     <ClInclude Include="..\ScriptManager\LuaFuncs.h" />
     <ClInclude Include="..\ScriptManager\LuaManager.h" />
     <ClInclude Include="..\ScriptManager\LuaVal.h" />

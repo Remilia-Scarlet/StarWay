@@ -5,6 +5,7 @@
 
 BaseComponent::BaseComponent(const char* luaPrototypeName)
 	:_id(genericObjectId())
+	,_name(luaPrototypeName)
 {
 	LUA_GENERATE_OBJ(luaPrototypeName);
 }
@@ -18,9 +19,16 @@ BaseComponent::~BaseComponent()
 void BaseComponent::setOwner(const RefCountPtr<Object> & owner)
 {
 	_owner = owner;
+	
+	lua_State* L = LuaManager::instance()->getLuaMachine();
+	LuaManager::instance()->pushVal(L, this);
+	LuaManager::instance()->pushVal(L, COMPONENT_PARENT);
+	LuaManager::instance()->pushVal(owner);
+	lua_rawset(L, -3);
+	lua_pop(L, 1);
 }
 
-WeakRefPtr<Object> BaseComponent::getOwner()
+WeakRefPtr<Object> BaseComponent::getOwner() const
 {
 	return _owner;
 }

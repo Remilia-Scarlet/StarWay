@@ -4,6 +4,7 @@
 #include <cmath>
 #include "Math/MathDef.h"
 #include "Math/quaternion/Quaternion.h"
+#include "TinyEngine/ScriptManager/LuaVal.h"
 
 template <class ValueType, int Size>
 class VectorStorage
@@ -34,6 +35,9 @@ public:
 	// Only for Vector4
 	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w);
 
+	// From LuaVal
+	inline VectorStorage(const LuaVal& luaval);
+
 	inline ~VectorStorage() {}
 	// Get an elem
 	inline ValueType& operator()(int index);
@@ -43,6 +47,7 @@ public:
 	inline VectorStorage& operator=(const ValueType* data);
 	inline VectorStorage& operator=(const ValueType& value);
 	inline VectorStorage& operator=(const VectorStorage& other);
+	inline operator LuaVal() const;
 
 	// Reset all elem to 0
 	inline void reset();

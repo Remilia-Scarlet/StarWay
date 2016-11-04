@@ -301,7 +301,7 @@ void LuaVal::reset(const RefCountPtr<T>& obj)
 
 	clear();
 	_type = DataType::REF_OBJ;
-	_data.obj = new RefCountPtr<RefCountObj>(obj);
+	_data.obj = new RefCountPtr<RefCountObj>(obj.get());
 }
 
 
@@ -334,6 +334,7 @@ RefCountPtr<T> LuaVal::convertRefPtr_dynamic() const
 template<int T,class TAR>
 struct LuaValConverter
 {
+	static const LuaVal& convert(const LuaVal& val) { return val; }
 };
 
 template<class TAR>
@@ -372,19 +373,19 @@ struct LuaValConverter<int(LuaVal::DataType::REF_OBJ), TAR>
 template<class T>
 typename std::remove_reference<typename T>::type LuaVal::convert() const
 {
-	constexpr bool isBool = std::is_same<std::remove_cv<std::remove_reference<T>::type>::type, bool>::value;
-	constexpr bool isFloatPoint = std::is_floating_point<T>::value;
-	constexpr bool isIntegral = std::is_integral<T>::value;
-	constexpr bool isString = std::is_same<T, const char*>::value || std::is_same<std::remove_cv<std::remove_reference<T>::type>::type,std::string>::value;
-	constexpr bool isRefObjPointer = std::is_convertible<std::remove_cv<std::remove_reference<T>::type*>::type, RefCountObj*>::value;
-	constexpr bool isRefPtr = std::is_convertible<std::remove_cv<std::remove_reference<T>::type>::type, RefCountPtr<RefCountObj>&>::value;
+	constexpr bool isBool = std::is_same<std::remove_cv<std::remove_reference<typename T>::type>::type, bool>::value;
+	constexpr bool isFloatPoint = std::is_floating_point<typename T>::value;
+	constexpr bool isIntegral = std::is_integral<typename T>::value;
+	constexpr bool isString = std::is_same<typename T, const char*>::value || std::is_same<std::remove_cv<std::remove_reference<typename T>::type>::type,std::string>::value;
+	constexpr bool isPointer = std::is_pointer<typename GetRefPtrInner<std::remove_cv<std::remove_reference<typename T>::type>::type>::type>::value;
 
 	constexpr int type =
 		(isBool ? (int)LuaVal::DataType::BOOLEAN
 			: (isString ? (int)LuaVal::DataType::STRING
 				: (isFloatPoint ? (int)LuaVal::DataType::DOUBLE
 					: (isIntegral ? (int)LuaVal::DataType::INT64
-						: (int)LuaVal::DataType::REF_OBJ
+						: (isPointer ? (int)LuaVal::DataType::REF_OBJ
+							: -1 )
 						)
 					)
 				)

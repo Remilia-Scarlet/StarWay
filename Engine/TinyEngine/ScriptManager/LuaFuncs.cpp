@@ -12,6 +12,7 @@
 #include "TinyEngine/Engine/Engine.h"
 #include "TinyEngine/Components/ScriptComponent.h"
 #include "TinyEngine/Components/LightComponent.h"
+#include "TinyEngine/Input/InputManager.h"
 
 
 #define REGIST_FUN(_NAME_) do{lua_register(LuaManager::instance()->getLuaMachine(), #_NAME_, LuaFuns::_NAME_);}while(0)
@@ -57,9 +58,11 @@ int LuaFuns::StartScene(lua_State* L)
 
 bool LuaFuns::registerFuncsToLua()
 {
+	// object
 	Object::createLuaPrototype();
 	Scene::createLuaPrototype();
 	
+	// component
 	CameraComponent::createLuaPrototype();
 	LightComponent::createLuaPrototype();
 	MeshComponent::createLuaPrototype();
@@ -67,6 +70,10 @@ bool LuaFuns::registerFuncsToLua()
 	TextureComponent::createLuaPrototype();
 	TransformComponent::createLuaPrototype();
 
+	// singleton manager
+	InputManager::createLuaPrototype();
+
+	// global function
 	REGIST_FUN(GenerateCubeMesh);
 	REGIST_FUN(GenerateSphereMesh);
 	REGIST_FUN(StartScene);
