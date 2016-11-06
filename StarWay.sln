@@ -19,15 +19,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "Engine\Math\project
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Durango = Debug|Durango
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
-		Profile|Durango = Profile|Durango
+		Debug|Durango = Debug|Durango
 		Profile|x64 = Profile|x64
 		Profile|x86 = Profile|x86
-		Release|Durango = Release|Durango
+		Profile|Durango = Profile|Durango
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		Release|Durango = Release|Durango
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{7070F552-7801-44E1-923F-5FDD391906BB}.Debug|Durango.ActiveCfg = Debug|Durango

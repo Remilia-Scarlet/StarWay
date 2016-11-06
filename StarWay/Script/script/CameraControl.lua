@@ -27,7 +27,6 @@ function handleMouse(dt)
 			euler.y = euler.y + detaX * CameraControl.TURN_SPEED
 			euler.x = euler.x + detaY * CameraControl.TURN_SPEED
 			transformCom:setEulerRotation(euler)
-			Print(euler)
 			mouseInfo.lastMousePos = currentMousePos
 		else
 			mouseInfo.lastLIsDown = true
@@ -62,7 +61,7 @@ function handleKey(dt)
 	local frontDirection = transformCom:getFrontDirection()
 	local rightDirection = transformCom:getRightDirection()
 	local speed = CameraControl.MOVE_SPEED
-	Print("front",frontDirection)
+--	Print("front",frontDirection)
 	if(btnUpStatus.isDown)then
 		location.x = location.x + frontDirection.x * speed
 		location.y = location.y + frontDirection.y * speed
@@ -83,13 +82,13 @@ function handleKey(dt)
 	end
 	if(btnL1Status.isDown)then
 		local parentUp = transformCom:parentVectorToLocal(Vector3(0,1,0))
-		Print(parentUp)
+		--Print(parentUp)
 		location.x = location.x + parentUp.x * speed
 		location.y = location.y + parentUp.y * speed
 		location.z = location.z + parentUp.z * speed
 	elseif (btnR1Status.isDown) then 
 		local parentUp = transformCom:parentVectorToLocal(Vector3(0,1,0))
-		Print(parentUp)
+		--Print(parentUp)
 		location.x = location.x - parentUp.x * speed
 		location.y = location.y - parentUp.y * speed
 		location.z = location.z - parentUp.z * speed
