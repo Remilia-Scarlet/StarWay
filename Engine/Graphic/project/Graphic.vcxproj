@@ -47,6 +47,7 @@
     <ClCompile Include="..\gfx\GfxVertexBuffer.cpp" />
     <ClCompile Include="..\Manager\ConstantBufferManager.cpp" />
     <ClCompile Include="..\Manager\GraphicMgr.cpp" />
+    <ClCompile Include="..\Manager\LightManager.cpp" />
     <ClCompile Include="..\Manager\ShaderMgr.cpp" />
     <ClCompile Include="..\precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -75,6 +76,7 @@
     <ClInclude Include="..\gfx\GfxVertexBuffer.h" />
     <ClInclude Include="..\Manager\ConstantBufferManager.h" />
     <ClInclude Include="..\Manager\GraphicMgr.h" />
+    <ClInclude Include="..\Manager\LightManager.h" />
     <ClInclude Include="..\Manager\ShaderMgr.h" />
     <ClInclude Include="..\precomp.h" />
     <ClInclude Include="..\Vertex\CommonVertex.h" />

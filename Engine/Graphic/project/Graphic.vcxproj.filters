@@ -53,6 +53,9 @@
     <ClCompile Include="..\Vertex\DefaultVertex.cpp">
       <Filter>Vertex</Filter>
     </ClCompile>
+    <ClCompile Include="..\Manager\LightManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -107,6 +110,9 @@
     </ClInclude>
     <ClInclude Include="..\Vertex\DefaultVertex.h">
       <Filter>Vertex</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Manager\LightManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

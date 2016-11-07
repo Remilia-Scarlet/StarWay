@@ -14,7 +14,8 @@ class BaseComponent;
 
 enum class ObjectFlag
 {
-	IS_CAMERA = 0   //check if this obj is a camera
+	IS_CAMERA,   //check if this obj is a camera
+	IS_LIGHT
 };
 
 class Object : public RefCountObj
@@ -47,6 +48,7 @@ public:
 
 	virtual void setFlag(ObjectFlag flagType, bool val);
 	virtual bool getFlag(ObjectFlag flagType);
+	virtual int getFlags();
 protected:
 	void ensureChildMap();
 	void ensureComponentMap();

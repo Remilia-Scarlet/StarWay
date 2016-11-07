@@ -3,6 +3,7 @@
 #include "Graphic\gfx\GfxMesh.h"
 #include "Graphic\Manager\ShaderMgr.h"
 #include "TinyEngine\ScriptManager\LuaManager.h"
+#include "Math\vector\Vector.h"
 
 TINY_DEFINE_PTR(MeshComponent);
 class MeshComponent : public BaseComponent
@@ -14,6 +15,9 @@ public:
 public:
 	template<class VertexType, class IndiceType>
 	static MeshComponentPtr create(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::vector<IndiceType>& indices,const std::string& vsFilename);
+
+	void setMaterial(const Material& material);
+	const Material& getMaterial();
 
 	virtual void render() override;
 
@@ -53,6 +57,12 @@ bool MeshComponent::init(InputLayoutType inputLayout,const std::vector<VertexTyp
 		TINY_BREAK_IF(!_gfxMesh.isValid());
 		_vertexShader = ShaderMgr::instance()->getVSShader(vsFilename);
 		TINY_BREAK_IF(!_vertexShader.isValid());
+
+		Material defaultMat;
+		defaultMat.ambient = { 0.48f,0.77f,0.46f,1.0f };
+		defaultMat.diffuse = { 0.48f,0.77f,0.46f,1.0f };
+		defaultMat.specular = { 0.2f,0.2f,0.2f,16.0f };
+		setMaterial(defaultMat);
 
 		return true;
 	} while (0);

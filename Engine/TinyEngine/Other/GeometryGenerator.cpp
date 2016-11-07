@@ -44,18 +44,18 @@ MeshComponentPtr GeometryGenerator::createCubeMesh(InputLayoutType layoutType, i
 	else if (layoutType == InputLayoutType::COMMON)
 	{
 		std::vector<CommonVertex> vertexBuffer = {
-			CommonVertex({-w2,h2,-d2}, {0.0f, 0.0f}),  CommonVertex({w2,h2,-d2}, {1.0f, 0.0f}),
-			CommonVertex({w2,h2,d2}, {1.0f, 1.0f}),	CommonVertex({-w2,h2,d2}, {0.0f, 1.0f}),
-			CommonVertex({-w2,-h2,-d2}, {0.0f, 0.0f}), CommonVertex({w2,-h2,-d2}, {1.0f, 0.0f}),
-			CommonVertex({w2,-h2,d2}, {1.0f, 1.0f}),   CommonVertex({-w2,-h2,d2}, {0.0f, 1.0f}),
-			CommonVertex({-w2,-h2,d2}, {0.0f, 0.0f}),  CommonVertex({-w2,-h2,-d2}, {1.0f, 0.0f}),
-			CommonVertex({-w2,h2,-d2}, {1.0f, 1.0f}),  CommonVertex({-w2,h2,d2}, {0.0f, 1.0f}),
-			CommonVertex({w2,-h2,d2}, {0.0f, 0.0f}),   CommonVertex({w2,-h2,-d2}, {1.0f, 0.0f}),
-			CommonVertex({w2,h2,-d2}, {1.0f, 1.0f}),   CommonVertex({w2,h2,d2}, {0.0f, 1.0f}),
-			CommonVertex({-w2,-h2,-d2}, {0.0f, 0.0f}), CommonVertex({w2,-h2,-d2}, {1.0f, 0.0f}),
-			CommonVertex({w2,h2,-d2}, {1.0f, 1.0f}),   CommonVertex({-w2,h2,-d2}, {0.0f, 1.0f}),
-			CommonVertex({-w2,-h2,d2}, {0.0f, 0.0f}),  CommonVertex({w2,-h2,d2}, {1.0f, 0.0f}),
-			CommonVertex({w2,h2,d2}, {1.0f, 1.0f}),	CommonVertex({-w2,h2,d2}, {0.0f, 1.0f}),
+			CommonVertex({-w2, h2, -d2}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}),   CommonVertex({w2, h2, -d2}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}),
+			CommonVertex({w2, h2, d2}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}),	 CommonVertex({-w2, h2, d2}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}),
+			CommonVertex({-w2, -h2, -d2}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}), CommonVertex({w2, -h2, -d2}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}),
+			CommonVertex({w2, -h2, d2}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}),   CommonVertex({-w2, -h2, d2}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}),
+			CommonVertex({-w2, -h2, d2}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}),  CommonVertex({-w2, -h2, -d2}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}),
+			CommonVertex({-w2, h2, -d2}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}),  CommonVertex({-w2, h2, d2}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}),
+			CommonVertex({w2, -h2, d2}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}),	CommonVertex({w2, -h2, -d2}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}),
+			CommonVertex({w2, h2, -d2}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}),	CommonVertex({w2, h2, d2}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}),
+			CommonVertex({-w2, -h2, -d2}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}), CommonVertex({w2, -h2, -d2}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}),
+			CommonVertex({w2, h2, -d2}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}),   CommonVertex({-w2, h2, -d2}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}),
+			CommonVertex({-w2, -h2, d2}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}),   CommonVertex({w2, -h2, d2}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}),
+			CommonVertex({w2, h2, d2}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}),	 CommonVertex({-w2, h2, d2}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}),
 		};
 		return MeshComponent::create(layoutType, vertexBuffer, indices, shaderName);
 	}
@@ -129,7 +129,7 @@ MeshComponentPtr GeometryGenerator::createSphereMeshData(InputLayoutType layoutT
 			float theta = atan2(p.X(), p.Z());
 			float phi = acosf(p.Y() / radius);
 
-			vertexBuffer.push_back(CommonVertex(p.XYZ(), Vector2(theta / float(2 * M_PI), phi / float(M_PI))));
+			vertexBuffer.push_back(CommonVertex(p.XYZ(), normal.XYZ(), Vector2(theta / float(2 * M_PI), phi / float(M_PI))));
 		}
 		return MeshComponent::create(layoutType, vertexBuffer, indices, shaderName);
 	}

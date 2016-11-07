@@ -78,7 +78,7 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	static int L_create(lua_State* L)\
 	{\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
 		LuaManager::instance()->pushVal(CLASS_NAME##::create(p1,p2));\
 		return 1;\
 	}
@@ -87,9 +87,20 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	static int L_create(lua_State* L)\
 	{\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P1_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
 		LuaManager::instance()->pushVal(CLASS_NAME##::create(p1,p2,p3));\
+		return 1;\
+	}
+
+#define LUA_CREATE_FUN_P4(CLASS_NAME,P1_TYPE,P2_TYPE,P3_TYPE,P4_TYPE)\
+	static int L_create(lua_State* L)\
+	{\
+		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
+		P4_TYPE p4 = LuaManager::instance()->getVal(L,5).convert<P4_TYPE>();\
+		LuaManager::instance()->pushVal(CLASS_NAME##::create(p1,p2,p3,p4));\
 		return 1;\
 	}
 
@@ -126,7 +137,7 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	{\
 		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
 		if(self)\
 			self->##FUN_NAME(p1,p2);\
 		return 0;\
@@ -140,8 +151,8 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	{\
 		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P1_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
 		if(self)\
 			self->##FUN_NAME(p1,p2,p3);\
 		return 0;\
@@ -180,7 +191,7 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	{\
 		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
 		if(self)\
 			LuaManager::instance()->pushVal(self->##FUN_NAME(p1,p2));\
 		return 1;\
@@ -194,8 +205,8 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	{\
 		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P1_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
 		if(self)\
 			LuaManager::instance()->pushVal(self->##FUN_NAME(p1,p2,p3));\
 		return 1;\
@@ -229,7 +240,7 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
 		CLASS_NAME##::instance()->##FUN_NAME(p1,p2);\
 		return 0;\
 	}
@@ -241,8 +252,8 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P1_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
 		CLASS_NAME##::instance()->##FUN_NAME(p1,p2,p3);\
 		return 0;\
 	}
@@ -276,7 +287,7 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
 		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(p1,p2));\
 		return 1;\
 	}
@@ -288,8 +299,8 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P1_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P1_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
+		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
+		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
 		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(p1,p2,p3));\
 		return 1;\
 	}

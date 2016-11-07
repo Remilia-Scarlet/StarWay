@@ -293,7 +293,7 @@
     </ClCompile>
     <ClCompile Include="..\Components\BaseComponent.cpp" />
     <ClCompile Include="..\Components\CameraComponent.cpp" />
-    <ClCompile Include="..\Components\LightComponent.cpp" />
+    <ClCompile Include="..\Components\DirectionLightComponent.cpp" />
     <ClCompile Include="..\Components\MeshComponent.cpp" />
     <ClCompile Include="..\Components\ScriptComponent.cpp" />
     <ClCompile Include="..\Components\TextureComponent.cpp" />
@@ -349,7 +349,7 @@
     <ClInclude Include="..\..\ThirdParty\lua_5_3_3\lzio.h" />
     <ClInclude Include="..\Components\BaseComponent.h" />
     <ClInclude Include="..\Components\CameraComponent.h" />
-    <ClInclude Include="..\Components\LightComponent.h" />
+    <ClInclude Include="..\Components\DirectionLightComponent.h" />
     <ClInclude Include="..\Components\MeshComponent.h" />
     <ClInclude Include="..\Components\ScriptComponent.h" />
     <ClInclude Include="..\Components\TextureComponent.h" />

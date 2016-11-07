@@ -8,6 +8,7 @@
 #include <functional>
 #include "DX11Wrapper.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
+#include "Graphic/Manager/LightManager.h"
 
 const float DX11GraphicMgr::s_clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 void DX11GraphicMgr::setViewPort(const ViewPort& viewPort)
@@ -40,6 +41,8 @@ void DX11GraphicMgr::preRender()
 
 	// reset draw index number
 	_drawIndexNumber = 0;
+
+	LightManager::instance()->preRender();
 }
 
 void DX11GraphicMgr::draw()

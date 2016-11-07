@@ -41,6 +41,8 @@ void Scene::addObject(ObjectPtr obj)
 		_objects[obj->getObjectId()] = obj;
 		if (obj->getFlag(ObjectFlag::IS_CAMERA))
 			_cameras[obj->getObjectId()] = obj;
+		if (obj->getFlag(ObjectFlag::IS_LIGHT))
+			_lights[obj->getObjectId()] = obj;
 	}
 
 }
@@ -80,9 +82,21 @@ void Scene::render()
 			it = _cameras.erase(it);
 	}
 
+	for (auto it = _lights.begin(); it != _lights.end();)
+	{
+		if (it->second.isValid())
+		{
+			it->second.lock()->render();
+			++it;
+		}
+		else
+			it = _lights.erase(it);
+	}
+
+
 	for (auto it = _objects.begin(); it != _objects.end(); ++it)
 	{
-		if (it->second.isValid() && !it->second->getFlag(ObjectFlag::IS_CAMERA))
+		if (it->second.isValid() && !(it->second->getFlag(ObjectFlag::IS_CAMERA) || it->second->getFlag(ObjectFlag::IS_LIGHT)))
 		{
 			it->second->render();
 		}

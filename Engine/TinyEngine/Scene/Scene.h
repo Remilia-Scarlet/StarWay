@@ -29,6 +29,7 @@ public:
 protected:
 	virtual bool init();
 	std::unordered_map<ObjectID, ObjectWeakPtr> _cameras;
+	std::unordered_map<ObjectID, ObjectWeakPtr> _lights;
 	std::unordered_map<ObjectID,ObjectPtr> _objects;
 
 };

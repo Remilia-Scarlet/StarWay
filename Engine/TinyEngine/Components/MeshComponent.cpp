@@ -18,6 +18,16 @@ MeshComponent::~MeshComponent()
 {
 }
 
+void MeshComponent::setMaterial(const Material& material)
+{
+	_gfxMesh->setMaterial(material);
+}
+
+const Material& MeshComponent::getMaterial()
+{
+	return _gfxMesh->getMaterial();
+}
+
 void MeshComponent::render()
 {
 	_gfxMesh->render(_vertexShader);

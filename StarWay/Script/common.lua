@@ -13,3 +13,7 @@ end
 function Vector3(x,y,z)
 	return {x=x,y=y,z=z}
 end
+
+function Vector4(x,y,z,w)
+	return {x=x,y=y,z=z,w=w}
+end

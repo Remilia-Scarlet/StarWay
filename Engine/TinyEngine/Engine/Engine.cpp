@@ -11,8 +11,9 @@
 #include "TinyEngine/Other/TimerManager.h"
 #include "TinyEngine/Input/InputManager.h"
 #include "TinyEngine/ScriptManager/LuaManager.h"
-#include "../Other/GeometryGenerator.h"
-#include "../Components/CameraComponent.h"
+#include "TinyEngine/Other/GeometryGenerator.h"
+#include "TinyEngine/Components/CameraComponent.h"
+#include "Graphic/Manager/LightManager.h"
 
 const int SOLUTION_WIDTH = 640;
 const int SOLUTION_HEIGHT = 480;
@@ -73,6 +74,7 @@ bool Engine::createManagers()
 		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionWidth, _solutionHeight, LocalSetting::instance()->getWindowHWND()));
 		TINY_BREAK_IF(!ConstantBufferManager::createInstance());
 		TINY_BREAK_IF(!ShaderMgr::createInstance());
+		TINY_BREAK_IF(!LightManager::createInstance());
 		TINY_BREAK_IF(!InputManager::createInstance());
 		TINY_BREAK_IF(!LuaManager::createInstance());
 		return true;
@@ -87,6 +89,7 @@ void Engine::cleanUp()
 	GraphicMgr::destroyInstance();
 	ConstantBufferManager::destroyInstance();
 	ShaderMgr::destroyInstance();
+	LightManager::destroyInstance();
 	InputManager::destroyInstance();
 }
 void Engine::destroyInstance()

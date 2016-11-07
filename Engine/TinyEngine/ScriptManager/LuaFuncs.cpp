@@ -11,7 +11,7 @@
 #include "TinyEngine/Components/CameraComponent.h"
 #include "TinyEngine/Engine/Engine.h"
 #include "TinyEngine/Components/ScriptComponent.h"
-#include "TinyEngine/Components/LightComponent.h"
+#include "TinyEngine/Components/DirectionLightComponent.h"
 #include "TinyEngine/Input/InputManager.h"
 
 
@@ -64,7 +64,7 @@ bool LuaFuns::registerFuncsToLua()
 	
 	// component
 	CameraComponent::createLuaPrototype();
-	LightComponent::createLuaPrototype();
+	DirectionLightComponent::createLuaPrototype();
 	MeshComponent::createLuaPrototype();
 	ScriptComponent::createLuaPrototype();
 	TextureComponent::createLuaPrototype();

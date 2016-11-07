@@ -102,6 +102,9 @@ void CameraComponent::render()
 	// set proj matrix
 	Matrix4 projMatrix = CreateProjMatrix(_fieldOfView, _viewPort.Width / _viewPort.Height, _nearClipPlane, _farClipPlane);
 	ConstantBufferManager::instance()->setVSMatrix(4, projMatrix);
+
+	// set camera pos
+	ConstantBufferManager::instance()->setPSVector(12, Vector4(trans->getLocation().X(), trans->getLocation().Y(), trans->getLocation().Z(), 0));
 }
 
 bool CameraComponent::init()

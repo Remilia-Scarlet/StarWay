@@ -26,9 +26,6 @@
     <ClCompile Include="..\Components\MeshComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\Components\LightComponent.cpp">
-      <Filter>Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\Components\CameraComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
@@ -158,6 +155,9 @@
     <ClCompile Include="..\Other\GeometryGenerator.cpp">
       <Filter>Other</Filter>
     </ClCompile>
+    <ClCompile Include="..\Components\DirectionLightComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -188,9 +188,6 @@
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\Components\MeshComponent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Components\LightComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="..\Components\CameraComponent.h">
@@ -309,6 +306,9 @@
     </ClInclude>
     <ClInclude Include="..\ScriptManager\LuaDefines.h">
       <Filter>ScriptManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Components\DirectionLightComponent.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -14,8 +14,23 @@ GfxMesh::~GfxMesh()
 {
 }
 
+void GfxMesh::setMaterial(const Material& material)
+{
+	_material = material;
+}
+
+const Material& GfxMesh::getMaterial()
+{
+	return _material;
+}
+
 void GfxMesh::render(const GfxShaderVertexPtr& vs)
 {
+	ConstantBufferManager::instance()->setVSVector(13, _material.ambient);
+	ConstantBufferManager::instance()->setVSVector(14, _material.diffuse);
+	ConstantBufferManager::instance()->setVSVector(15, _material.specular);
+	ConstantBufferManager::instance()->setVSVector(16, _material.reflect);
+
 	GraphicMgr::instance()->setInputLayout(_inputLayoutType);
 	_vertexBuffer.setBuffer();
 	_indexBuffer.setBuffer();

@@ -29,6 +29,12 @@ public:
 
 	virtual void commitVSBuffer() = 0;
 	virtual void commitPSBuffer() = 0;
+
+	virtual void registVSBuffer(int bufferSlot, int size) = 0;
+	virtual void registPSBuffer(int bufferSlot, int size) = 0;
+
+	virtual void setRegistVSBuffer(int bufferSlot, void* data) = 0;
+	virtual void setRegistPSBuffer(int bufferSlot, void* data) = 0;
 protected:
 	virtual bool init() = 0;
 	static ConstantBufferManager* s_instance;

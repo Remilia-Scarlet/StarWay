@@ -5,7 +5,16 @@
 #include "Ash/RefCountPointer/RefCountObj.h"
 #include "GfxIndexBuffer.h"
 #include "GfxVertexBuffer.h"
+#include "Math/vector/Vector.h"
 enum class InputLayoutType;
+
+struct Material
+{
+	Vector4 ambient;
+	Vector4 diffuse;
+	Vector4 specular;
+	Vector4 reflect;
+};
 
 TINY_DEFINE_PTR(GfxMesh);
 class GfxMesh : public RefCountObj
@@ -30,6 +39,9 @@ public:
 	int getVertexNumber() const { return _vertexNumber; }
 	void setVertexNumber(int val) { _vertexNumber = val; }
 
+	void setMaterial(const Material& material);
+	const Material& getMaterial();
+
 	void render(const GfxShaderVertexPtr& vs);
 private:
 	virtual bool init(InputLayoutType inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat);
@@ -37,6 +49,7 @@ private:
 	GfxVertexBuffer _vertexBuffer;
 	GfxIndexBuffer _indexBuffer;
 	int _vertexNumber;
+	Material _material;
 };
 
 

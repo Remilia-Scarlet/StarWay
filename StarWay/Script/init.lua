@@ -34,5 +34,11 @@ function start()
 	
 	scene:addObject(cameraObj);
 	
+	--add light
+	local directionLightObj = Object:create()
+	local directionLightComponent = DirectionLightComponent:create(Vector4(0.2,0.2,0.2,1.0),Vector4(0.5,0.5,0.5,1.0),Vector4(0.5,0.5,0.5,1.0),Vector3(0.57735,-0.57735,0.57735))
+	directionLightObj.addComponent(directionLightComponent)
+	scene:addObject(directionLightObj);
+	
 	StartScene(scene)
 end
