@@ -14,6 +14,9 @@
     <ClInclude Include="..\shape\Rect.h">
       <Filter>rect</Filter>
     </ClInclude>
+    <ClInclude Include="..\splines\Spline.h">
+      <Filter>splines</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vector">
@@ -28,6 +31,9 @@
     <Filter Include="rect">
       <UniqueIdentifier>{405696ef-3eb8-44ad-b7a9-7b86fee74efe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="splines">
+      <UniqueIdentifier>{d4da9f32-8470-454a-94a3-dd52248409d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\vector\Vector.inl">
@@ -41,6 +47,9 @@
     </None>
     <None Include="..\shape\Rect.inl">
       <Filter>rect</Filter>
+    </None>
+    <None Include="..\splines\Spline.inl">
+      <Filter>splines</Filter>
     </None>
   </ItemGroup>
 </Project>

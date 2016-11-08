@@ -31,12 +31,14 @@
     <ClInclude Include="..\matrix\Matrix.h" />
     <ClInclude Include="..\quaternion\Quaternion.h" />
     <ClInclude Include="..\shape\Rect.h" />
+    <ClInclude Include="..\splines\Spline.h" />
     <ClInclude Include="..\vector\Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\matrix\Matrix.inl" />
     <None Include="..\quaternion\Quaternion.inl" />
     <None Include="..\shape\Rect.inl" />
+    <None Include="..\splines\Spline.inl" />
     <None Include="..\vector\Vector.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
