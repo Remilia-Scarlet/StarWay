@@ -17,3 +17,7 @@ end
 function Vector4(x,y,z,w)
 	return {x=x,y=y,z=z,w=w}
 end
+
+function Rect(x,y,w,h)
+	return {x=x,y=y,w=w,h=h}
+end

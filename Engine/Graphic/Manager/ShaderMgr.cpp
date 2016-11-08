@@ -26,24 +26,34 @@ ShaderMgr* ShaderMgr::instance()
 
 GfxShaderVertexPtr ShaderMgr::getVSShader(const std::string& filename)
 {
+	if (filename.empty())
+		return _defaultVShader;
+
 	GfxShaderVertexPtr& shader = _vsShaders[filename];
 	if (!shader.isValid())
 	{
 		GfxShaderVertexPtr p = GfxShaderVertex::create(filename);
 		if (p.isValid())
 			shader = p;
+		else
+			shader = _defaultVShader;
 	}
 	return shader;
 }
 
 GfxShaderPixelPtr ShaderMgr::getPSShader(const std::string& filename)
 {
+	if (filename.empty())
+		return _defaultPShader;
+
 	GfxShaderPixelPtr& shader = _psShaders[filename];
 	if (!shader.isValid())
 	{
 		GfxShaderPixelPtr p = GfxShaderPixel::create(filename);
 		if (p.isValid())
 			shader = p;
+		else
+			shader = _defaultPShader;
 	}
 	return shader;
 }

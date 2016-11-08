@@ -572,6 +572,8 @@ void TestLuaVal()
 	auto sdf44 = sdsadfsa.convert<const RefCountPtr<RefCountObj>&>();
 	auto sdf55 = sdsadfsa.convert<RefCountObj*>();
 	auto sdf66 = sdsadfsa.convert<RefCountPtr<RefCountObj>>();
+
+	LuaVal dasdas = LuaVal(true);
 }
 void TestFileSystem()
 {

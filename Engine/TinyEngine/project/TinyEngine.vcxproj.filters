@@ -315,9 +315,6 @@
     <Filter Include="Objects">
       <UniqueIdentifier>{3102552a-651e-419a-9ce5-b99f4353d228}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Actions">
-      <UniqueIdentifier>{85b47a4b-f23e-45e1-b095-4de4d1b3482d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Components">
       <UniqueIdentifier>{229113c3-80f2-4f7a-b156-8690871b3f5f}</UniqueIdentifier>
     </Filter>

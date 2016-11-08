@@ -22,27 +22,35 @@ public:
 public:
 	// set field of view, in degree. Default is DEFAULT_FIELD_OF_VIEW
 	void setFiledOfView(float angle);
+	LUA_MEMBER_FUN_P1R0_DECL(CameraComponent, setFiledOfView, float);
 
 	// get filed of view in degree.
 	float getFiledOfView() const;
+	LUA_MEMBER_FUN_P0R1_DECL(CameraComponent, getFiledOfView);
 
 	// set far clip plane
 	void setFarClipPlane(float farZ);
+	LUA_MEMBER_FUN_P1R0_DECL(CameraComponent, setFarClipPlane, float);
 
 	// get far clip plane
 	float getFarClipPlane() const;
+	LUA_MEMBER_FUN_P0R1_DECL(CameraComponent, getFarClipPlane);
 
 	// set near clip plane
 	void setNearClipPlane(float nearZ);
+	LUA_MEMBER_FUN_P1R0_DECL(CameraComponent, setNearClipPlane, float);
 
 	// get near clip plane
 	float getNearClipPlane() const;
+	LUA_MEMBER_FUN_P0R1_DECL(CameraComponent, getNearClipPlane);
 
 	// set draw rect in screen
 	void setDrawRectOnScreen(const Rect& rect);
+	LUA_MEMBER_FUN_P1R0_DECL(CameraComponent, setDrawRectOnScreen, const Rect&);
 
 	// get draw rect in screen
 	Rect getRawRectOnScreen() const;
+	LUA_MEMBER_FUN_P0R1_DECL(CameraComponent, getRawRectOnScreen);
 
 public:
 	virtual void render() override;

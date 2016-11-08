@@ -15,6 +15,8 @@ bool Object::createLuaPrototype()
 	LUA_PROTOTYPE_REGIST_FUN(create);
 	LUA_PROTOTYPE_REGIST_FUN(addComponent);
 	LUA_PROTOTYPE_REGIST_FUN(getComponent);
+	LUA_PROTOTYPE_REGIST_FUN(setEnable);
+	LUA_PROTOTYPE_REGIST_FUN(getEnable);
 
 	LUA_PROTOTYPE_END(Object);
 	return true;
@@ -59,17 +61,8 @@ void Object::addComponent(const BaseComponentPtr& component)
 	else
 		TinyAssert(false,"Object::addComponent ptr is not valid");
 }
+
 LUA_MEMBER_FUN_P1R0_IMPL(Object, addComponent, const BaseComponentPtr&)
-//
-//int Object::L_addComponent(lua_State* L)
-//{
-//	ObjectPtr objPtr = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<Object>();
-//	BaseComponentPtr compoPtr = LuaManager::instance()->getVal(L, 2).convertRefPtr_dynamic<BaseComponent>();
-//	if (!objPtr.isValid() || !compoPtr.isValid())
-//		return LUA_PARAM_ERROR(AddComponent);
-//	objPtr->addComponent(compoPtr);
-//	return 0;
-//}
 
 BaseComponentPtr Object::getComponent(ObjectID componentId)
 {
@@ -152,6 +145,20 @@ int Object::getFlags()
 	return (int)_flag.to_ulong();
 }
 
+void Object::setEnable(bool enable)
+{
+	_enable = enable;
+}
+
+LUA_MEMBER_FUN_P1R0_IMPL(Object, setEnable, bool);
+
+bool Object::getEnable()
+{
+	return _enable;
+}
+
+LUA_MEMBER_FUN_P0R1_IMPL(Object, getEnable);
+
 void Object::ensureChildMap()
 {
 	if (!_children)
@@ -175,6 +182,7 @@ bool Object::init()
 
 Object::Object()
 	:_id(genericObjectId())
+	,_enable(true)
 {
 	LUA_GENERATE_OBJ(TO_STRING(Object));
 }

@@ -45,6 +45,9 @@ bool ScriptComponent::init(const std::string& luaFunctionTable)
 	do 
 	{
 		_luaFunctionTable = luaFunctionTable;
+		int type = lua_getglobal(LuaManager::instance()->getLuaMachine(), _luaFunctionTable.c_str());
+		lua_pop(LuaManager::instance()->getLuaMachine(), 1);
+		TINY_BREAK_IF(type == LUA_TNIL);
 		return true;
 	} while (0);
 	return false;

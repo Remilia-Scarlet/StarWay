@@ -49,11 +49,19 @@ public:
 	virtual void setFlag(ObjectFlag flagType, bool val);
 	virtual bool getFlag(ObjectFlag flagType);
 	virtual int getFlags();
+
+	virtual void setEnable(bool enable);
+	LUA_MEMBER_FUN_P1R0_DECL(Object, setEnable, bool);
+
+	virtual bool getEnable();
+	LUA_MEMBER_FUN_P0R1_DECL(Object, getEnable);
 protected:
 	void ensureChildMap();
 	void ensureComponentMap();
 	void Object::setParent(ObjectPtr parent);
 	virtual bool init();
+
+	bool _enable;
 	ObjectID _id;
 	ObjectWeakPtr _parent;
 	std::unordered_map<ObjectID, ObjectPtr>* _children;

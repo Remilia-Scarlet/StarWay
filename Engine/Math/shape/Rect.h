@@ -10,6 +10,8 @@ class RectStorage
 public:
 	// init rect with x=y=w=h=0
 	inline RectStorage();
+
+	inline RectStorage(const LuaVal& luaval);
 	
 	// init rect with x,y,w,h
 	inline RectStorage(ValueType x, ValueType y, ValueType w, ValueType h);
@@ -56,6 +58,8 @@ public:
 	inline void reset(const ValueType& x, const ValueType& y, const ValueType& w, const ValueType& h);
 
 	inline bool equal(const RectStorage<ValueType>& other) const;
+
+	inline operator LuaVal() const;
 protected:
 
 	ValueType _x;

@@ -102,15 +102,15 @@ void Engine::mainLoop(float dt)
 	if (_paused)
 		return;
 	_currentTime += dt;
-	
-	// input
-	InputManager::instance()->update(dt);
 
 	//game logic
 	updateWorld(dt);
 
 	//draw current scene
 	drawScene();
+
+	// input
+	InputManager::instance()->update(dt);
 }
 
 

@@ -1,6 +1,9 @@
 #pragma once
+#include <xtr1common>
+
 
 #define LUA_PARAM_ERROR(NAME) luaL_error(L, "function %s param error", #NAME)
+#define ASSERT_PARAM_NUM(PARAM_NUM) do{if(lua_gettop(L) < PARAM_NUM)return luaL_error(L, "function param number wrong");}while(0)
 static const char* CPP_LUA_POTABLE = "_ObjList";
 static const char* LUA_CPP_REF_NAME = "c_ref";
 static const char* CPP_CALL_LUA_NAME = "CppCallLua";
@@ -62,6 +65,7 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_CREATE_FUN_P0(CLASS_NAME)\
 	static int L_create(lua_State* L)\
 	{\
+		ASSERT_PARAM_NUM(1);\
 		LuaManager::instance()->pushVal(CLASS_NAME##::create());\
 		return 1;\
 	}
@@ -69,38 +73,42 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_CREATE_FUN_P1(CLASS_NAME,P1_TYPE)\
 	static int L_create(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		LuaManager::instance()->pushVal(CLASS_NAME##::create(p1));\
+		ASSERT_PARAM_NUM(2);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		LuaManager::instance()->pushVal(CLASS_NAME##::create(std::move(p1)));\
 		return 1;\
 	}
 
 #define LUA_CREATE_FUN_P2(CLASS_NAME,P1_TYPE,P2_TYPE)\
 	static int L_create(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		LuaManager::instance()->pushVal(CLASS_NAME##::create(p1,p2));\
+		ASSERT_PARAM_NUM(3);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		LuaManager::instance()->pushVal(CLASS_NAME##::create(std::move(p1),std::move(p2)));\
 		return 1;\
 	}
 
 #define LUA_CREATE_FUN_P3(CLASS_NAME,P1_TYPE,P2_TYPE,P3_TYPE)\
 	static int L_create(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
-		LuaManager::instance()->pushVal(CLASS_NAME##::create(p1,p2,p3));\
+		ASSERT_PARAM_NUM(4);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		LuaManager::instance()->pushVal(CLASS_NAME##::create(std::move(p1),std::move(p2),std::move(p3)));\
 		return 1;\
 	}
 
 #define LUA_CREATE_FUN_P4(CLASS_NAME,P1_TYPE,P2_TYPE,P3_TYPE,P4_TYPE)\
 	static int L_create(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
-		P4_TYPE p4 = LuaManager::instance()->getVal(L,5).convert<P4_TYPE>();\
-		LuaManager::instance()->pushVal(CLASS_NAME##::create(p1,p2,p3,p4));\
+		ASSERT_PARAM_NUM(5);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		std::remove_reference<P4_TYPE>::type p4 = LuaManager::instance()->getVal(L,5).convert<std::remove_reference<P4_TYPE>::type>();\
+		LuaManager::instance()->pushVal(CLASS_NAME##::create(std::move(p1),std::move(p2),std::move(p3),std::move(p4)));\
 		return 1;\
 	}
 
@@ -110,8 +118,9 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_MEMBER_FUN_P0R0_IMPL(CLASS_NAME,FUN_NAME)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
-		if(self)\
+		ASSERT_PARAM_NUM(1);\
+		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		if(self.isValid())\
 			self->##FUN_NAME();\
 		return 0;\
 	}
@@ -122,10 +131,11 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_MEMBER_FUN_P1R0_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		if(self)\
-			self->##FUN_NAME(p1);\
+		ASSERT_PARAM_NUM(2);\
+		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		if(self.isValid())\
+			self->##FUN_NAME(std::move(p1));\
 		return 0;\
 	}
 
@@ -135,11 +145,12 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_MEMBER_FUN_P2R0_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE,P2_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		if(self)\
-			self->##FUN_NAME(p1,p2);\
+		ASSERT_PARAM_NUM(3);\
+		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		if(self.isValid())\
+			self->##FUN_NAME(std::move(p1),std::move(p2));\
 		return 0;\
 	}
 
@@ -149,12 +160,13 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_MEMBER_FUN_P3R0_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE,P2_TYPE,P3_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
-		if(self)\
-			self->##FUN_NAME(p1,p2,p3);\
+		ASSERT_PARAM_NUM(4);\
+		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		if(self.isValid())\
+			self->##FUN_NAME(std::move(p1),std::move(p2),std::move(p3));\
 		return 0;\
 	}
 
@@ -164,9 +176,10 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_MEMBER_FUN_P0R1_IMPL(CLASS_NAME,FUN_NAME)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
-		if(self)\
-			LuaManager::instance()->pushVal(self->##FUN_NAME());\
+		ASSERT_PARAM_NUM(1);\
+		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		if(self.isValid())\
+			LuaManager::instance()->pushVal(LuaVal(self->##FUN_NAME()));\
 		return 1;\
 	}
 
@@ -176,10 +189,11 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_MEMBER_FUN_P1R1_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		if(self)\
-			LuaManager::instance()->pushVal(self->##FUN_NAME(p1));\
+		ASSERT_PARAM_NUM(2);\
+		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		if(self.isValid())\
+			LuaManager::instance()->pushVal(LuaVal(self->##FUN_NAME(std::move(p1))));\
 		return 1;\
 	}
 
@@ -189,11 +203,12 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_MEMBER_FUN_P2R1_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE,P2_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		if(self)\
-			LuaManager::instance()->pushVal(self->##FUN_NAME(p1,p2));\
+		ASSERT_PARAM_NUM(3);\
+		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		if(self.isValid())\
+			LuaManager::instance()->pushVal(LuaVal(self->##FUN_NAME(std::move(p1),std::move(p2))));\
 		return 1;\
 	}
 
@@ -203,12 +218,13 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_MEMBER_FUN_P3R1_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE,P2_TYPE,P3_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		CLASS_NAME* self = LuaManager::instance()->getVal(L,1).convert<CLASS_NAME*>();\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
-		if(self)\
-			LuaManager::instance()->pushVal(self->##FUN_NAME(p1,p2,p3));\
+		ASSERT_PARAM_NUM(4);\
+		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		if(self.isValid())\
+			LuaManager::instance()->pushVal(LuaVal(self->##FUN_NAME(std::move(p1),std::move(p2),std::move(p3))));\
 		return 1;\
 	}
 
@@ -218,6 +234,7 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_SINGLETON_FUN_P0R0_IMPL(CLASS_NAME,FUN_NAME)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
+		ASSERT_PARAM_NUM(1);\
 		CLASS_NAME##::instance()->##FUN_NAME();\
 		return 0;\
 	}
@@ -228,8 +245,9 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_SINGLETON_FUN_P1R0_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		CLASS_NAME##::instance()->##FUN_NAME(p1);\
+		ASSERT_PARAM_NUM(2);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		CLASS_NAME##::instance()->##FUN_NAME(std::move(p1));\
 		return 0;\
 	}
 
@@ -239,9 +257,10 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_SINGLETON_FUN_P2R0_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE,P2_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		CLASS_NAME##::instance()->##FUN_NAME(p1,p2);\
+		ASSERT_PARAM_NUM(3);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		CLASS_NAME##::instance()->##FUN_NAME(std::move(p1),std::move(p2));\
 		return 0;\
 	}
 
@@ -251,10 +270,11 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_SINGLETON_FUN_P3R0_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE,P2_TYPE,P3_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
-		CLASS_NAME##::instance()->##FUN_NAME(p1,p2,p3);\
+		ASSERT_PARAM_NUM(4);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		CLASS_NAME##::instance()->##FUN_NAME(std::move(p1),std::move(p2),std::move(p3));\
 		return 0;\
 	}
 
@@ -265,6 +285,7 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_SINGLETON_FUN_P0R1_IMPL(CLASS_NAME,FUN_NAME)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
+		ASSERT_PARAM_NUM(1);\
 		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME());\
 		return 1;\
 	}
@@ -275,8 +296,9 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_SINGLETON_FUN_P1R1_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(p1));\
+		ASSERT_PARAM_NUM(2);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(std::move(p1)));\
 		return 1;\
 	}
 
@@ -286,9 +308,10 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_SINGLETON_FUN_P2R1_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE,P2_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(p1,p2));\
+		ASSERT_PARAM_NUM(3);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(std::move(p1),std::move(p2)));\
 		return 1;\
 	}
 
@@ -298,10 +321,11 @@ static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 #define LUA_SINGLETON_FUN_P3R1_IMPL(CLASS_NAME,FUN_NAME,P1_TYPE,P2_TYPE,P3_TYPE)\
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
-		P1_TYPE p1 = LuaManager::instance()->getVal(L,2).convert<P1_TYPE>();\
-		P2_TYPE p2 = LuaManager::instance()->getVal(L,3).convert<P2_TYPE>();\
-		P3_TYPE p3 = LuaManager::instance()->getVal(L,4).convert<P3_TYPE>();\
-		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(p1,p2,p3));\
+		ASSERT_PARAM_NUM(4);\
+		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(std::move(p1),std::move(p2),std::move(p3)));\
 		return 1;\
 	}
 

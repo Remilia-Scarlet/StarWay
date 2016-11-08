@@ -21,16 +21,22 @@ bool TextureComponent::init(const std::string& fileName, const std::string& shad
 {
 	do 
 	{
-		std::ifstream file(fileName,std::ios::binary);
-		TINY_BREAK_IF(!file);
-		file.seekg(0, std::ios::end);
-		size_t size = (size_t)file.tellg();
-		file.seekg(0, std::ios::beg);
-		char* buffer = new char[size];
-		file.read(buffer, size);
-		file.close();
-		_gfxTexture = GfxTexture::create((uint8_t*)buffer, (int)size, fileName.c_str());
-		delete[] buffer;
+		if (!fileName.empty())
+		{
+			std::ifstream file(fileName, std::ios::binary);
+			TINY_BREAK_IF(!file);
+			file.seekg(0, std::ios::end);
+			size_t size = (size_t)file.tellg();
+			file.seekg(0, std::ios::beg);
+			char* buffer = new char[size];
+			file.read(buffer, size);
+			file.close();
+			_gfxTexture = GfxTexture::create((uint8_t*)buffer, (int)size, fileName.c_str());
+			delete[] buffer;
+		}
+		else
+			_gfxTexture = GfxTexture::create(nullptr, 0, fileName.c_str());
+
 		TINY_BREAK_IF(!_gfxTexture.isValid());
 
 		_psShader = ShaderMgr::instance()->getPSShader(shadeName);

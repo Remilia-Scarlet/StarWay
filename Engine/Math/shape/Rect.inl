@@ -1,3 +1,5 @@
+#include "Rect.h"
+#include "Rect.h"
 //////////////////////////////////////////////////////////////////////////
 // Global functions
 //////////////////////////////////////////////////////////////////////////
@@ -14,6 +16,22 @@ template <class ValueType>
 RectStorage<ValueType>::RectStorage()
 {
 	reset();
+}
+
+template<class ValueType>
+inline RectStorage<ValueType>::RectStorage(const LuaVal & luaval)
+{
+	if (!luaval.isTable())
+	{
+		TinyAssert(false);
+		reset();
+		return;
+	}
+	float x = luaval.getField("x").convertFloat();
+	float y = luaval.getField("y").convertFloat();
+	float w = luaval.getField("w").convertFloat();
+	float h = luaval.getField("h").convertFloat();
+	reset(x, y, w, h);
 }
 
 
@@ -142,4 +160,15 @@ template <class ValueType>
 bool RectStorage<ValueType>::equal(const RectStorage<ValueType>& other) const
 {
 	return isEqual(_x, other._x) && isEqual(_y, other._y) && isEqual(_w, other._w) && isEqual(_h, other._h);
+}
+
+template<class ValueType>
+inline RectStorage<ValueType>::operator LuaVal() const
+{
+	LuaVal ret;
+	ret.setField("x", _x);
+	ret.setField("y", _y);
+	ret.setField("h", _h);
+	ret.setField("w", _w);
+	return ret;
 }

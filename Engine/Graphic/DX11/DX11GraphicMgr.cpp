@@ -20,24 +20,24 @@ void DX11GraphicMgr::setViewPort(const ViewPort& viewPort)
 	vp.MaxDepth = viewPort.MaxDepth;
 	vp.TopLeftX = viewPort.TopLeftX;
 	vp.TopLeftY = viewPort.TopLeftY;
-	_pImmediateContext->RSSetViewports(1, &vp);
+	_immediateContext->RSSetViewports(1, &vp);
 }
 
 ViewPort DX11GraphicMgr::getViewPort()
 {
 	UINT num;
 	D3D11_VIEWPORT vp;
-	_pImmediateContext->RSGetViewports(&num, &vp);
+	_immediateContext->RSGetViewports(&num, &vp);
 	return ViewPort(vp.TopLeftX, vp.TopLeftY, vp.Width, vp.Height, vp.MinDepth, vp.MaxDepth);
 }
 
 void DX11GraphicMgr::preRender()
 {
 	// Clear the back buffer
-	_pImmediateContext->ClearRenderTargetView(_pRenderTargetView, s_clearColor);
+	_immediateContext->ClearRenderTargetView(_renderTargetView, s_clearColor);
 
 	// Clear the depth buffer to 1.0 (max depth)
-	_pImmediateContext->ClearDepthStencilView(_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	_immediateContext->ClearDepthStencilView(_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	// reset draw index number
 	_drawIndexNumber = 0;
@@ -48,7 +48,7 @@ void DX11GraphicMgr::preRender()
 void DX11GraphicMgr::draw()
 {
 	if(_drawIndexNumber > 0)
-		_pImmediateContext->DrawIndexed(_drawIndexNumber, 0, 0);
+		_immediateContext->DrawIndexed(_drawIndexNumber, 0, 0);
 }
 
 void DX11GraphicMgr::render()
@@ -56,13 +56,13 @@ void DX11GraphicMgr::render()
 	
 
 	// Present our back buffer to our front buffer
-	_pSwapChain->Present(0, 0);
+	_swapChain->Present(0, 0);
 }
 
 void DX11GraphicMgr::setPixelShader(const GfxShaderPixelPtr& ps)
 {
 	if (ps.isValid())
-		_pImmediateContext->PSSetShader(ps->getPlatformPSShader(), NULL, 0);
+		_immediateContext->PSSetShader(ps->getPlatformPSShader(), NULL, 0);
 	else
 		TinyAssert(false, "DX11GraphicMgr::setPixelShader no shader");
 }
@@ -70,14 +70,29 @@ void DX11GraphicMgr::setPixelShader(const GfxShaderPixelPtr& ps)
 void DX11GraphicMgr::setVertexShader(const GfxShaderVertexPtr& vs)
 {
 	if(vs.isValid())
-		_pImmediateContext->VSSetShader(vs->getPlatformVSShader(), NULL, 0);
+		_immediateContext->VSSetShader(vs->getPlatformVSShader(), NULL, 0);
 	else
 		TinyAssert(false, "DX11GraphicMgr::setVertexShader no shader");
 }
 
 void DX11GraphicMgr::setInputLayout(InputLayoutType inputLayoutType)
 {
-	_pImmediateContext->IASetInputLayout(_pInputLayout[(size_t)inputLayoutType]);
+	_immediateContext->IASetInputLayout(_inputLayout[(size_t)inputLayoutType]);
+}
+
+void DX11GraphicMgr::setWireFrame(bool isWireFrame)
+{
+	// TODO : optimize state management
+	ID3D11RasterizerState *	rasterState = NULL;
+/*	_immediateContext->RSGetState(&rasterState);*/
+	D3D11_RASTERIZER_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+/*	rasterState->GetDesc(&desc);*/
+	desc.CullMode = D3D11_CULL_NONE;
+	desc.FillMode = isWireFrame ? D3D11_FILL_WIREFRAME : D3D11_FILL_SOLID;
+	_d3dDevice->CreateRasterizerState(&desc, &rasterState);
+	_immediateContext->RSSetState(rasterState);
+	rasterState->Release();
 }
 
 bool DX11GraphicMgr::initInputLayout()
@@ -136,16 +151,16 @@ bool DX11GraphicMgr::initInputLayout()
 		if (successed)
 		{
 			// Create the actual input layout
-			HRESULT hr = _pd3dDevice->CreateInputLayout(layout.data(),
+			HRESULT hr = _d3dDevice->CreateInputLayout(layout.data(),
 				(UINT)layout.size(),
 				shaderBlob->GetBufferPointer(),
 				(UINT)shaderBlob->GetBufferSize(),
-				&_pInputLayout[i]);
+				&_inputLayout[i]);
 			TINY_SAFE_RELEASE(shaderBlob);
 			if (FAILED(hr))
 				ret = false;
 			else
-				SET_DEBUG_NAME(_pInputLayout[i], FormatString("Inputlayout%d", i).c_str());
+				SET_DEBUG_NAME(_inputLayout[i], FormatString("Inputlayout%d", i).c_str());
 		}
 		else
 			ret = false;
@@ -194,23 +209,23 @@ bool DX11GraphicMgr::initDevice(int width, int height, HWND hWnd)
 	{
 		_driverType = driverTypes[driverTypeIndex];
 		hr = D3D11CreateDeviceAndSwapChain(NULL, _driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
-			D3D11_SDK_VERSION, &sd, &_pSwapChain, &_pd3dDevice, &_featureLevel, &_pImmediateContext);
+			D3D11_SDK_VERSION, &sd, &_swapChain, &_d3dDevice, &_featureLevel, &_immediateContext);
 		if (SUCCEEDED(hr))
 			break;
 	}
 	if (FAILED(hr))
 		return false;
-	SET_DEBUG_NAME(_pSwapChain,"SwapChain");
-	SET_DEBUG_NAME(_pd3dDevice,"Device");
-	SET_DEBUG_NAME(_pImmediateContext, "ImmediateContext");
+	SET_DEBUG_NAME(_swapChain,"SwapChain");
+	SET_DEBUG_NAME(_d3dDevice,"Device");
+	SET_DEBUG_NAME(_immediateContext, "ImmediateContext");
 	// Create a render target view
 	ID3D11Texture2D* pBackBuffer = NULL;
-	hr = _pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+	hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 	if (FAILED(hr))
 		return false;
 
-	hr = _pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &_pRenderTargetView);
-	SET_DEBUG_NAME(_pRenderTargetView, "RenderTargetView");
+	hr = _d3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &_renderTargetView);
+	SET_DEBUG_NAME(_renderTargetView, "RenderTargetView");
 	TINY_SAFE_RELEASE(pBackBuffer);
 	if (FAILED(hr))
 		return false;
@@ -234,10 +249,10 @@ bool DX11GraphicMgr::initDepthStencil(int width, int height)
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
-	hr = _pd3dDevice->CreateTexture2D(&descDepth, NULL, &_pDepthStencil);
+	hr = _d3dDevice->CreateTexture2D(&descDepth, NULL, &_depthStencil);
 	if (FAILED(hr))
 		return false;
-	SET_DEBUG_NAME(_pDepthStencil,"DepthStencil");
+	SET_DEBUG_NAME(_depthStencil,"DepthStencil");
 
 	// Create the depth stencil view
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
@@ -245,13 +260,23 @@ bool DX11GraphicMgr::initDepthStencil(int width, int height)
 	descDSV.Format = descDepth.Format;
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
-	hr = _pd3dDevice->CreateDepthStencilView(_pDepthStencil, &descDSV, &_pDepthStencilView);
+	hr = _d3dDevice->CreateDepthStencilView(_depthStencil, &descDSV, &_depthStencilView);
 	if (FAILED(hr))
 		return false;
-	SET_DEBUG_NAME(_pDepthStencilView,"DepthStencilView");
+	SET_DEBUG_NAME(_depthStencilView,"DepthStencilView");
 
-	_pImmediateContext->OMSetRenderTargets(1, &_pRenderTargetView, _pDepthStencilView);
+	_immediateContext->OMSetRenderTargets(1, &_renderTargetView, _depthStencilView);
 	return true;
+}
+
+bool DX11GraphicMgr::initState()
+{
+	do 
+	{
+		HRESULT hr = S_OK;
+		return true;
+	} while (0);
+	return false;
 }
 
 DX11GraphicMgr::DX11GraphicMgr()
@@ -275,7 +300,7 @@ bool DX11GraphicMgr::init(int width, int height, HWND hWnd)
 		TINY_BREAK_IF(!initInputLayout());
 
 #ifdef _DEBUG
-		LocalSetting::instance()->_d3dDevice = _pd3dDevice;
+		LocalSetting::instance()->_d3dDevice = _d3dDevice;
 #endif // _DEBUG
 
 		return true;
@@ -285,16 +310,16 @@ bool DX11GraphicMgr::init(int width, int height, HWND hWnd)
 
 void DX11GraphicMgr::clearDevice()
 {
-	if (_pImmediateContext) _pImmediateContext->ClearState();
+	if (_immediateContext) _immediateContext->ClearState();
 
-	TINY_SAFE_RELEASE(_pDepthStencil);
-	TINY_SAFE_RELEASE(_pDepthStencilView);
-	TINY_SAFE_RELEASE(_pRenderTargetView);
-	TINY_SAFE_RELEASE(_pSwapChain);
-	TINY_SAFE_RELEASE(_pImmediateContext);
-	TINY_SAFE_RELEASE(_pd3dDevice);
+	TINY_SAFE_RELEASE(_depthStencil);
+	TINY_SAFE_RELEASE(_depthStencilView);
+	TINY_SAFE_RELEASE(_renderTargetView);
+	TINY_SAFE_RELEASE(_swapChain);
+	TINY_SAFE_RELEASE(_immediateContext);
+	TINY_SAFE_RELEASE(_d3dDevice);
 	for (int i = 0; i < (int)InputLayoutType::TYPE_NUMBER; ++i)
 	{
-		TINY_SAFE_RELEASE(_pInputLayout[i]);
+		TINY_SAFE_RELEASE(_inputLayout[i]);
 	}
 }

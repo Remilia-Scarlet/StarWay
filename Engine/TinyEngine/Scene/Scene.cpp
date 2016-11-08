@@ -71,35 +71,38 @@ void Scene::update(float dt)
 
 void Scene::render()
 {
-	for (auto it = _cameras.begin(); it != _cameras.end();)
+	for (auto itCamera = _cameras.begin(); itCamera != _cameras.end();)
 	{
-		if (it->second.isValid())
+		if (itCamera->second.isValid())
 		{
-			it->second.lock()->render();
-			++it;
+			ObjectPtr camera = itCamera->second.lock();
+			++itCamera;
+			if(!camera->getEnable())
+				continue;
+			camera->render();
+
+			for (auto itLight = _lights.begin(); itLight != _lights.end();)
+			{
+				if (itLight->second.isValid())
+				{
+					itLight->second.lock()->render();
+					++itLight;
+				}
+				else
+					itLight = _lights.erase(itLight);
+			}
+
+
+			for (auto itObj = _objects.begin(); itObj != _objects.end(); ++itObj)
+			{
+				if (itObj->second.isValid() && !(itObj->second->getFlag(ObjectFlag::IS_CAMERA) || itObj->second->getFlag(ObjectFlag::IS_LIGHT)))
+				{
+					itObj->second->render();
+				}
+			}
 		}
 		else
-			it = _cameras.erase(it);
-	}
-
-	for (auto it = _lights.begin(); it != _lights.end();)
-	{
-		if (it->second.isValid())
-		{
-			it->second.lock()->render();
-			++it;
-		}
-		else
-			it = _lights.erase(it);
-	}
-
-
-	for (auto it = _objects.begin(); it != _objects.end(); ++it)
-	{
-		if (it->second.isValid() && !(it->second->getFlag(ObjectFlag::IS_CAMERA) || it->second->getFlag(ObjectFlag::IS_LIGHT)))
-		{
-			it->second->render();
-		}
+			itCamera = _cameras.erase(itCamera);
 	}
 }
 

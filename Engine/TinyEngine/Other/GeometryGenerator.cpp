@@ -10,11 +10,11 @@ GeometryGenerator* GeometryGenerator::instance()
 	return &s_instance;
 }
 
-MeshComponentPtr GeometryGenerator::createCubeMesh(InputLayoutType layoutType, int width, int height, int lenth)
+MeshComponentPtr GeometryGenerator::createCubeMesh(InputLayoutType layoutType, float width, float height, float lenth)
 {
 	float w2 = width / 2.f;
 	float h2 = height / 2.f;
-	float d2 = height / 2.f;
+	float d2 = lenth / 2.f;
 
 	std::vector<short> indices = {3,  1,  0, 2,  1,  3, //top
 								  6,  4,  5, 7,  4,  6, //bottom

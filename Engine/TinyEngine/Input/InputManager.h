@@ -60,6 +60,7 @@ protected:
 	};
 	VBtnStatusSave _vBtnStatus[(int)VirtualButton::VIRTUAL_BTN_NUMBER][2];
 	std::unordered_map<VirtualButton, VBtnStatusSave> _btnChangeChache;
+	std::unordered_map<VirtualButton, VBtnStatusSave> _btnChangeThisFrameChache;
 
 	struct VMouseStatusSave
 	{
@@ -71,6 +72,7 @@ protected:
 	};
 	VMouseStatusSave _vMouseBtnStatus[(int)VirtualMouseBtn::VIRTUAL_MOUSE_BTN_NUM][2];
 	std::unordered_map<VirtualMouseBtn, VMouseStatusSave> _mouseBtnChangeChache;
+	std::unordered_map<VirtualMouseBtn, VMouseStatusSave> _mouseBtnChangeThisFrameChache;
 
 	Vector2 _vMousePos;
 protected:

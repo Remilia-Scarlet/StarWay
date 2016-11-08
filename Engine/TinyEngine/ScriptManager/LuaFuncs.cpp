@@ -31,7 +31,7 @@ int LuaFuns::GenerateCubeMesh(lua_State* L)
 	LuaVal l = getVal(L, 3);
 	if (!w.isNumber() || !h.isNumber() || !l.isNumber())
 		return LUA_PARAM_ERROR(GenerateCubeMesh);
-	MeshComponentPtr mesh = GeometryGenerator::instance()->createCubeMesh(InputLayoutType::COMMON, w.convertInt32(), h.convertInt32(), l.convertInt32());
+	MeshComponentPtr mesh = GeometryGenerator::instance()->createCubeMesh(InputLayoutType::COMMON, w.convertFloat(), h.convertFloat(), l.convertFloat());
 	pushVal(L, mesh);
 	return 1;
 }

@@ -28,7 +28,7 @@ public:
 	virtual bool start() { return true; }
 protected:
 	virtual bool init();
-	std::unordered_map<ObjectID, ObjectWeakPtr> _cameras;
+	std::map<ObjectID, ObjectWeakPtr> _cameras;//we need to sort cameras for draw
 	std::unordered_map<ObjectID, ObjectWeakPtr> _lights;
 	std::unordered_map<ObjectID,ObjectPtr> _objects;
 

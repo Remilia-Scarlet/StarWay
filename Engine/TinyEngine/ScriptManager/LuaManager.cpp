@@ -103,7 +103,7 @@ LuaVal LuaManager::getVal(lua_State* L, int index)
 		;//nothing to do
 		break;
 	case LUA_TBOOLEAN:
-		v = lua_toboolean(L, 1) == 0 ? false : true;
+		v = lua_toboolean(L, index) == 0 ? false : true;
 		break;
 	case LUA_TNUMBER:
 		if (lua_isinteger(L, index))

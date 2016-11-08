@@ -1,14 +1,14 @@
 CameraControl = {
 	update = function(dt)
-		handleMouse(dt)
-		handleKey(dt)
+		CameraControl.handleMouse(dt)
+		CameraControl.handleKey(dt)
 	end,
 	MOVE_SPEED = 0.1,
 	TURN_SPEED = 0.1,
 	mouseInfo = {lastLIsDown = false, lastMousePos={x=0,y=0}}
 }
 
-function handleMouse(dt)
+CameraControl.handleMouse = function(dt)
 	local obj = CameraControl.obj
 	local mouseInfo = CameraControl.mouseInfo
 	local transformCom = obj:getComponent("TransformComponent")
@@ -40,7 +40,7 @@ function handleMouse(dt)
 	local rightDirection = transformCom:getRightDirection()
 end
 
-function handleKey(dt)
+CameraControl.handleKey = function(dt)
 	local obj = CameraControl.obj
 	local transformCom = obj:getComponent("TransformComponent")
 	if(transformCom == nil)then
