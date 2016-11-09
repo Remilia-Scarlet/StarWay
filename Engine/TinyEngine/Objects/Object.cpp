@@ -90,8 +90,6 @@ BaseComponentPtr Object::getComponent(const std::string& name)
 
 int Object::L_getComponent(lua_State* L)
 {
-	Object* ooo = nullptr;
-	RefCountObj* fdsa = ooo;
 	ObjectPtr self = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<Object>();
 	LuaVal componentName = LuaManager::instance()->getVal(L, 2);
 	if (!self.isValid() || !componentName.isString())
@@ -181,8 +179,7 @@ bool Object::init()
 }
 
 Object::Object()
-	:_id(genericObjectId())
-	,_enable(true)
+	:_enable(true)
 {
 	LUA_GENERATE_OBJ(TO_STRING(Object));
 }

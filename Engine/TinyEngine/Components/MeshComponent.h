@@ -15,9 +15,14 @@ public:
 public:
 	template<class VertexType, class IndiceType>
 	static MeshComponentPtr create(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::vector<IndiceType>& indices,const std::string& vsFilename);
+	template<class VertexType>
+	static MeshComponentPtr create(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::string& vsFilename);
 
 	void setMaterial(const Material& material);
 	const Material& getMaterial();
+
+	void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
+	PrimitiveTopology getPrimitiveTopology() const;
 
 	virtual void render() override;
 
@@ -26,6 +31,8 @@ public:
 protected:
 	template<class VertexType, class IndiceType>
 	bool init(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::vector<IndiceType>& indices, const std::string& vsFilename);
+	template<class VertexType>
+	bool init(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::string& vsFilename);
 	MeshComponent();
 	GfxMeshPtr _gfxMesh;
 	GfxShaderVertexPtr _vertexShader;
@@ -38,6 +45,12 @@ MeshComponentPtr MeshComponent::create(InputLayoutType inputLayout, const std::v
 	if (!ret || !ret->init(inputLayout, vertexs, indices,vsFilename))
 		TINY_SAFE_DELETE(ret);
 	return MeshComponentPtr(ret);
+}
+
+template<class VertexType>
+MeshComponentPtr MeshComponent::create(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::string & vsFilename)
+{
+	return MeshComponentPtr();
 }
 
 template<class VertexType, class IndiceType>
@@ -67,5 +80,24 @@ bool MeshComponent::init(InputLayoutType inputLayout,const std::vector<VertexTyp
 		return true;
 	} while (0);
 	return false;
+}
+
+template<class VertexType>
+bool MeshComponent::init(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::string& vsFilename)
+{
+	if (vertexs.size() > (size_t)(uint16_t)-1)
+	{
+		std::vector<uint32_t> indices(vertexs.size());
+		for (int i = 0; i < vertexs.size(); ++i)
+			indices[i] = i;
+		return init(inputLayout, vertexs, indices, vsFilename);
+	}
+	else
+	{
+		std::vector<uint16_t> indices(vertexs.size());
+		for (int i = 0; i < vertexs.size(); ++i)
+			indices[i] = i;
+		return init(inputLayout, vertexs, indices, vsFilename);
+	}
 }
 

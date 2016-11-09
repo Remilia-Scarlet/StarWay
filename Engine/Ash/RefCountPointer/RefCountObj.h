@@ -1,5 +1,5 @@
 #pragma once
-
+#include "TinyEngine/Engine/EngineDefs.h"
 template <class T> class RefCountPtr;
 class RefCountObj;
 
@@ -31,11 +31,13 @@ class RefCountObj
 public:
 	int getStrongRefCount()const { return _refInfo->getStrongRefCount(); }
 	int getWeakRefCount()const { return _refInfo->getWeakRefCount(); }
+	virtual ObjectID getObjectId()  const { return _id; }
 protected:
 	explicit RefCountObj();
 	virtual ~RefCountObj();
 private:
 	_RefInfo* _refInfo;
+	ObjectID _id;
 };
 
 
@@ -63,6 +65,8 @@ void _RefInfo::releaseStrongRef()
 			delete this;
 		}
 	}
+	else
+		TinyAssert(false);
 }
 
 void _RefInfo::addWeakRef()
@@ -78,6 +82,8 @@ void _RefInfo::releaseWeakRef()
 		if (_refCount == 0 && _weakCount == 0)
 			delete this;
 	}
+	else
+		TinyAssert(false);
 }
 
 int _RefInfo::getStrongRefCount()

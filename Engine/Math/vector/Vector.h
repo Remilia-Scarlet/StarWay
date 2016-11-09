@@ -167,6 +167,10 @@ template <class ValueType, int Size>
 VectorStorage<ValueType, Size> operator*(const VectorStorage<ValueType, Size>& vec, const ValueType& scale);
 template <class ValueType, int Size>
 VectorStorage<ValueType, Size> operator*(const ValueType& scale, const VectorStorage<ValueType, Size>& vec);
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator/(const VectorStorage<ValueType, Size>& vec, const ValueType& scale);
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator/(const ValueType& scale, const VectorStorage<ValueType, Size>& vec);
 
 // plus
 template <class ValueType, int Size>

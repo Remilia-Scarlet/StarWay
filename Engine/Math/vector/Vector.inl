@@ -26,6 +26,17 @@ VectorStorage<ValueType, Size> operator*(const ValueType& scale, const VectorSto
 }
 
 template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator/(const VectorStorage<ValueType, Size>& vec, const ValueType& scale)
+{
+	return vec.scaled(ValueType(1) / scale);
+}
+template <class ValueType, int Size>
+VectorStorage<ValueType, Size> operator/(const ValueType& scale, const VectorStorage<ValueType, Size>& vec)
+{
+	return vec.scaled(ValueType(1) / scale);
+}
+
+template <class ValueType, int Size>
 VectorStorage<ValueType, Size> operator+(const VectorStorage<ValueType, Size>& vec1, const VectorStorage<ValueType, Size>& vec2)
 {
 	return vec1.add(vec2);

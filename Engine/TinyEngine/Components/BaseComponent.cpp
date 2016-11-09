@@ -4,8 +4,7 @@
 #include "TinyEngine\Engine\Engine.h"
 
 BaseComponent::BaseComponent(const char* luaPrototypeName)
-	:_id(genericObjectId())
-	,_name(luaPrototypeName)
+	:_name(luaPrototypeName)
 {
 	LUA_GENERATE_OBJ(luaPrototypeName);
 }

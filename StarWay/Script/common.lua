@@ -10,8 +10,19 @@ function CppCallLua(tab,...)
 	end
 end
 
+Vector3MetaTable = {
+	__add = function(a,b)
+		return {a.x + b.x, a.y + b.y, a.z + b.z}
+	end,
+	__sub = function(a,b)
+		return {a.x - b.x, a.y - b.y, z.z - b.z}
+	end
+}
+
 function Vector3(x,y,z)
-	return {x=x,y=y,z=z}
+	local v = {x=x,y=y,z=z}
+	setmetatable(v,Vector3MetaTable)
+	return v
 end
 
 function Vector4(x,y,z,w)

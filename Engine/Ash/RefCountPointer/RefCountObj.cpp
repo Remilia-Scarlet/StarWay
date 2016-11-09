@@ -4,6 +4,7 @@
 #include "TinyEngine/ScriptManager/LuaManager.h"
 
 RefCountObj::RefCountObj()
+	:_id(genericObjectId())
 {
 	_refInfo = new _RefInfo(this);
 }

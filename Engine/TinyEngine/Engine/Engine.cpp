@@ -84,6 +84,7 @@ bool Engine::createManagers()
 void Engine::cleanUp()
 {
 	_exit = true;
+	_currentScene = nullptr;
 	LuaManager::destroyInstance();
 	TimerManager::destoryInstance();
 	GraphicMgr::destroyInstance();

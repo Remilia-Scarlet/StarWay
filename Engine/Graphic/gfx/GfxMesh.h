@@ -42,6 +42,9 @@ public:
 	void setMaterial(const Material& material);
 	const Material& getMaterial();
 
+	void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
+	PrimitiveTopology getPrimitiveTopology() const;
+
 	void render(const GfxShaderVertexPtr& vs);
 private:
 	virtual bool init(InputLayoutType inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat);

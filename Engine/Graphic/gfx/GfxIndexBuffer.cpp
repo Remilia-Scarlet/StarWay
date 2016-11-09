@@ -6,6 +6,7 @@ GfxIndexBuffer::GfxIndexBuffer()
 	: _size(0)
 	, _indexBuffer(nullptr)
 	,_dataFormat(IndexBufferDataFormat::BIT_16)
+	,_primitiveTopology(PrimitiveTopology::TRIANGLE_LIST)
 {
 }
 
@@ -48,4 +49,14 @@ void GfxIndexBuffer::setBuffer()
 	ID3D11DeviceContext* context = GraphicMgr::instance()->getD3D11DeviceContext();
 	TinyAssert(context != nullptr, "GfxIndexBuffer::setBuffer can't get context");
 	context->IASetIndexBuffer(_indexBuffer, (_dataFormat == IndexBufferDataFormat::BIT_16 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT), 0);
+}
+
+void GfxIndexBuffer::setPrimitiveTopology(PrimitiveTopology primitiveTopology)
+{
+	_primitiveTopology = primitiveTopology;
+}
+
+PrimitiveTopology GfxIndexBuffer::getPrimitiveTopology() const
+{
+	return _primitiveTopology;
 }

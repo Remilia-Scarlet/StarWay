@@ -216,6 +216,7 @@ std::list<LuaVal> LuaManager::doCall(int oldStackDeep, int paramNum)
 
 LuaManager::LuaManager()
 	:_LuaState (nullptr)
+	,_runningLuaFunctions(0)
 {
 
 }

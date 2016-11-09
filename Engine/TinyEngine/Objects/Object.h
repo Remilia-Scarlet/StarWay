@@ -44,8 +44,6 @@ public:
 	virtual void update(float dt);
 	virtual void render();
 
-	virtual ObjectID getObjectId() { return _id; }
-
 	virtual void setFlag(ObjectFlag flagType, bool val);
 	virtual bool getFlag(ObjectFlag flagType);
 	virtual int getFlags();
@@ -62,7 +60,6 @@ protected:
 	virtual bool init();
 
 	bool _enable;
-	ObjectID _id;
 	ObjectWeakPtr _parent;
 	std::unordered_map<ObjectID, ObjectPtr>* _children;
 	std::unordered_map<ObjectID, BaseComponentPtr>* _components;

@@ -24,6 +24,16 @@ const Material& GfxMesh::getMaterial()
 	return _material;
 }
 
+void GfxMesh::setPrimitiveTopology(PrimitiveTopology primitiveTopology)
+{
+	_indexBuffer.setPrimitiveTopology(primitiveTopology);
+}
+
+PrimitiveTopology GfxMesh::getPrimitiveTopology() const
+{
+	return _indexBuffer.getPrimitiveTopology();
+}
+
 void GfxMesh::render(const GfxShaderVertexPtr& vs)
 {
 	ConstantBufferManager::instance()->setVSVector(13, _material.ambient);

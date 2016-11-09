@@ -28,6 +28,16 @@ const Material& MeshComponent::getMaterial()
 	return _gfxMesh->getMaterial();
 }
 
+void MeshComponent::setPrimitiveTopology(PrimitiveTopology primitiveTopology)
+{
+	_gfxMesh->setPrimitiveTopology(primitiveTopology);
+}
+
+PrimitiveTopology MeshComponent::getPrimitiveTopology() const
+{
+	return _gfxMesh->getPrimitiveTopology();
+}
+
 void MeshComponent::render()
 {
 	_gfxMesh->render(_vertexShader);
