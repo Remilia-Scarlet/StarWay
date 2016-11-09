@@ -10,14 +10,36 @@ function CppCallLua(tab,...)
 	end
 end
 
-Vector3MetaTable = {
-	__add = function(a,b)
-		return {a.x + b.x, a.y + b.y, a.z + b.z}
-	end,
-	__sub = function(a,b)
-		return {a.x - b.x, a.y - b.y, z.z - b.z}
+Vector3MetaTable = {}
+Vector3MetaTable.__add = function(a,b)
+	local vec = {x = a.x + b.x, y = a.y + b.y, z = a.z + b.z}
+	setmetatable(vec,Vector3MetaTable)
+	return vec
+end
+Vector3MetaTable.__sub = function(a,b)
+	local vec = {x = a.x - b.x, y = a.y - b.y, z = a.z - b.z}
+	setmetatable(vec,Vector3MetaTable)
+	return vec
+end
+Vector3MetaTable.__mul = function(a,b)
+	if type(a) == "number" and type(b) == "table" then
+		local vec = {x = b.x * a , y = b.y * a, z = b.z * a}
+		setmetatable(vec,Vector3MetaTable)
+		return vec
+	elseif type(a) == "table" and type(b) == "number" then
+		local vec = {x = a.x * b , y = a.y * b, z = a.z * b}
+		setmetatable(vec,Vector3MetaTable)
+		return vec
 	end
-}
+end
+Vector3MetaTable.__div = function(a,b)
+	if type(a) == "table" and type(b) == "number" then
+		local vec = {x = a.x / b , y = a.y / b, z = a.z / b}
+		setmetatable(vec,Vector3MetaTable)
+		return vec
+	end
+end
+
 
 function Vector3(x,y,z)
 	local v = {x=x,y=y,z=z}

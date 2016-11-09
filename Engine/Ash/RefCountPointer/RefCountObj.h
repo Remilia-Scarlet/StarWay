@@ -53,6 +53,7 @@ void _RefInfo::releaseStrongRef()
 {
 	if (_refCount > 0)
 	{
+		addWeakRef();// for not delete _RefInfo
 		--_refCount;
 		if (_refCount == 0)
 		{
@@ -60,10 +61,7 @@ void _RefInfo::releaseStrongRef()
 			delete _obj;
 			_obj = nullptr;
 		}
-		if (_refCount == 0 && _weakCount == 0)
-		{
-			delete this;
-		}
+		releaseWeakRef();
 	}
 	else
 		TinyAssert(false);

@@ -2,8 +2,7 @@ function start()
 	local scene = Scene:create()
 	
 	CreateGround(scene)
-	print(123)
-	--CreateObj(scene)
+	CreateObj(scene)
 	local freeCamera = CreateFreeCamera(scene)
 	CreateSplineCamera(scene,freeCamera)
 	CreateSpline(scene)
@@ -19,17 +18,14 @@ function CreateGround(scene)
 			local obj = Object:create()
 			
 			local meshComponent = GenerateCubeMesh(size,0.0,size)
-			print("mesh")
 			obj:addComponent(meshComponent)
 			
 			local texture = TextureComponent:create("","")
-			print("texture")
 			obj:addComponent(texture)
 			
 			local transform = TransformComponent:create()
-			print("transform")
 			obj:addComponent(transform)
-		--	transform:setLocation(Vector3(i*size,-2,j*size))
+			transform:setLocation(Vector3(i*size,-2,j*size))
 			
 			scene:addObject(obj)
 		end
@@ -94,8 +90,8 @@ function CreateSplineCamera(scene,freeCamera)
 end
 
 function CreateSpline(scene)
-	local controlPoints = {Vector3(0,0,0),Vector3(1,1,0),Vector3(2,0,0),Vector3(1,-1,0) }
-	Spline:create(controlPoints)
+--	local controlPoints = {Vector3(0,0,0),Vector3(1,1,0),Vector3(2,0,0),Vector3(1,-1,0) }
+--	Spline:create(controlPoints)
 	
 end
 
