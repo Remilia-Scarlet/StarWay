@@ -199,9 +199,6 @@ bool DX11ConstantBufferManager::init()
 		d3dDevice->CreateBuffer(&bd, NULL, &_psConstantBuffer);
 		SET_DEBUG_NAME(_vsConstantBuffer, "VsConstantBuffer");
 		SET_DEBUG_NAME(_psConstantBuffer, "PsConstantBuffer");
-
-		// Set primitive topology
-		d3dContent->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		return true;
 	} while (0);
 	return false;

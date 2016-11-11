@@ -46,9 +46,36 @@ bool GfxIndexBuffer::initBuffer(const void* indexBuffer, int size, IndexBufferDa
 
 void GfxIndexBuffer::setBuffer()
 {
+#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
 	ID3D11DeviceContext* context = GraphicMgr::instance()->getD3D11DeviceContext();
 	TinyAssert(context != nullptr, "GfxIndexBuffer::setBuffer can't get context");
 	context->IASetIndexBuffer(_indexBuffer, (_dataFormat == IndexBufferDataFormat::BIT_16 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT), 0);
+
+	// Set primitive topology
+	struct ToDxTopology
+	{
+		static D3D_PRIMITIVE_TOPOLOGY run(PrimitiveTopology topo)
+		{
+			switch (topo)
+			{
+			case PrimitiveTopology::POINT_LIST:
+				return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+			case PrimitiveTopology::LINE_LIST:
+				return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+			case PrimitiveTopology::LINE_STRIP:
+				return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
+			case PrimitiveTopology::TRIANGLE_LIST:
+				return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			case PrimitiveTopology::TRIANGLE_STRIP:
+				return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+			}
+			return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		}
+	};
+	context->IASetPrimitiveTopology(ToDxTopology::run(_primitiveTopology));
+#else
+#error not support
+#endif
 }
 
 void GfxIndexBuffer::setPrimitiveTopology(PrimitiveTopology primitiveTopology)

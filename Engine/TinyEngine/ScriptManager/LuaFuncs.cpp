@@ -14,10 +14,6 @@
 #include "TinyEngine/Components/DirectionLightComponent.h"
 #include "TinyEngine/Input/InputManager.h"
 
-
-#define REGIST_FUN(_NAME_) do{lua_register(LuaManager::instance()->getLuaMachine(), #_NAME_, LuaFuns::_NAME_);}while(0)
-#define LUA_PARAM_ERROR(_NAME_) luaL_error(L, "function %s param error", #_NAME_)
-
 LuaFuns* LuaFuns::instance()
 {
 	static LuaFuns instance;
@@ -56,6 +52,13 @@ int LuaFuns::StartScene(lua_State* L)
 	return 0;
 }
 
+int LuaFuns::GetCurrentScene(lua_State* L)
+{
+	ScenePtr scene = Engine::instance()->getCurrentScene();
+	pushVal(L, scene);
+	return 1;
+}
+
 bool LuaFuns::registerFuncsToLua()
 {
 	// object
@@ -74,9 +77,13 @@ bool LuaFuns::registerFuncsToLua()
 	InputManager::createLuaPrototype();
 
 	// global function
+#define REGIST_FUN(_NAME_) do{lua_register(LuaManager::instance()->getLuaMachine(), #_NAME_, LuaFuns::_NAME_);}while(0)
 	REGIST_FUN(GenerateCubeMesh);
 	REGIST_FUN(GenerateSphereMesh);
 	REGIST_FUN(StartScene);
+	REGIST_FUN(GetCurrentScene);
+#undef REGIST_FUN
+
 	return true;
 }
 

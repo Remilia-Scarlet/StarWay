@@ -136,6 +136,11 @@ void Engine::startScene(const ScenePtr& scene)
 	scene->start();
 }
 
+ScenePtr Engine::getCurrentScene()
+{
+	return _currentScene;
+}
+
 void Engine::drawScene()
 {
 	GraphicMgr::instance()->preRender();

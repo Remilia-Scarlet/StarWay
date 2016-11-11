@@ -20,5 +20,6 @@ protected:
 	virtual ~ScriptComponent();
 
 	std::string _luaFunctionTable;
+	bool _inited;
 };
 

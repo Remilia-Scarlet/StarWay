@@ -40,6 +40,9 @@ Vector3MetaTable.__div = function(a,b)
 	end
 end
 
+function Vector3Len(vec3)
+	return (vec3.x ^ 2 + vec3.y ^ 2 + vec3.z ^ 2) ^ 0.5
+end
 
 function Vector3(x,y,z)
 	local v = {x=x,y=y,z=z}
@@ -53,4 +56,33 @@ end
 
 function Rect(x,y,w,h)
 	return {x=x,y=y,w=w,h=h}
+end
+
+function CreateSimpleCubeOnPos(pos)
+	local obj = Object:create()
+	
+	local meshConponent = GenerateCubeMesh(0.5,0.5,0.5)
+	obj:addComponent(meshConponent)
+	
+	local texture = TextureComponent:create("","")
+	obj:addComponent(texture)
+	
+	local transform = TransformComponent:create()
+	obj:addComponent(transform)
+	transform:setLocation(pos)
+	return obj
+end
+function CreateSimpleSphereOnPos(pos)
+	local obj = Object:create()
+	
+	local meshConponent = GenerateSphereMesh(0.1,1)
+	obj:addComponent(meshConponent)
+	
+	local texture = TextureComponent:create("","")
+	obj:addComponent(texture)
+	
+	local transform = TransformComponent:create()
+	obj:addComponent(transform)
+	transform:setLocation(pos)
+	return obj
 end

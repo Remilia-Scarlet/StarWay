@@ -17,12 +17,16 @@ public:
 	static MeshComponentPtr create(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::vector<IndiceType>& indices,const std::string& vsFilename);
 	template<class VertexType>
 	static MeshComponentPtr create(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::string& vsFilename);
+	static int L_create(lua_State* L);
 
 	void setMaterial(const Material& material);
 	const Material& getMaterial();
 
 	void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
+	static int L_setPrimitiveTopology(lua_State* L);
+
 	PrimitiveTopology getPrimitiveTopology() const;
+
 
 	virtual void render() override;
 
@@ -50,7 +54,10 @@ MeshComponentPtr MeshComponent::create(InputLayoutType inputLayout, const std::v
 template<class VertexType>
 MeshComponentPtr MeshComponent::create(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::string & vsFilename)
 {
-	return MeshComponentPtr();
+	MeshComponent* ret = new MeshComponent();
+	if (!ret || !ret->init(inputLayout, vertexs, vsFilename))
+		TINY_SAFE_DELETE(ret);
+	return MeshComponentPtr(ret);
 }
 
 template<class VertexType, class IndiceType>

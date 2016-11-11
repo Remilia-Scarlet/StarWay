@@ -555,6 +555,19 @@ LuaVal& LuaVal::setField(int index, const LuaVal& value)
 	return setField(LuaVal(index),value);
 }
 
+int LuaVal::getLenth() const
+{
+	if (_type == DataType::STRING)
+		return (int)strlen(_data.s);
+	else if (_type == DataType::TABLE)
+		return (int)_data.table->get()->size();
+	else
+	{
+		TinyAssert(false);
+		return 0;
+	}
+}
+
 LuaValTabIt LuaVal::begin()
 {
 	if (_type != DataType::TABLE)

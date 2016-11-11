@@ -36,6 +36,12 @@ void ScriptComponent::setOwner(const RefCountPtr<Object> & owner)
 void ScriptComponent::update(float dt)
 {
 	BaseComponent::update(dt);
+	if (!_inited)
+	{
+		_inited = true;
+		LuaVal callFunc = { _luaFunctionTable.c_str(),"init" };
+		LuaManager::instance()->call(CPP_CALL_LUA_NAME, callFunc, dt);
+	}
 	LuaVal callFunc = { _luaFunctionTable.c_str(),"update"};
 	LuaManager::instance()->call(CPP_CALL_LUA_NAME, callFunc, dt);
 }
@@ -55,6 +61,7 @@ bool ScriptComponent::init(const std::string& luaFunctionTable)
 
 ScriptComponent::ScriptComponent()
 	:BaseComponent(TO_STRING(ScriptComponent))
+	, _inited(false)
 {
 
 }

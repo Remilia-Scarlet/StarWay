@@ -167,6 +167,9 @@ public:
 	// Convert type to table, and set field by index. Return this.
 	LuaVal& setField(int index, const LuaVal& value);
 
+	// Get lenth. Only aviliable on table and string
+	int getLenth() const;
+
 	// only aviliable for Table
 	LuaValTabIt begin();
 	ConstLuaValTabIt begin() const;
