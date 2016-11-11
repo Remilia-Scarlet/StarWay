@@ -63,7 +63,7 @@ function CreateFreeCamera(scene)
 	local cametaTran = TransformComponent:create()
 	freeCamera:addComponent(cametaTran)
 	cametaTran:setLocation(Vector3(0, 2, -5))
-	cametaTran:faceToPoint(Vector3(1, 0, 1))
+--	cametaTran:faceToPoint(Vector3(1, 0, 1))
 	
 	scene:addObject(freeCamera);
 	return freeCamera

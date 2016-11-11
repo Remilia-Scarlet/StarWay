@@ -40,8 +40,8 @@ SpineCamera = {
 			SpineCamera.t = 0
 		end
 		local transformCom = obj:getComponent("TransformComponent")
-		local up = Vector3(0,0,-2)
-		transformCom:setLocation(pos + up)		
+		local offset = Vector3(0,0,-3)
+		transformCom:setLocation(pos + offset)		
 	end,
 	freeCamera = {},
 	spline = nil,
@@ -51,6 +51,7 @@ SpineCamera = {
 SpineCamera.handleKeyChangeCamera = function(dt)
 	local obj = SpineCamera.obj
 	local btnR3Status = InputManager:getVitualBtnStatus(InputManager.BTN_R3)
+	local btnPauseStatus = InputManager:getVitualBtnStatus(InputManager.BTN_Pause)
 	if(btnR3Status.isDown == true and btnR3Status.isChangedInThisFrame == true) then
 		if(obj:getEnable() == true) then
 			obj:setEnable(false)
@@ -60,4 +61,8 @@ SpineCamera.handleKeyChangeCamera = function(dt)
 			SpineCamera.freeCamera:setEnable(false)
 		end
 	end
+	if(btnPauseStatus.isDown == true and btnPauseStatus.isChangedInThisFrame == true) then
+		obj:setEnable(false)
+		SpineCamera.freeCamera:setEnable(true)
+	end	
 end

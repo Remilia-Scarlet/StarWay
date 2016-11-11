@@ -45,6 +45,7 @@ void InputManagerWin::mapVirtualBtns()
 		{LocalKey::KEY_S, VirtualButton::DOWN},
 		{LocalKey::KEY_Q, VirtualButton::L1},
 		{LocalKey::KEY_E, VirtualButton::R1},
-		{LocalKey::KEY_C, VirtualButton::R3}
+		{LocalKey::KEY_C, VirtualButton::R3},
+		{LocalKey::KEY_SPACE,VirtualButton::Pause}
 	};
 }

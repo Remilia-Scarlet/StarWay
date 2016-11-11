@@ -53,7 +53,8 @@ CameraControl.handleKey = function(dt)
 	local btnRightStatus = InputManager:getVitualBtnStatus(InputManager.BTN_RIGHT)
 	local btnL1Status = InputManager:getVitualBtnStatus(InputManager.BTN_L1)
 	local btnR1Status = InputManager:getVitualBtnStatus(InputManager.BTN_R1)
-	if(btnUpStatus.isDown ~= true and btnDownStatus.isDown ~= true and btnRightStatus.isDown ~= true and btnLeftStatus.isDown ~= true and btnL1Status.isDown ~=true and btnR1Status.isDown ~= true) then
+	local btnPauseStatus = InputManager:getVitualBtnStatus(InputManager.BTN_Pause)
+	if(btnPauseStatus.isDown ~= true and btnUpStatus.isDown ~= true and btnDownStatus.isDown ~= true and btnRightStatus.isDown ~= true and btnLeftStatus.isDown ~= true and btnL1Status.isDown ~=true and btnR1Status.isDown ~= true) then
 		return
 	end
 	
@@ -93,5 +94,9 @@ CameraControl.handleKey = function(dt)
 		location.y = location.y - parentUp.y * speed
 		location.z = location.z - parentUp.z * speed
 	end
-	transformCom:setLocation(location)
+	if(btnPauseStatus.isDown == true) then
+		transformCom:setLocation(Vector3(0, 2, -5))
+	else
+		transformCom:setLocation(location)
+	end
 end

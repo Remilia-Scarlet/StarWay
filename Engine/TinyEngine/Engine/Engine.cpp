@@ -15,8 +15,8 @@
 #include "TinyEngine/Components/CameraComponent.h"
 #include "Graphic/Manager/LightManager.h"
 
-const int SOLUTION_WIDTH = 640;
-const int SOLUTION_HEIGHT = 480;
+const int SOLUTION_WIDTH = 1024;
+const int SOLUTION_HEIGHT = 768;
 const int DESIRED_FPS = 60;
 
 Engine::Engine()
