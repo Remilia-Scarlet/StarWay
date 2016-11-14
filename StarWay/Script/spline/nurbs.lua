@@ -14,14 +14,14 @@ function Nurbs:create(degree,controlPoints,knot,weight)
 end
 
 function Nurbs:get(u)
-	u = u * (self.k[#self.k - 1] - self.k[0]) + self.k[0]
+	u = u * (self.k[#self.k] - self.k[1]) + self.k[1]
 	local a = Vector3(0,0,0)
 	local b = 0
 --	Print(self)
-	for i = 0,#(self.P)-1 do
+	for i = 1,#(self.P) do
 		a = a + self.w[i]* self:N(i,self.n,u) * self.P[i] 
 	end
-	for i = 0,#(self.P)-1 do
+	for i = 1,#(self.P) do
 --		Print(self:N(i,self.n,u))
 		b = b + self.w[i] * self:N(i,self.n,u)
 	end

@@ -11,17 +11,7 @@ function Spline:create(ctlPoint)
 end
 
 function Spline:get(t)
-	if (t < 0.0 or t > 1.0) then
-		error("wrong param")
-	end
---[[	if(t < self.tTab[2])then
-		t = self.tTab[2]
-	end
-	if(t > self.tTab[#self.tTab - 1])then
-		t = self.tTab[#self.tTab - 1]
-	end]]
-	
-	local i = 0
+	local i = #self.tTab - 1
 	for index = 1,#self.tTab do
 		if(self.tTab[index] > t) then
 			i = index - 1

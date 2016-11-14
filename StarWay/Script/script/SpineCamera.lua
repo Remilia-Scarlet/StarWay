@@ -13,13 +13,14 @@ SplineCamera.init = function()
 end
 
 function SplineCamera:changeSpline()
-Print("changeSpline",self.splineIndex)
+--Print("changeSpline",self.splineIndex)
+	self.t = 0
 	if(self.splineIndex == 0)then
 		self:setCubicSpline()
 	elseif(self.splineIndex == 1)then
 		self:setNurbs()
 	elseif(self.splineIndex == 2)then
-		
+		self:setBezier()
 	end
 	self.splineIndex = self.splineIndex + 1
 	if(self.splineIndex == 3)then
@@ -28,11 +29,11 @@ Print("changeSpline",self.splineIndex)
 end
 
 function SplineCamera:setCubicSpline()
-Print("setCubicSpline")
+--Print("setCubicSpline")
 	local scene = GetCurrentScene()
 	self:removeObj()
 	local ctlPoints = {Vector3(0,0,0),Vector3(2,5,0),Vector3(10,0,0),Vector3(10,-5,0),Vector3(14,-3,0),Vector3(10,2,0)}
-	for _,v in ipairs(ctlPoints) do
+	for _,v in pairs(ctlPoints) do
 		local controlPoint = CreateSimpleSphereOnPos(v)
 		table.insert(self.controlPoints,controlPoint)
 		scene:addObject(controlPoint)
@@ -42,10 +43,10 @@ Print("setCubicSpline")
 end
 
 function SplineCamera:setNurbs()
-Print("setNurbs")
+--Print("setNurbs")
 	local scene = GetCurrentScene()
 	self:removeObj()
-	local ctr = {[0]=Vector3(6.0,  0.0,  6.0),
+	local ctr = {Vector3(6.0,  0.0,  6.0),
 					   Vector3(-5.5,  0.5,  5.5),
 					   Vector3(-5.0,  1.0, -5.0),
 					   Vector3( 4.5,  1.5, -4.5),
@@ -58,8 +59,22 @@ Print("setNurbs")
 					   Vector3(-1.0,  5.0, -1.0),
 					   Vector3( 0.5,  5.5, -0.5),
 					   Vector3( 0.0,  6.0,  0.0)}
-	self.currentSpline = Nurbs:create(4,ctr,{[0]=0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10},{[0]=1,1,1,1,1,1,1,1,1,1,1,1,1})
-	for _,v in ipairs(ctr) do
+	self.currentSpline = Nurbs:create(4,ctr,{0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 11, 11},{1,1,1,1,1,1,1,1,1,1,1,1,1})
+	for _,v in pairs(ctr) do
+		local obj = CreateSimpleSphereOnPos(v)
+		table.insert(self.controlPoints,obj)
+		scene:addObject(obj)
+	end
+	self:createSplineLine()
+end
+
+function SplineCamera:setBezier()
+--Print("setBezier")
+	local scene = GetCurrentScene()
+	self:removeObj()
+	local ctr = {Vector3(0,0,0),Vector3(-1,5,0),Vector3(9,5,0),Vector3(15,0,0)}
+	self.currentSpline = Bezier:create(3,ctr)
+	for _,v in pairs(ctr) do
 		local obj = CreateSimpleSphereOnPos(v)
 		table.insert(self.controlPoints,obj)
 		scene:addObject(obj)
@@ -69,7 +84,7 @@ end
 
 function SplineCamera:removeObj()
 	local currentScene = GetCurrentScene()
-	for _,v in ipairs(self.controlPoints) do
+	for _,v in pairs(self.controlPoints) do
 		currentScene:removeObject(v)
 	end
 	self.controlPoints = {}
@@ -100,9 +115,18 @@ function SplineCamera:createSplineLine()
 		self.splineLine = nil
 	end
 	local vertex = {}
-	for t = 0.0,1.0,0.01 do
+	local step = 0.001
+	local t = 0
+	while t <= 1.0 do
+	--	Print(t)
 		local pos = self.currentSpline:get(t)
 		table.insert(vertex,{pos,Vector3(0,0,0),{x=0,y=0}} )
+		t = t + step
+		if(t >= 0.1 and t <= 0.9)then
+			step = 0.01
+		elseif(t > 0.9)then
+			step = 0.001
+		end
 	end
 --	Print(vertex)
 
@@ -141,6 +165,8 @@ function SplineCamera:handleKeyChangeCamera(dt)
 	if(btnPauseStatus.isDown == true and btnPauseStatus.isChangedInThisFrame == true) then
 		obj:setEnable(false)
 		SplineCamera.freeCamera:setEnable(true)
+		self:setCubicSpline()
+		self.splineIndex = 0
 	end	
 	if(btnDownStatus.isDown == true and btnDownStatus.isChangedInThisFrame == true) then
 		if(obj:getEnable() == true)then
