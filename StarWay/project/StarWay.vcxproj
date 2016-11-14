@@ -169,7 +169,7 @@
     </CustomBuild>
     <FxCompile>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\Shader\%(Filename).cso</ObjectFileOutput>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -196,7 +196,7 @@
     </CustomBuild>
     <FxCompile>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\Shader\%(Filename).cso</ObjectFileOutput>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -222,7 +222,7 @@
     </CustomBuild>
     <FxCompile>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\Shader\%(Filename).cso</ObjectFileOutput>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -252,7 +252,7 @@
     </CustomBuild>
     <FxCompile>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\Shader\%(Filename).cso</ObjectFileOutput>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -282,7 +282,7 @@
     </CustomBuild>
     <FxCompile>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\Shader\%(Filename).cso</ObjectFileOutput>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -312,7 +312,7 @@
     </CustomBuild>
     <FxCompile>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>$(SolutionDir)output\$(Platform)\Shader\%(Filename).cso</ObjectFileOutput>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
   </ItemDefinitionGroup>

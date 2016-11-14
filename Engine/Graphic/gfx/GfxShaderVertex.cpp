@@ -37,7 +37,8 @@ GfxShaderVertex::~GfxShaderVertex()
 
 bool GfxShaderVertex::createVSShaderFromFile(const std::string& filename)
 {
-	std::ifstream shaderFile(filename, std::ios::binary);
+	const std::string fixedFileName = std::string("Shader/") + filename;
+	std::ifstream shaderFile(fixedFileName, std::ios::binary);
 	if (shaderFile)
 	{
 		shaderFile.seekg(0, std::ios::end);
@@ -56,7 +57,7 @@ bool GfxShaderVertex::createVSShaderFromFile(const std::string& filename)
 		SET_DEBUG_NAME(_compiledVSShader, FormatString("VertexShader_%s", filename.c_str()).c_str());
 		return true;
 	}
-	DebugString("Can't open %s for compiling shader", filename.c_str());
+	DebugString("Can't open %s for compiling shader", fixedFileName.c_str());
 	return false;
 }
 
