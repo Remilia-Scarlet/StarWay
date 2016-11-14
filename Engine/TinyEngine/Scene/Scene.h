@@ -21,6 +21,9 @@ public:
 	static int L_addObject(lua_State* L);
 //@@TODO:	virtual void removeObject(...);
 
+	virtual void removeObject(ObjectPtr obj);
+	static int L_removeObject(lua_State* L);
+
 	virtual void update(float dt);
 	virtual void render();
 

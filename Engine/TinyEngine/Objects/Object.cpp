@@ -62,7 +62,18 @@ void Object::addComponent(const BaseComponentPtr& component)
 		TinyAssert(false,"Object::addComponent ptr is not valid");
 }
 
-LUA_MEMBER_FUN_P1R0_IMPL(Object, addComponent, const BaseComponentPtr&)
+int Object::L_addComponent(lua_State* L)
+{
+	ASSERT_PARAM_NUM(2);
+	ObjectPtr self = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<Object>();
+	BaseComponentPtr com = LuaManager::instance()->getVal(L, 2).convertRefPtr_dynamic<BaseComponent>();
+	if (!self.isValid())
+		return luaL_error(L, "addComponent self is nil");
+	if (!com.isValid())
+		return luaL_error(L, "addComponent component is nil");
+	self->addComponent(std::move(com));
+	return 0;
+}
 
 BaseComponentPtr Object::getComponent(ObjectID componentId)
 {

@@ -77,9 +77,9 @@ function CreateSplineCamera(scene,freeCamera)
 	local spineCameraComponent = CameraComponent:create()
 	spineCamera:addComponent(spineCameraComponent)
 	
-	local spineScriptComponent = ScriptComponent:create("SpineCamera")
+	local spineScriptComponent = ScriptComponent:create("SplineCamera")
 	spineCamera:addComponent(spineScriptComponent)
-	SpineCamera.freeCamera = freeCamera
+	SplineCamera.freeCamera = freeCamera
 
 	local spineCametaTran = TransformComponent:create()
 	spineCamera:addComponent(spineCametaTran)

@@ -13,7 +13,11 @@ void DebugString(std::string format, ...)
 	static char buffer[1024];
 	va_list args;
 	va_start(args, format);
+#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+	vsprintf_s(buffer, format.c_str(), args);
+#else
 	vsprintf(buffer, format.c_str(), args);
+#endif
 	va_end(args);
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 	OutputDebugStringA(buffer);
