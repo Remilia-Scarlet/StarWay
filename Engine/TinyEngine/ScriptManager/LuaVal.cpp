@@ -287,7 +287,7 @@ bool LuaVal::operator<(const LuaVal& other) const
 		TinyAssert(false, "unreachable");
 		break;
 	case LuaVal::DataType::STRING:
-		return std::strcmp(_data.s, other._data.s) < 0;
+		return *_data.str < *other._data.str;
 	case LuaVal::DataType::REF_OBJ:
 		return *_data.obj < *other._data.obj;
 	case LuaVal::DataType::TABLE:
@@ -388,19 +388,14 @@ void LuaVal::reset(const char* s)
 {
 	clear();
 	_type = DataType::STRING;
-	auto len = strlen(s);
-	_data.s = new char[len + 1];
-	memcpy(_data.s, s, len + 1);
+	_data.str = new std::shared_ptr<std::string>(new std::string(s));
 }
 
 void LuaVal::reset(const std::string& s)
 {
 	clear();
 	_type = DataType::STRING;
-	auto len = s.length();
-	_data.s = new char[len + 1];
-	memcpy(_data.s, s.c_str(), len);
-	_data.s[len] = 0;
+	_data.str = new std::shared_ptr<std::string>(new std::string(s));
 }
 
 void LuaVal::reset(RefCountObj& obj)
@@ -475,7 +470,7 @@ void LuaVal::reset(const LuaVal& other)
 		reset(other._data.d);
 		break;
 	case LuaVal::DataType::STRING:
-		reset(other._data.s);
+		reset(*other._data.str->get());
 		break;
 	case LuaVal::DataType::REF_OBJ:
 		reset(*other._data.obj);
@@ -504,7 +499,7 @@ void LuaVal::reset(LuaVal&& other)
 		_data.i = other._data.i;
 		break;
 	case LuaVal::DataType::STRING:
-		_data.s = other._data.s;
+		_data.str = other._data.str;
 		break;
 	case LuaVal::DataType::REF_OBJ:
 		_data.obj = other._data.obj;
@@ -558,9 +553,9 @@ LuaVal& LuaVal::setField(int index, const LuaVal& value)
 int LuaVal::getLenth() const
 {
 	if (_type == DataType::STRING)
-		return (int)strlen(_data.s);
+		return (int)(*_data.str)->length();
 	else if (_type == DataType::TABLE)
-		return (int)_data.table->get()->size();
+		return (int)(*_data.table)->size();
 	else
 	{
 		TinyAssert(false);
@@ -631,7 +626,7 @@ std::string LuaVal::toString() const
 	case LuaVal::DataType::DOUBLE:
 		return FormatString("%.14g", _data.d);
 	case LuaVal::DataType::STRING:
-		return FormatString("\"%s\"",_data.s);
+		return FormatString("\"%s\"",(*_data.str)->c_str());
 	case LuaVal::DataType::REF_OBJ:
 		return FormatString("(Obj:%lX)", (int64_t)(*_data.obj).get());
 	case LuaVal::DataType::TABLE:
@@ -773,7 +768,7 @@ const char* LuaVal::convertCharPointer() const
 	switch (_type)
 	{
 	case LuaVal::DataType::STRING:
-		return _data.s;
+		return (*_data.str)->c_str();
 	case LuaVal::DataType::NIL:
 	case LuaVal::DataType::BOOLEAN:
 	case LuaVal::DataType::INT64:
@@ -796,7 +791,7 @@ std::string LuaVal::converString() const
 	case DataType::BOOLEAN:
 		return _data.b ? "true" : "false";
 	case LuaVal::DataType::STRING:
-		return _data.s;
+		return *_data.str->get();
 	case LuaVal::DataType::INT64:
 		return FormatString("%ld", _data.i);
 	case LuaVal::DataType::DOUBLE:
@@ -909,7 +904,7 @@ bool LuaVal::equal(const LuaVal& other) const
 		// unreachable
 		break;
 	case LuaVal::DataType::STRING:
-		return strcmp(_data.s, other._data.s) == 0;
+		return *_data.str->get() == *other._data.str->get();
 	case LuaVal::DataType::REF_OBJ:
 		return _data.obj->get() == other._data.obj->get();
 	case LuaVal::DataType::TABLE:
@@ -930,7 +925,7 @@ void LuaVal::clear()
 		// base type, nothing to do
 		break;
 	case LuaVal::DataType::STRING:
-		delete[] _data.s;
+		delete _data.str;
 		break;
 	case LuaVal::DataType::REF_OBJ:
 		delete _data.obj;
@@ -956,9 +951,12 @@ std::string LuaVal::getKeyString(const LuaVal& key) const
 	case LuaVal::DataType::DOUBLE:
 		return FormatString("[%.14g]", key._data.d);
 	case LuaVal::DataType::STRING:
-		if (key._data.s[0] == 0 || (key._data.s[0] > '0' && key._data.s[0] < '9'))
-			return FormatString("[\"%s\"]", key._data.s);
-		return key._data.s;
+	{
+		const std::string& str = *key._data.str->get();
+		if (str.length() == 0 || (str.at(0) > '0' && str.at(0) < '9'))
+			return FormatString("[\"%s\"]", str.c_str());
+		return str;
+	}
 	case LuaVal::DataType::REF_OBJ:
 		return FormatString("[(Obj:%lX)]", (int64_t)(*_data.obj).get());
 	case LuaVal::DataType::TABLE:

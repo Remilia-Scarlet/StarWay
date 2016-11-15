@@ -31,6 +31,7 @@
     <ClInclude Include="..\matrix\Matrix.h" />
     <ClInclude Include="..\quaternion\Quaternion.h" />
     <ClInclude Include="..\shape\Rect.h" />
+    <ClInclude Include="..\vector\LuaVector.h" />
     <ClInclude Include="..\vector\Vector.h" />
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +39,9 @@
     <None Include="..\quaternion\Quaternion.inl" />
     <None Include="..\shape\Rect.inl" />
     <None Include="..\vector\Vector.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\vector\LuaVector.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{02717FAA-D141-439D-86F3-9A01F194A284}</ProjectGuid>

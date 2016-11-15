@@ -247,7 +247,7 @@ protected:
 			case DataType::DOUBLE:
 				return std::hash<float>()(float(key._data.d));
 			case DataType::STRING:
-				return std::hash<std::string>()(key._data.s);
+				return std::hash<std::string>()(*key._data.str->get());
 			case DataType::REF_OBJ:
 				return std::hash<void*>()(key._data.obj->get());
 			case DataType::TABLE:
@@ -274,7 +274,7 @@ protected:
 		int64_t i;
 		bool b;
 		double d;
-		char* s;
+		std::shared_ptr<std::string>* str;
 		RefCountPtr<RefCountObj>* obj;
 		std::shared_ptr<std::unordered_map<LuaVal,LuaVal,HashFunc,CmpFunc> >* table;
 	} _data;

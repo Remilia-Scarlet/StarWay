@@ -14,6 +14,9 @@
     <ClInclude Include="..\shape\Rect.h">
       <Filter>rect</Filter>
     </ClInclude>
+    <ClInclude Include="..\vector\LuaVector.h">
+      <Filter>vector</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vector">
@@ -42,5 +45,10 @@
     <None Include="..\shape\Rect.inl">
       <Filter>rect</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\vector\LuaVector.cpp">
+      <Filter>vector</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

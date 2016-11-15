@@ -95,14 +95,14 @@ bool MeshComponent::init(InputLayoutType inputLayout, const std::vector<VertexTy
 	if (vertexs.size() > (size_t)(uint16_t)-1)
 	{
 		std::vector<uint32_t> indices(vertexs.size());
-		for (int i = 0; i < vertexs.size(); ++i)
+		for (int i = 0; i < (int)vertexs.size(); ++i)
 			indices[i] = i;
 		return init(inputLayout, vertexs, indices, vsFilename);
 	}
 	else
 	{
 		std::vector<uint16_t> indices(vertexs.size());
-		for (int i = 0; i < vertexs.size(); ++i)
+		for (int i = 0; i < (int)vertexs.size(); ++i)
 			indices[i] = i;
 		return init(inputLayout, vertexs, indices, vsFilename);
 	}
