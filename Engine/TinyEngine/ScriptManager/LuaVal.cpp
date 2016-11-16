@@ -276,6 +276,9 @@ bool LuaVal::operator<(const LuaVal& other) const
 	if (_type != other._type)
 		return (int)_type < (int)other._type;
 
+	if (_type == DataType::TABLE && _isLuaRefTable != other._isLuaRefTable)
+		return int(_isLuaRefTable) < int(other._isLuaRefTable);
+
 	switch (_type)
 	{
 	case LuaVal::DataType::NIL:
@@ -291,7 +294,10 @@ bool LuaVal::operator<(const LuaVal& other) const
 	case LuaVal::DataType::REF_OBJ:
 		return *_data.obj < *other._data.obj;
 	case LuaVal::DataType::TABLE:
-		return *_data.table < *other._data.table;
+		if (_isLuaRefTable)
+			return _data.refTableId < other._data.refTableId;
+		else
+			return *_data.tablePtr < *other._data.tablePtr;
 	}
 	TinyAssert(false, "unreachable");
 	return false;
@@ -424,15 +430,15 @@ void LuaVal::reset(std::initializer_list<_K> table)
 
 	int index = 1;
 	_type = DataType::TABLE;
-	_data.table = new std::shared_ptr<std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> >(new std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>());
-	std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>& dataTab = *((*_data.table).get());
+	_data.tablePtr = new std::shared_ptr<std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> >(new std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>());
+	std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>& dataTab = *((*_data.tablePtr).get());
 
 	std::list<int64_t> usedKey;
 	for (const _K& helper : table)
 	{
 		const LuaVal& key = helper._key;
-		if (key.getType() == DataType::INT64)
-			usedKey.push_back(key.convertInt64());
+if (key.getType() == DataType::INT64)
+usedKey.push_back(key.convertInt64());
 	}
 	for (const _K& helper : table)
 	{
@@ -441,7 +447,7 @@ void LuaVal::reset(std::initializer_list<_K> table)
 		if (key.getType() == DataType::NIL)
 		{
 			auto it = usedKey.begin();
-			while ((it = std::find(usedKey.begin(),usedKey.end(),index)) != usedKey.end())
+			while ((it = std::find(usedKey.begin(), usedKey.end(), index)) != usedKey.end())
 				++index;
 			dataTab[index++] = val;
 		}
@@ -477,8 +483,12 @@ void LuaVal::reset(const LuaVal& other)
 		break;
 	case LuaVal::DataType::TABLE:
 		clear();
-		_data.table = new std::shared_ptr<std::unordered_map<LuaVal,LuaVal,HashFunc,CmpFunc> >(*other._data.table);
+		if (other._isLuaRefTable)
+			_data.refTableId = other._data.refTableId;
+		else
+			_data.tablePtr = new std::shared_ptr<std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> >(*other._data.tablePtr);
 		_type = DataType::TABLE;
+		_isLuaRefTable = other._isLuaRefTable;
 		break;
 	}
 }
@@ -489,7 +499,7 @@ void LuaVal::reset(LuaVal&& other)
 		return;
 
 	clear();
-	_type = other._type;;
+	_type = other._type;
 	switch (_type)
 	{
 	case LuaVal::DataType::NIL:
@@ -505,11 +515,16 @@ void LuaVal::reset(LuaVal&& other)
 		_data.obj = other._data.obj;
 		break;
 	case LuaVal::DataType::TABLE:
-		_data.table = other._data.table;
+		_isLuaRefTable = other._isLuaRefTable;
+		if (other._isLuaRefTable)
+			_data.refTableId = other._data.refTableId;
+		else
+			_data.tablePtr = other._data.tablePtr;
 		break;
 	}
 	other._data.i = 0;
 	other._type = DataType::NIL;
+	other._isLuaRefTable = false;
 }
 
 LuaVal::DataType LuaVal::getType() const
@@ -521,9 +536,28 @@ LuaVal LuaVal::getField(const LuaVal& key) const
 {
 	if (_type != DataType::TABLE)
 		return NIL;
-	auto it = (*_data.table)->find(key);
-	if (it != (*_data.table)->end())
-		return it->second;
+	if (_isLuaRefTable)
+	{
+		lua_State* L = LuaManager::instance()->getLuaMachine();
+		int oldTop = lua_gettop(L);
+		int type = lua_getglobal(L, LUAVAL_TABLE);
+		TinyAssert(type == LUA_TTABLE);
+		type = lua_rawgeti(L, -1, _data.refTableId);
+		TinyAssert(type == LUA_TTABLE);
+		LuaManager::instance()->pushVal(key);
+		lua_gettable(L, -2);
+		LuaVal top = LuaManager::instance()->getVal(L, -1);
+		lua_pop(L, 3);
+		TinyAssert(oldTop == lua_gettop(L));
+		return top;
+	}
+	else
+	{
+		auto it = (*_data.tablePtr)->find(key);
+		if (it != (*_data.tablePtr)->end())
+			return it->second;
+	}
+
 	return NIL;
 }
 
@@ -538,10 +572,28 @@ LuaVal& LuaVal::setField(const LuaVal& key, const LuaVal& value)
 	{
 		clear();
 		_type = DataType::TABLE;
-		_data.table = new std::shared_ptr<std::unordered_map<LuaVal,LuaVal,HashFunc,CmpFunc> >(new std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>());
+		_isLuaRefTable = false;
+		_data.tablePtr = new std::shared_ptr<std::unordered_map<LuaVal,LuaVal,HashFunc,CmpFunc> >(new std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>());
 	}
-	std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>* table = (*_data.table).get();
-	(*table)[key] = value;
+	if (_isLuaRefTable)
+	{
+		lua_State* L = LuaManager::instance()->getLuaMachine();	
+		int oldTop = lua_gettop(L);
+		int type = lua_getglobal(L, LUAVAL_TABLE);
+		TinyAssert(type == LUA_TTABLE);
+		type = lua_rawgeti(L, -1, _data.refTableId);
+		TinyAssert(type == LUA_TTABLE);
+		LuaManager::instance()->pushVal(key);
+		LuaManager::instance()->pushVal(value);
+		lua_settable(L, -3); 
+		lua_pop(L, 3);
+		TinyAssert(oldTop == lua_gettop(L));
+	}
+	else
+	{
+		std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>* table = (*_data.tablePtr).get();
+		(*table)[key] = value;
+	}
 	return *this;
 }
 
@@ -555,7 +607,21 @@ int LuaVal::getLenth() const
 	if (_type == DataType::STRING)
 		return (int)(*_data.str)->length();
 	else if (_type == DataType::TABLE)
-		return (int)(*_data.table)->size();
+		if (_isLuaRefTable)
+		{
+			lua_State* L = LuaManager::instance()->getLuaMachine();
+			int oldTop = lua_gettop(L);
+			int type = lua_getglobal(L, LUAVAL_TABLE);
+			TinyAssert(type == LUA_TTABLE);
+			type = lua_rawgeti(L, -1, _data.refTableId);
+			TinyAssert(type == LUA_TTABLE);
+			int len = (int)luaL_len(L, -1);
+			lua_pop(L, 2);
+			TinyAssert(oldTop == lua_gettop(L));
+			return len;
+		}
+		else
+			return (int)(*_data.tablePtr)->size();
 	else
 	{
 		TinyAssert(false);
@@ -563,54 +629,30 @@ int LuaVal::getLenth() const
 	}
 }
 
-LuaValTabIt LuaVal::begin()
+LuaValTabIt LuaVal::begin() const
 {
 	if (_type != DataType::TABLE)
 	{
 		TinyAssert(false, "It's not table");
 		return LuaValTabIt(s_getItWrongRet.begin());
 	}
-	return LuaValTabIt(_data.table->get()->begin());
+	if (_isLuaRefTable)
+		return ++LuaValTabIt(_data.refTableId);
+	else
+		return LuaValTabIt(_data.tablePtr->get()->begin());
 }
 
-ConstLuaValTabIt LuaVal::begin() const
-{
-	return cbegin();
-}
-
-ConstLuaValTabIt LuaVal::cbegin() const
-{
-	if (_type != DataType::TABLE)
-	{
-		TinyAssert(false, "It's not table");
-		return ConstLuaValTabIt(s_getItWrongRet.cbegin());
-	}
-	return ConstLuaValTabIt(_data.table->get()->cbegin());
-}
-
-LuaValTabIt LuaVal::end()
+LuaValTabIt LuaVal::end() const
 {
 	if (_type != DataType::TABLE)
 	{
 		TinyAssert(false, "It's not table");
 		return LuaValTabIt(s_getItWrongRet.end());
 	}
-	return LuaValTabIt(_data.table->get()->end());
-}
-
-ConstLuaValTabIt LuaVal::end() const
-{
-	return cend();
-}
-
-ConstLuaValTabIt LuaVal::cend() const
-{
-	if (_type != DataType::TABLE)
-	{
-		TinyAssert(false, "It's not table");
-		return ConstLuaValTabIt(s_getItWrongRet.cend());
-	}
-	return ConstLuaValTabIt(_data.table->get()->cend());
+	if (_isLuaRefTable)
+		return LuaValTabIt(-_data.refTableId);
+	else
+		return LuaValTabIt(_data.tablePtr->get()->end());
 }
 
 std::string LuaVal::toString() const
@@ -631,7 +673,9 @@ std::string LuaVal::toString() const
 		return FormatString("(Obj:%lX)", (int64_t)(*_data.obj).get());
 	case LuaVal::DataType::TABLE:
 		{
-			std::map<LuaVal, LuaVal> sortedTable((*_data.table)->begin(), (*_data.table)->end()); //sort table
+			std::map<LuaVal,LuaVal> sortedTable; //sort table
+			for (auto it = begin(); it != end(); ++it)
+				sortedTable[it.key()] = it.val();
 			std::string str = "{";
 			bool first = true;
 			for (auto pair : sortedTable)
@@ -872,11 +916,34 @@ LuaVal LuaVal::clone() const
 		break;
 	case LuaVal::DataType::TABLE:
 		val._type = _type;
-		val._data.table = new std::shared_ptr<std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> >(
-			new std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>(
-				*_data.table->get()
-			)
-		);
+		val._isLuaRefTable = false;
+		if (_isLuaRefTable)
+		{
+			lua_State* L = LuaManager::instance()->getLuaMachine();
+			int oldTop = lua_gettop(L);
+			int type = lua_getglobal(L, LUAVAL_TABLE);
+			TinyAssert(type == LUA_TTABLE);
+			type = lua_rawgeti(L, -1, _data.refTableId);
+			TinyAssert(type == LUA_TTABLE);
+
+			lua_pushnil(L);
+			while (lua_next(L, -2) != 0)
+			{
+				LuaVal key = LuaManager::instance()->getVal(L, -2);
+				LuaVal val = LuaManager::instance()->getVal(L, -1);
+				val.setField(key, val);
+			}
+			lua_pop(L, 2);
+			TinyAssert(oldTop == lua_gettop(L));
+		}
+		else
+		{
+			val._data.tablePtr = new std::shared_ptr<std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> >(
+				new std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>(
+					*_data.tablePtr->get()
+				)
+			);
+		}
 		break;
 	}
 	return val;
@@ -908,7 +975,12 @@ bool LuaVal::equal(const LuaVal& other) const
 	case LuaVal::DataType::REF_OBJ:
 		return _data.obj->get() == other._data.obj->get();
 	case LuaVal::DataType::TABLE:
-		return _data.table->get() == other._data.table->get();
+		if (_isLuaRefTable != other._isLuaRefTable)
+			return false;
+		if (_isLuaRefTable)
+			return _data.refTableId == other._data.refTableId;
+		else
+			return _data.tablePtr->get() == other._data.tablePtr->get();
 	}
 	TinyAssert(false, "unreachable code");
 	return false;
@@ -931,11 +1003,25 @@ void LuaVal::clear()
 		delete _data.obj;
 		break;
 	case LuaVal::DataType::TABLE:
-		delete _data.table;
+		if (_isLuaRefTable)
+		{
+			lua_State* L = LuaManager::instance()->getLuaMachine();
+			int oldTop = lua_gettop(L);
+			int type = lua_getglobal(L, LUAVAL_TABLE);
+			TinyAssert(type == LUA_TTABLE);
+			lua_pushinteger(L, _data.refTableId);
+			lua_pushnil(L);
+			lua_settable(L, -3);
+			lua_pop(L, 2);
+			TinyAssert(oldTop == lua_gettop(L));
+		}
+		else
+			delete _data.tablePtr;
 		break;
 	}
 	_data.i = 0;
 	_type = DataType::NIL;
+	_isLuaRefTable = false;
 }
 
 std::string LuaVal::getKeyString(const LuaVal& key) const
@@ -960,10 +1046,18 @@ std::string LuaVal::getKeyString(const LuaVal& key) const
 	case LuaVal::DataType::REF_OBJ:
 		return FormatString("[(Obj:%lX)]", (int64_t)(*_data.obj).get());
 	case LuaVal::DataType::TABLE:
-		return FormatString("[(Table:%lX)]", (int64_t)(*_data.table).get());
+		return FormatString("[(Table:%lX)]", (_isLuaRefTable ? _data.refTableId : (int64_t)(*_data.tablePtr).get()));
 	}
 	TinyAssert(false, "unreachable code");
 	return "";
+}
+
+void LuaVal::setRefTable(int64_t refTableId)
+{
+	clear();
+	_type = DataType::TABLE;
+	_isLuaRefTable = true;
+	_data.refTableId = refTableId;
 }
 
 _K::_K(_K&& other)
@@ -1057,109 +1151,119 @@ LuaValTabIt LuaValTabIt::operator++()
 
 LuaValTabIt& LuaValTabIt::operator++(int)
 {
-	++_it;
+	if (_isRefTable)
+	{
+		if (_tableId <= 0)
+		{
+			TinyAssert(false, "This iterator is ended!");
+			return *this;
+		}
+		++_stepIndex;
+		lua_State* L = LuaManager::instance()->getLuaMachine();
+		int oldTop = lua_gettop(L);
+		int type = lua_getglobal(L, LUAVAL_TABLE);
+		TinyAssert(type == LUA_TTABLE);
+		type = lua_rawgeti(L, -1, _tableId);
+		TinyAssert(type == LUA_TTABLE);
+		LuaManager::instance()->pushVal(_key);
+		int result = lua_next(L, -2);
+		if (result == 0)
+		{
+			_tableId = -_tableId;
+			lua_pop(L, 2);
+		}
+		else
+		{
+			_key = LuaManager::instance()->getVal(L, -1);
+			_val = LuaManager::instance()->getVal(L, -2);
+			lua_pop(L, 4);
+		}
+		TinyAssert(oldTop == lua_gettop(L));
+	}
+	else
+	{
+		++_it;
+	}
 	return *this;
 }
 
-LuaValTabIt LuaValTabIt::operator--()
+//LuaValTabIt LuaValTabIt::operator--()
+//{
+//	LuaValTabIt itCopy = *this;
+//	--_it;
+//	return itCopy;
+//}
+//
+//LuaValTabIt& LuaValTabIt::operator--(int)
+//{
+//	if (_isRefTable)
+//	{
+//		// lua unsupport
+//	}
+//	else
+//	{
+//		--_it;
+//	}
+//	return *this;
+//}
+
+const LuaVal LuaValTabIt::key() const
 {
-	LuaValTabIt itCopy = *this;
-	--_it;
-	return itCopy;
+	return _key;
 }
 
-LuaValTabIt& LuaValTabIt::operator--(int)
+const LuaVal LuaValTabIt::val() const
 {
-	--_it;
-	return *this;
+	return _val;
 }
-
-std::pair<const LuaVal, LuaVal>* LuaValTabIt::operator->()
-{
-	return &(*_it);
-}
-
-std::pair<const LuaVal, LuaVal>& LuaValTabIt::operator*()
-{
-	return *_it;
-}
-
 LuaValTabIt::LuaValTabIt(const std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::iterator& it)
-	:_it(it)
+	: _it(it)
+	, _tableId(0)
+	, _isRefTable(false)
+	, _stepIndex(0)
 {
-	
+
+}
+
+LuaValTabIt::LuaValTabIt(int64_t tableId)
+	: _tableId(tableId)
+	, _isRefTable(true)
+	, _stepIndex(0)
+{
+
 }
 
 bool LuaValTabIt::operator!=(const LuaValTabIt& other) const
 {
-	return _it != other._it;
+	return !(*this == other);
 }
 
 bool LuaValTabIt::operator==(const LuaValTabIt& other) const
 {
-	return _it == other._it;
+	if (_isRefTable != other._isRefTable)
+		return false;
+
+	if (_isRefTable)
+	{
+		if (_tableId != other._tableId)
+			return false;
+		return _stepIndex == other._stepIndex;
+	}
+	else
+		return _it == other._it;
 }
 
 LuaValTabIt& LuaValTabIt::operator=(const LuaValTabIt& other)
 {
+	if (*this == other)
+		return *this;
+
+	_isRefTable = other._isRefTable;
 	_it = other._it;
-	return *this;
-}
+	_tableId = other._tableId;
+	_key = other._key;
+	_val = other._val;
+	_stepIndex = other._stepIndex;
 
-ConstLuaValTabIt ConstLuaValTabIt::operator++()
-{
-	ConstLuaValTabIt itCopy = *this;
-	++_it;
-	return itCopy;
-}
-
-ConstLuaValTabIt& ConstLuaValTabIt::operator++(int)
-{
-	++_it;
-	return *this;
-}
-
-ConstLuaValTabIt ConstLuaValTabIt::operator--()
-{
-	ConstLuaValTabIt itCopy = *this;
-	--_it;
-	return itCopy;
-}
-
-ConstLuaValTabIt& ConstLuaValTabIt::operator--(int)
-{
-	--_it;
-	return *this;
-}
-
-const std::pair<const LuaVal, LuaVal>* ConstLuaValTabIt::operator->()
-{
-	return &(*_it);
-}
-
-const std::pair<const LuaVal, LuaVal>& ConstLuaValTabIt::operator*()
-{
-	return *_it;
-}
-
-ConstLuaValTabIt::ConstLuaValTabIt(const std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::const_iterator& it)
-	:_it(it)
-{
-
-}
-
-bool ConstLuaValTabIt::operator!=(const ConstLuaValTabIt& other) const
-{
-	return _it != other._it;
-}
-
-bool ConstLuaValTabIt::operator==(const ConstLuaValTabIt& other) const
-{
-	return _it == other._it;
-}
-
-ConstLuaValTabIt& ConstLuaValTabIt::operator=(const ConstLuaValTabIt& other)
-{
-	_it = other._it;
 	return *this;
 }

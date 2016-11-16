@@ -58,13 +58,25 @@ bool LuaManager::pushVal(lua_State* L, const LuaVal& val)
 		_usingRefObj.push_back(val.convertRefPtr_static<RefCountObj>());
 		break;
 	case LuaVal::DataType::TABLE:
-		lua_newtable(L);
-		for (auto& pair : val)
+		if (val._isLuaRefTable)
 		{
-			pushVal(pair.first);
-			pushVal(pair.second);
-			lua_rawset(L, -3);
+			int type = lua_getglobal(L, LUAVAL_TABLE);
+			TinyAssert(type == LUA_TTABLE);
+			lua_geti(L,-1,val._data.refTableId);
+			lua_remove(L, -2);
 		}
+		else
+		{
+			lua_newtable(L);
+			for (auto it = val.begin(); it != val.end();++it)
+			{
+				pushVal(it.key());
+				pushVal(it.val());
+				lua_rawset(L, -3);
+			}
+			const_cast<LuaVal&>(val) = getVal(L, -1);
+		}
+
 		break;
 	default:
 		return false;
@@ -132,20 +144,32 @@ LuaVal LuaManager::getVal(lua_State* L, int index)
 			}
 			else
 			{
-				v = {};
 				lua_pop(L, 1);
-				lua_pushnil(L); //key
-				int tabPos = (index >= 0 ? index : index - 1);
-				while (lua_next(L, tabPos) != 0)
+				int type = lua_getglobal(L, LUAVAL_TABLE);
+				TinyAssert(type == LUA_TTABLE);
+				lua_pushnil(L);
+				int64_t index = 1;
+				while (lua_next(L, -2) != 0)
 				{
-					LuaVal key = getVal(L, -2);
-					if (!(key.isString() && key == "__index"))
+					if (lua_compare(L, -1, -4, LUA_OPEQ))
 					{
-						LuaVal value = getVal(L, -1);
-						v.setField(key, value);
+						int64_t id = (int64_t)lua_tointeger(L, -2);
+						v.setRefTable(id);
+						lua_pop(L, 2);
+						break;
 					}
+					++index;
 					lua_pop(L, 1);
 				}
+				if (v.getType() == LuaVal::DataType::NIL)
+				{
+					lua_pushinteger(L, index);
+					lua_pushnil(L);
+					lua_copy(L, -4, -1);
+					lua_settable(L, -3);
+					v.setRefTable(index);
+				}
+				lua_pop(L, 1);
 			}
 			TinyAssert(oldTop == lua_gettop(L));
 		}
@@ -185,6 +209,8 @@ bool LuaManager::init()
 		lua_register(_LuaState, "Print", printVal);
 		lua_newtable(_LuaState);
 		lua_setglobal(_LuaState, CPP_LUA_POTABLE);
+		lua_newtable(_LuaState);
+		lua_setglobal(_LuaState, LUAVAL_TABLE);
 
 		LuaFuns::instance()->registerFuncsToLua();
 		return true;

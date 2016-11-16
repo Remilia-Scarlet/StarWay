@@ -58,11 +58,13 @@
 struct _K;
 class LuaValTabIt;
 class ConstLuaValTabIt;
+class LuaManager;
 
 class LuaVal
 {
 	friend class LuaValTabIt;
 	friend class ConstLuaValTabIt;
+	friend class LuaManager;
 public:
 	enum class DataType : int8_t
 	{
@@ -172,14 +174,10 @@ public:
 	int getLenth() const;
 
 	// only aviliable for Table
-	LuaValTabIt begin();
-	ConstLuaValTabIt begin() const;
-	ConstLuaValTabIt cbegin() const;
+	LuaValTabIt begin() const;
 
 	// only aviliable for Table
-	LuaValTabIt end();
-	ConstLuaValTabIt end() const;
-	ConstLuaValTabIt cend() const;
+	LuaValTabIt end() const;
 
 	// get describe of this LuaVal
 	std::string toString() const;
@@ -232,6 +230,7 @@ public:
 protected:
 	void clear();
 	std::string getKeyString(const LuaVal& key) const;
+	void setRefTable(int64_t refTableId);
 protected:
 	struct HashFunc
 	{
@@ -252,7 +251,10 @@ protected:
 			case DataType::REF_OBJ:
 				return std::hash<void*>()(key._data.obj->get());
 			case DataType::TABLE:
-				return std::hash<void*>()(key._data.table->get());
+				if(key._isLuaRefTable)
+					return std::hash<int64_t>()(key._data.refTableId);
+				else
+					return std::hash<void*>()(key._data.tablePtr->get());
 			default:
 				return 0;
 			}
@@ -277,9 +279,13 @@ protected:
 		double d;
 		std::shared_ptr<std::string>* str;
 		RefCountPtr<RefCountObj>* obj;
-		std::shared_ptr<std::unordered_map<LuaVal,LuaVal,HashFunc,CmpFunc> >* table;
+		std::shared_ptr<std::unordered_map<LuaVal,LuaVal,HashFunc,CmpFunc> >* tablePtr;
+		int64_t refTableId;
 	} _data;
 	DataType _type = DataType::NIL;
+	bool _isLuaRefTable = false;
+
+	 
 
 	static std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> s_getItWrongRet;
 };
@@ -445,36 +451,22 @@ class LuaValTabIt
 public:
 	LuaValTabIt operator++();
 	LuaValTabIt& operator++(int);
-	LuaValTabIt operator--();
-	LuaValTabIt& operator--(int);
-	std::pair<const LuaVal, LuaVal>* operator->();
-	std::pair<const LuaVal, LuaVal>& operator*();
+//	LuaValTabIt operator--();
+//	LuaValTabIt& operator--(int);
+	const LuaVal key() const;
+	const LuaVal val() const;
 	bool operator==(const LuaValTabIt& other) const;
 	bool operator!=(const LuaValTabIt& other) const;
 	LuaValTabIt& operator=(const LuaValTabIt& other);
 protected:
 	LuaValTabIt() = delete;
 	LuaValTabIt(const std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::iterator& it);
+	LuaValTabIt(int64_t tableId);
 
+	bool _isRefTable;
 	std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::iterator _it;
-};
-
-class ConstLuaValTabIt
-{
-	friend class LuaVal;
-public:
-	ConstLuaValTabIt operator++();
-	ConstLuaValTabIt& operator++(int);
-	ConstLuaValTabIt operator--();
-	ConstLuaValTabIt& operator--(int);
-	const std::pair<const LuaVal, LuaVal>* operator->();
-	const std::pair<const LuaVal, LuaVal>& operator*();
-	bool operator==(const ConstLuaValTabIt& other) const;
-	bool operator!=(const ConstLuaValTabIt& other) const;
-	ConstLuaValTabIt& operator=(const ConstLuaValTabIt& other);
-protected:
-	ConstLuaValTabIt() = delete;
-	ConstLuaValTabIt(const std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::const_iterator& it);
-
-	std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc>::const_iterator _it;
+	int64_t _tableId;
+	LuaVal _key;
+	LuaVal _val;
+	int32_t _stepIndex;
 };

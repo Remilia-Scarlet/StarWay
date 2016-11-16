@@ -502,10 +502,10 @@ void TestLuaVal()
 	LuaVal val16(*obj.get());
 	std::string str5 = val16.toString();
 	LuaVal val17 = {1, _K(1.1) = "mmm", "abc", _K("1") = 234, _K(2) = 1, _K("x") = 123, _K("y") = 456, _K("tab") = {1, 2, 3}};
-	for (auto& pair : val17)
+	for (auto it = val17.begin(); it != val17.end();++it)
 	{
-		const LuaVal& key = pair.first;
-		LuaVal& val = pair.second;
+		LuaVal key = it.key();
+		LuaVal val = it.val();
 		//	DebugString("%s,%s", key.toString().c_str(), val.toString().c_str());
 	}
 	const LuaVal valconst = val17;
@@ -624,7 +624,7 @@ void TestFileSystem()
 }
 void UnitTest()
 {
-	return;
+//	return;
 	Common();
 	TestMatrix();
 	TestVector();

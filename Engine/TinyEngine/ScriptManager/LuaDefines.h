@@ -4,9 +4,10 @@
 
 #define LUA_PARAM_ERROR(NAME) luaL_error(L, "function %s param error", #NAME)
 #define ASSERT_PARAM_NUM(PARAM_NUM) do{if(lua_gettop(L) < PARAM_NUM)return luaL_error(L, "function param number wrong");}while(0)
-static const char* CPP_LUA_POTABLE = "_ObjList";
+static const char* CPP_LUA_POTABLE = "ObjList";
 static const char* LUA_CPP_REF_NAME = "c_ref";
 static const char* CPP_CALL_LUA_NAME = "CppCallLua";
+static const char* LUAVAL_TABLE = "LuaValTable";
 static const char* COMPONENT_PARENT = "parent";
 static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
 
