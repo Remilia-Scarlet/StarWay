@@ -3,9 +3,11 @@
 //////////////////////////////////////////////////////////////////////////
 // Useage:
 // You can construct a LuaVal from these ways:
-// number:
+// Number:
 // LuaVal val = 1;    //int
 // val = 2.2;         //double
+//
+// Boolean:
 // val = true;	      //bool
 //
 // string:
@@ -45,7 +47,7 @@
 // If you want deep copy, call clone()
 // LuaVal deepCopy = shadowCopy.clone();
 // Now your modification on deepCopy will not affect shadowCopy and val
-// LuaVal string is treated as basical type. The copy constructor and operator== are deep copy.
+// LuaVal string is treated as basical type. You don't need to worry about shadow copy and deep copy.
 //////////////////////////////////////////////////////////////////////////
 
 #include "Ash\RefCountPointer\RefCountPtr.h"
@@ -95,7 +97,6 @@ public:
 	template <class T>
 	LuaVal(const RefCountPtr<T>& obj);  // obj
 	LuaVal(std::initializer_list<_K> table);//table
-//	LuaVal(const LuaVal& key, const LuaVal& val);//table
 	LuaVal(const LuaVal& other);  // copy
 	LuaVal(LuaVal&& other);  // move
 
@@ -213,7 +214,7 @@ public:
 	LuaVal clone() const;
 
 	// For int, double and string, return true if the value is equal
-	// For RefCountObj, compair there pointer
+	// For RefCountObj, compair their pointers
 	// For table, compair the table pointer. That is, this->clone().euqal(this) == false
 	bool equal(const LuaVal& other) const;
 public:

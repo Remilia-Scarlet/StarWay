@@ -874,9 +874,9 @@ LuaVal LuaVal::clone() const
 		val._type = _type;
 		val._data.table = new std::shared_ptr<std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> >(
 			new std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>(
-				*((*_data.table).get())
-				)
-			);
+				*_data.table->get()
+			)
+		);
 		break;
 	}
 	return val;
