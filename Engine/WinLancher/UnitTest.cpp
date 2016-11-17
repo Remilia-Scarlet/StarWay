@@ -574,6 +574,39 @@ void TestLuaVal()
 	auto sdf66 = sdsadfsa.convert<RefCountPtr<RefCountObj>>();
 
 	LuaVal dasdas = LuaVal(true);
+
+	lua_State* L = LuaManager::instance()->getLuaMachine();
+	lua_newtable(L);
+	lua_pushstring(L, "abc");
+	LuaManager::instance()->pushVal(val17);
+	lua_settable(L, -3);
+
+	LuaManager::instance()->pushVal(aaasds);
+	LuaManager::instance()->pushVal(asddf);
+	lua_settable(L, -3);
+
+	LuaVal abc = LuaManager::instance()->getVal(L, -1);
+	
+	lua_pushstring(L, "looop");
+	LuaManager::instance()->pushVal(abc);
+	lua_settable(L, -3);
+
+	lua_pushstring(L, "LUAVALTAB");
+	lua_getglobal(L, LUAVAL_TABLE);
+	std::string luavaltab = LuaManager::instance()->toString(-1);
+	lua_settable(L, -3);
+	
+	LuaVal tab = LuaManager::instance()->getVal(L, -1);
+	std::string str = tab.toString();
+	std::string strdfs = LuaManager::instance()->toString(-1);
+
+	abc = nullptr;
+	lua_getglobal(L, LUAVAL_TABLE);
+	std::string luavaltab2 = LuaManager::instance()->toString(-1);
+	lua_pop(L, 1);
+
+	lua_pop(L, 1);
+
 }
 void TestFileSystem()
 {
@@ -624,7 +657,7 @@ void TestFileSystem()
 }
 void UnitTest()
 {
-//	return;
+	return;
 	Common();
 	TestMatrix();
 	TestVector();

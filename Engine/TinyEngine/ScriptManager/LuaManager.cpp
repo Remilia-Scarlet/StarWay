@@ -60,11 +60,11 @@ bool LuaManager::pushVal(lua_State* L, const LuaVal& val)
 		_usingRefObj.push_back(val.convertRefPtr_static<RefCountObj>());
 		break;
 	case LuaVal::DataType::TABLE:
-		if (val._isLuaRefTable)
+		if (val.isLuaRefTable())
 		{
 			int type = lua_getglobal(L, LUAVAL_TABLE);
 			TinyAssert(type == LUA_TTABLE);
-			lua_geti(L,-1,val._data.refTableId);
+			lua_geti(L, -1, val.getLuaRefTableId());
 			lua_remove(L, -2);
 		}
 		else
@@ -96,6 +96,8 @@ bool LuaManager::pushVal()
 {
 	return true;
 }
+
+
 LuaVal LuaManager::getVal(int index)
 {
 	return getVal(_LuaState, index);
@@ -104,6 +106,73 @@ LuaVal LuaManager::getVal(int index)
 lua_State* LuaManager::getLuaMachine()
 {
 	return _LuaState;
+}
+
+std::string LuaManager::toString(int index)
+{
+	return doToString(index, 0);
+}
+
+std::string LuaManager::doToString(int index, int deep)
+{
+	int type = lua_type(_LuaState, index);
+	switch (type)
+	{
+	case LUA_TNIL:
+		return "nil";
+	case LUA_TBOOLEAN:
+		return lua_toboolean(_LuaState, index) == 1 ? "true" : "false";
+	case LUA_TLIGHTUSERDATA:
+		return FormatString("(CPtr:%lX)", (int64_t)(lua_touserdata(_LuaState, index)));
+	case LUA_TNUMBER:
+	{
+		if (lua_isinteger(_LuaState, index))
+			return FormatString("%ld", lua_tointeger(_LuaState, index));
+		else
+			return FormatString("%.14g", lua_tonumber(_LuaState, index));
+	}
+	case LUA_TSTRING:
+		return FormatString("\"%s\"", lua_tostring(_LuaState, index));
+	case LUA_TTABLE:
+	{
+		if(deep == LUA_TOSTRING_MAX_DEEP)
+			return FormatString("(Table:%lX)", (int64_t)lua_topointer(_LuaState, index));
+		int top = lua_gettop(_LuaState);
+		int tabIndex = lua_absindex(_LuaState, index);
+		lua_pushnil(_LuaState);
+		std::string str = "{\n";
+		bool first = true;
+		while (lua_next(_LuaState, tabIndex))
+		{
+			if (first)
+				first = false;
+			else
+				str += ",\n";
+			for (int i = 0; i < deep + 1; ++i)
+				str += "\t";
+			str += doToString(-2, deep + 1);
+			str += "=";
+			str += doToString(-1, deep + 1);
+			lua_pop(_LuaState, 1);
+		}
+		str += "\n";
+		for (int i = 0; i < deep; ++i)
+			str += "\t";
+		str += "}";
+		TinyAssert(top == lua_gettop(_LuaState));
+		return str;
+	}
+	case LUA_TFUNCTION:
+		return FormatString("(Func:%lX)", (int64_t)lua_topointer(_LuaState, index));
+	case LUA_TUSERDATA:
+		return FormatString("(UserData:%lX)", (int64_t)(lua_touserdata(_LuaState, index)));
+	case LUA_TTHREAD:
+		return FormatString("(Thread:%lX)", (int64_t)(lua_topointer(_LuaState, index)));
+	default:
+		break;
+	}
+	TinyAssert(false, "unreachable code");
+	return "(error value)";
 }
 
 LuaVal LuaManager::getVal(lua_State* L, int index)
@@ -248,8 +317,7 @@ int LuaManager::printVal(lua_State* L)
 
 	for (int i = 1; i <= num; ++i)
 	{
-		LuaVal val = LuaManager::instance()->getVal(i);
-		DebugString("Lua info:%s", val.toString().c_str());
+		DebugString("Lua info:%s", LuaManager::instance()->toString(i).c_str());
 	}
 	return 0;
 }

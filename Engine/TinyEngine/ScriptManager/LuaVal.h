@@ -50,6 +50,7 @@
 // LuaVal string is treated as basical type. You don't need to worry about shadow copy and deep copy.
 //////////////////////////////////////////////////////////////////////////
 
+#include "ThirdParty\lua_5_3_3\lua.hpp"
 #include "Ash\RefCountPointer\RefCountPtr.h"
 #include "Ash\RefCountPointer\RefCountObj.h"
 #include <memory>
@@ -63,7 +64,6 @@ class LuaManager;
 class LuaVal
 {
 	friend class LuaValTabIt;
-	friend class ConstLuaValTabIt;
 	friend class LuaManager;
 public:
 	enum class DataType : int8_t
@@ -231,34 +231,12 @@ protected:
 	void clear();
 	std::string getKeyString(const LuaVal& key) const;
 	void setRefTable(int64_t refTableId);
+	bool isLuaRefTable() const;
+	int64_t getLuaRefTableId() const;
 protected:
 	struct HashFunc
 	{
-		size_t operator()(const LuaVal& key) const
-		{
-			switch (key._type)
-			{
-			case DataType::NIL:
-				return 99999999;
-			case DataType::BOOLEAN:
-				return key._data.b ? 1234567 : 7654321;
-			case DataType::INT64:
-				return std::hash<int64_t>()(key._data.i);
-			case DataType::DOUBLE:
-				return std::hash<float>()(float(key._data.d));
-			case DataType::STRING:
-				return std::hash<std::string>()(*key._data.str->get());
-			case DataType::REF_OBJ:
-				return std::hash<void*>()(key._data.obj->get());
-			case DataType::TABLE:
-				if(key._isLuaRefTable)
-					return std::hash<int64_t>()(key._data.refTableId);
-				else
-					return std::hash<void*>()(key._data.tablePtr->get());
-			default:
-				return 0;
-			}
-		}
+		size_t operator()(const LuaVal& key) const;
 	};
 	struct CmpFunc
 	{
@@ -266,6 +244,23 @@ protected:
 		{
 			return a.equal(b);
 		}
+	};
+	struct TableSaver
+	{
+		TableSaver(bool isLuaRefTable);
+		TableSaver(const TableSaver& other) = delete;
+		TableSaver(TableSaver&& other);
+		~TableSaver();
+		bool operator==(const TableSaver& other) const;
+		bool operator<(const TableSaver& other) const;
+		std::shared_ptr<TableSaver> clone() const;
+		
+		union 
+		{
+			std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc>* originTable;
+			int64_t refTableId;
+		};
+		bool isLuaRefTable;
 	};
 	union Data
 	{
@@ -279,13 +274,10 @@ protected:
 		double d;
 		std::shared_ptr<std::string>* str;
 		RefCountPtr<RefCountObj>* obj;
-		std::shared_ptr<std::unordered_map<LuaVal,LuaVal,HashFunc,CmpFunc> >* tablePtr;
-		int64_t refTableId;
+		std::shared_ptr<TableSaver>* tab;
 	} _data;
 	DataType _type = DataType::NIL;
-	bool _isLuaRefTable = false;
 
-	 
 
 	static std::unordered_map<LuaVal, LuaVal, HashFunc, CmpFunc> s_getItWrongRet;
 };

@@ -10,6 +10,7 @@ static const char* CPP_CALL_LUA_NAME = "CppCallLua";
 static const char* LUAVAL_TABLE = "LuaValTable";
 static const char* COMPONENT_PARENT = "parent";
 static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
+static const int LUA_TOSTRING_MAX_DEEP = 3;
 
 // Used in prototype creating. First PROTOTYPE_PREPARE() then PROTOTYPE_REGISTER_FUN(FUN_NAME) if needed. Then PROTOTYPE_END(CLASS_NAME).
 #define LUA_PROTOTYPE_PREPARE()       \

@@ -41,6 +41,9 @@ public:
 
 	// get lua machine
 	lua_State* getLuaMachine();
+
+	// format a value to string at index of stack
+	std::string toString(int index);
 protected:
 	// load all script file under game:Script
 	bool loadFile();
@@ -49,6 +52,7 @@ protected:
 	std::list<LuaVal> doCall(int oldStackDeep, int paramNum);
 	bool pushVal();
 	
+	std::string doToString(int index, int deep);
 
 	LuaManager();
 	~LuaManager();
