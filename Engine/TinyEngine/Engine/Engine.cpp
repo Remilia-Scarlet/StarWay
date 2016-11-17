@@ -151,6 +151,10 @@ void Engine::drawScene()
 
 void Engine::updateWorld(float dt)
 {
+	lua_State* L = LuaManager::instance()->getLuaMachine();
+	lua_getglobal(L, LUAVAL_TABLE);
+	LuaVal val = LuaManager::instance()->getVal(L, -1);
+	std::string str = val.toString();
 	TimerManager::instance()->update(dt);
 	if (_currentScene.isValid())
 		_currentScene->update(dt);

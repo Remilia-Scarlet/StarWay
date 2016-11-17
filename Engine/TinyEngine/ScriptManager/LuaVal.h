@@ -449,8 +449,8 @@ class LuaValTabIt
 {
 	friend class LuaVal;
 public:
-	LuaValTabIt operator++();
-	LuaValTabIt& operator++(int);
+	LuaValTabIt operator++(int);
+	LuaValTabIt& operator++();
 //	LuaValTabIt operator--();
 //	LuaValTabIt& operator--(int);
 	const LuaVal key() const;

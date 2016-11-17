@@ -5,6 +5,8 @@
 #include "LuaFuncs.h"
 
 LuaManager* LuaManager::s_instance = nullptr;
+int64_t LuaManager::s_luaTableIndex = 0;
+
 class LuaFuns;
 bool LuaManager::createInstance()
 {
@@ -74,7 +76,6 @@ bool LuaManager::pushVal(lua_State* L, const LuaVal& val)
 				pushVal(it.val());
 				lua_rawset(L, -3);
 			}
-			const_cast<LuaVal&>(val) = getVal(L, -1);
 		}
 
 		break;
@@ -145,30 +146,15 @@ LuaVal LuaManager::getVal(lua_State* L, int index)
 			else
 			{
 				lua_pop(L, 1);
+				int tabIndex = lua_absindex(L, index);
 				int type = lua_getglobal(L, LUAVAL_TABLE);
 				TinyAssert(type == LUA_TTABLE);
+				int64_t index = ++s_luaTableIndex;
+				lua_pushinteger(L, index);
 				lua_pushnil(L);
-				int64_t index = 1;
-				while (lua_next(L, -2) != 0)
-				{
-					if (lua_compare(L, -1, -4, LUA_OPEQ))
-					{
-						int64_t id = (int64_t)lua_tointeger(L, -2);
-						v.setRefTable(id);
-						lua_pop(L, 2);
-						break;
-					}
-					++index;
-					lua_pop(L, 1);
-				}
-				if (v.getType() == LuaVal::DataType::NIL)
-				{
-					lua_pushinteger(L, index);
-					lua_pushnil(L);
-					lua_copy(L, -4, -1);
-					lua_settable(L, -3);
-					v.setRefTable(index);
-				}
+				lua_copy(L, tabIndex, -1);
+				lua_settable(L, -3);
+				v.setRefTable(index);
 				lua_pop(L, 1);
 			}
 			TinyAssert(oldTop == lua_gettop(L));
