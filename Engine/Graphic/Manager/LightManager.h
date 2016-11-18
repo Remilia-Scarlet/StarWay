@@ -57,6 +57,7 @@ public:
 	static LightManager* instance();
 public:
 	void applyDirectionLight(const DirectionLight& directionLight);
+	void applyPointLight(const PointLight& pointLight);
 
 	void preRender();
 	void render();

@@ -33,6 +33,15 @@ void LightManager::applyDirectionLight(const DirectionLight& directionLight)
 	}
 }
 
+void LightManager::applyPointLight(const PointLight& pointLight)
+{
+	if (_lightInfo.lightNumber.Y() < (float)MAX_LIGHT)
+	{
+		_lightInfo.pointLight[int(_lightInfo.lightNumber.Y())] = pointLight;
+		++_lightInfo.lightNumber.Y();
+	}
+}
+
 void LightManager::preRender()
 {
 	_lightInfo.lightNumber.reset();

@@ -1,6 +1,7 @@
 #include "TinyEngine/precomp.h"
 #include "Scene.h"
 #include "TinyEngine/Engine/Engine.h"
+#include "Graphic/Manager/LightManager.h"
 
 bool Scene::createLuaPrototype()
 {
@@ -111,6 +112,7 @@ void Scene::render()
 					itLight = _lights.erase(itLight);
 			}
 
+			LightManager::instance()->render();
 
 			for (auto itObj = _objects.begin(); itObj != _objects.end(); ++itObj)
 			{

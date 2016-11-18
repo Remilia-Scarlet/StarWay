@@ -2,10 +2,9 @@ function start()
 	local scene = Scene:create()
 	
 	CreateGround(scene)
-	--CreateObj(scene)
+	CreateObj(scene)
 	local freeCamera = CreateFreeCamera(scene)
 	CreateSplineCamera(scene,freeCamera)
-	CreateSpline(scene)
 	CreateLight(scene)
 	
 	StartScene(scene)
@@ -86,19 +85,21 @@ function CreateSplineCamera(scene,freeCamera)
 	spineCametaTran:setLocation(Vector3(0, 2, -5))
 	spineCametaTran:faceToPoint(Vector3(1, 0, 1))
 	
-	scene:addObject(spineCamera);
+	--scene:addObject(spineCamera);
 end
 
-function CreateSpline(scene)
---	local controlPoints = {Vector3(0,0,0),Vector3(1,1,0),Vector3(2,0,0),Vector3(1,-1,0) }
---	Spline:create(controlPoints)
-	
-end
 
 function CreateLight(scene)
-	--add light
+	--direction light
 	local directionLightObj = Object:create()
 	local directionLightComponent = DirectionLightComponent:create(Vector4(0.2,0.2,0.2,1.0),Vector4(0.5,0.5,0.5,1.0),Vector4(0.5,0.5,0.5,1.0),Vector3(0.57735,-0.57735,0.57735))
 	directionLightObj:addComponent(directionLightComponent)
 	scene:addObject(directionLightObj);
+	
+	--point light
+	local pointLightObj = Object:create()
+	local pointLightComponent = PointLightComponet:create(Vector4(0.2,0.2,0.2,1.0),Vector4(0.5,0.5,0.5,1.0),Vector4(0.5,0.5,0.5,1.0),Vector3(0.57735,-0.57735,0.57735))
+	pointLightObj:addComponent(pointLightComponent)
+	scene:addObject(pointLightObj);
+	
 end

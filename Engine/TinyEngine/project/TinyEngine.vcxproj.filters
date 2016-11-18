@@ -158,6 +158,9 @@
     <ClCompile Include="..\Components\DirectionLightComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\Components\PointLightComponet.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -308,6 +311,9 @@
       <Filter>ScriptManager</Filter>
     </ClInclude>
     <ClInclude Include="..\Components\DirectionLightComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Components\PointLightComponet.h">
       <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
