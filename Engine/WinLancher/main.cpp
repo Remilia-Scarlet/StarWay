@@ -164,6 +164,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	float frameTime;
 	float remainTime;
 	float desiredFrameTime;
+	double frame = 0;
+	double average = 0;
 	MSG msg = { 0 };
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start_t);
@@ -180,7 +182,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		if (frameTime >= desiredFrameTime)
 		{
 			start_t = stop_t;
+			++frame;
 			Engine::instance()->mainLoop(frameTime);
+			QueryPerformanceCounter(&stop_t);
+			frameTime = float(stop_t.QuadPart - start_t.QuadPart) / float(freq.QuadPart);
+			average += frameTime;
 #if _DEBUG
 			extern void UnitTest();
 			UnitTest();
@@ -194,6 +200,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 				Sleep(DWORD(remainTime));
 		}
 	}
+
+	DebugString("Average frame time:%f", average/frame);
 
 	Engine::instance()->cleanUp();
 
