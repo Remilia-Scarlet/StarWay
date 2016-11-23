@@ -40,15 +40,16 @@ int MeshComponent::L_create(lua_State* L)
 	if(vertexs.getType() != LuaVal::DataType::TABLE)
 		return LUA_PARAM_ERROR(MeshComponent::L_create);
 	std::vector<CommonVertex> ver;
-	for (int i = 1; i <= vertexs.getLenth(); ++i)
-	{
-		LuaVal vertex = vertexs.getField(i);
-		Vector3 pos = (Vector3)vertex.getField(1);
-		Vector3 normal = (Vector3)vertex.getField(2);
-		Vector2 uv = (Vector2)vertex.getField(3);
+	//for (int i = 1; i <= vertexs.getLenth(); ++i)
+	//{
+	//	LuaVal vertex = vertexs.getField(i);
+	//	Vector3 pos = (Vector3)vertex.getField(1);
+	//	Vector3 normal = (Vector3)vertex.getField(2);
+	//	Vector2 uv = (Vector2)vertex.getField(3);
 
-		ver.push_back({ pos,normal,uv });
-	}
+	//	ver.push_back({ pos,normal,uv });
+	//}
+	TinyAssert(false, "to do");
 
 	LuaVal indicsOrName = LuaManager::instance()->getVal(L, 3);
 	if (indicsOrName.getType() == LuaVal::DataType::STRING)

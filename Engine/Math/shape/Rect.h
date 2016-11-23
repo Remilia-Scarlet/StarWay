@@ -11,10 +11,12 @@ public:
 	// init rect with x=y=w=h=0
 	inline RectStorage();
 
-	inline RectStorage(const LuaVal& luaval);
+//	inline RectStorage(const LuaVal& luaval);
 	
 	// init rect with x,y,w,h
 	inline RectStorage(ValueType x, ValueType y, ValueType w, ValueType h);
+
+	static RectStorage createFromLua(lua_State* L, int index);
 
 	// return Vector2(x,y)
 	inline VectorStorage<ValueType, 2> getLocation() const;

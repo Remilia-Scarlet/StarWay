@@ -1,5 +1,6 @@
 #include "TinyEngine\precomp.h"
 #include "PointLightComponet.h"
+#include "TransformComponent.h"
 
 
 bool PointLightComponet::createLuaPrototype()
@@ -16,12 +17,11 @@ PointLightComponetPtr PointLightComponet::create(
 	const Vector4& ambient,
 	const Vector4& diffuse,
 	const Vector4& specular,
-	const Vector3& position,
 	float range,
 	const Vector3& att)
 {
 	PointLightComponet* ret = new PointLightComponet();
-	if (ret && ret->init(ambient, diffuse, specular, position, range, att))
+	if (ret && ret->init(ambient, diffuse, specular, range, att))
 		return PointLightComponetPtr(ret);
 	TINY_SAFE_DELETE(ret);
 	return PointLightComponetPtr();
@@ -29,17 +29,24 @@ PointLightComponetPtr PointLightComponet::create(
 
 int PointLightComponet::L_create(lua_State* L)
 {
-	Vector4 ambient = (Vector4)LuaManager::instance()->getVal(L, 2);
-	Vector4 diffuse = (Vector4)LuaManager::instance()->getVal(L, 3);
-	Vector4 specular = (Vector4)LuaManager::instance()->getVal(L, 4);
-	Vector3 position = (Vector3)LuaManager::instance()->getVal(L, 5);
-	float range = LuaManager::instance()->getVal(L, 6).convertFloat();
-	Vector3 att = (Vector3)LuaManager::instance()->getVal(L, 7);
-
+	Vector4 ambient = LuaManager::instance()->convert<Vector4>(L, 2);
+	Vector4 diffuse = LuaManager::instance()->convert<Vector4>(L, 3);
+	Vector4 specular = LuaManager::instance()->convert<Vector4>(L, 4);
+	float range = LuaManager::instance()->convert<float>(L, 5);
+	Vector3 att = LuaManager::instance()->convert<Vector3>(L, 6);
+	PointLightComponetPtr ptr = PointLightComponet::create(ambient, diffuse, specular, range, att);
+	LuaManager::instance()->pushVal(ptr);
+	return 1;
 }
 
 void PointLightComponet::render()
 {
+	ObjectPtr obj = getOwner().lock();
+	TinyAssert(obj.isValid());
+	TransformComponentPtr trans = obj->getComponent<TransformComponent>();
+	if (!trans.isValid())
+		return;
+	_light.position = trans->getLocation();
 	LightManager::instance()->applyPointLight(_light);
 }
 
@@ -52,14 +59,13 @@ PointLightComponet::~PointLightComponet()
 {
 }
 
-bool PointLightComponet::init(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular, const Vector3& position, float range, const Vector3& att)
+bool PointLightComponet::init(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular, float range, const Vector3& att)
 {
 	do
 	{
 		_light.ambient = ambient;
 		_light.diffuse = diffuse;
 		_light.specular = specular;
-		_light.position = position;
 		_light.range = range;
 		_light.att = att;
 		return true;

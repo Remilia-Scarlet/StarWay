@@ -105,7 +105,7 @@ LuaVal::LuaVal(LuaVal&& other)
 
 LuaVal::~LuaVal()
 {
-	if(_type == DataType::REF_OBJ || _type == DataType::STRING || _type == DataType::TABLE)
+	if(_type == DataType::REF_OBJ || _type == DataType::STRING || _type == DataType::TABLE || _type == DataType::USER_DATA)
 		clear();
 }
 
@@ -280,6 +280,7 @@ bool LuaVal::operator<(const LuaVal& other) const
 	case LuaVal::DataType::REF_OBJ:
 		return *_data.obj < *other._data.obj;
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 		return *_data.tab->get() < *other._data.tab->get();
 	}
 	TinyAssert(false, "unreachable");
@@ -465,11 +466,12 @@ void LuaVal::reset(const LuaVal& other)
 		reset(*other._data.obj);
 		break;
 	case LuaVal::DataType::TABLE:
-		if(_type == DataType::TABLE && *_data.tab == *other._data.tab)
+	case LuaVal::DataType::USER_DATA:
+		if(_type == other._type && *_data.tab == *other._data.tab)
 			break;
 		clear();
 		_data.tab = new std::shared_ptr<TableSaver>(*other._data.tab);
-		_type = DataType::TABLE;
+		_type = other._type;
 		break;
 	}
 }
@@ -496,6 +498,7 @@ void LuaVal::reset(LuaVal&& other)
 		_data.obj = other._data.obj;
 		break;
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 		_data.tab = other._data.tab;
 		break;
 	}
@@ -600,6 +603,19 @@ int LuaVal::getLenth() const
 		else
 			return (int)(_data.tab->get()->originTable->size());
 	}
+	else if (_type == DataType::USER_DATA)
+	{
+		lua_State* L = LuaManager::instance()->getLuaMachine();
+		int oldTop = lua_gettop(L);
+		int type = lua_getglobal(L, LUAVAL_TABLE);
+		TinyAssert(type == LUA_TTABLE);
+		type = lua_rawgeti(L, -1, _data.tab->get()->refTableId);
+		TinyAssert(type == LUA_TUSERDATA);
+		int len = (int)lua_rawlen(L, -1);
+		lua_pop(L, 2);
+		TinyAssert(oldTop == lua_gettop(L));
+		return len;
+	}
 	else
 	{
 		TinyAssert(false);
@@ -650,43 +666,58 @@ std::string LuaVal::toString() const
 	case LuaVal::DataType::REF_OBJ:
 		return FormatString("(Obj:%lX)", (int64_t)(*_data.obj).get());
 	case LuaVal::DataType::TABLE:
-	{
-		if (isLuaRefTable())
+		{
+			if (isLuaRefTable())
+			{
+				lua_State* L = LuaManager::instance()->getLuaMachine();
+				int top = lua_gettop(L);
+				int type = lua_getglobal(L, LUAVAL_TABLE);
+				TinyAssert(type == LUA_TTABLE);
+				type = lua_rawgeti(L, -1, getLuaRefTableId());
+				TinyAssert(type == LUA_TTABLE);
+				std::string ret = FormatString("(Table:%lX)", (int64_t)lua_topointer(L, -1));
+				lua_pop(L, 2);
+				TinyAssert(top == lua_gettop(L));
+				return ret;
+			}
+			else
+			{
+				std::map<LuaVal, LuaVal> sortedTable; //sort table
+				for (auto it = begin(); it != end(); ++it)
+					sortedTable[it.key()] = it.val();
+				std::string str = "{";
+				bool first = true;
+				for (auto pair : sortedTable)
+				{
+					if (first)
+						first = false;
+					else
+						str += ",";
+					const LuaVal& key = pair.first;
+					const LuaVal& val = pair.second;
+					str += getKeyString(key);
+					str += "=";
+					str += val.toString();
+				}
+				str += "}";
+				return str;
+			}
+		}
+		break;
+	case DataType::USER_DATA:
 		{
 			lua_State* L = LuaManager::instance()->getLuaMachine();
 			int top = lua_gettop(L);
 			int type = lua_getglobal(L, LUAVAL_TABLE);
 			TinyAssert(type == LUA_TTABLE);
 			type = lua_rawgeti(L, -1, getLuaRefTableId());
-			TinyAssert(type == LUA_TTABLE);
-			std::string ret = FormatString("(Table:%lX)", (int64_t)lua_topointer(L, -1));
+			TinyAssert(type == LUA_TUSERDATA);
+			std::string ret = FormatString("(UserData:%lX)", (int64_t)lua_topointer(L, -1));
 			lua_pop(L, 2);
 			TinyAssert(top == lua_gettop(L));
 			return ret;
 		}
-		else
-		{
-			std::map<LuaVal, LuaVal> sortedTable; //sort table
-			for (auto it = begin(); it != end(); ++it)
-				sortedTable[it.key()] = it.val();
-			std::string str = "{";
-			bool first = true;
-			for (auto pair : sortedTable)
-			{
-				if (first)
-					first = false;
-				else
-					str += ",";
-				const LuaVal& key = pair.first;
-				const LuaVal& val = pair.second;
-				str += getKeyString(key);
-				str += "=";
-				str += val.toString();
-			}
-			str += "}";
-			return str;
-		}
-	}
+		break;
 	default:
 		break;
 	}
@@ -707,6 +738,7 @@ bool LuaVal::convertBoolean() const
 	case LuaVal::DataType::STRING:
 	case LuaVal::DataType::REF_OBJ:
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 		return true;
 	default:
 		TinyAssert(false, "can't convert LuaVal to boolean");
@@ -730,6 +762,7 @@ int32_t LuaVal::convertInt32() const
 	case LuaVal::DataType::STRING:
 	case LuaVal::DataType::REF_OBJ:
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 	default:
 		TinyAssert(false, "can't convert LuaVal to int32");
 		break;
@@ -752,6 +785,7 @@ int64_t LuaVal::convertInt64() const
 	case LuaVal::DataType::STRING:
 	case LuaVal::DataType::REF_OBJ:
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 	default:
 		TinyAssert(false, "can't convert LuaVal to int64");
 		break;
@@ -774,6 +808,7 @@ float LuaVal::convertFloat() const
 	case LuaVal::DataType::STRING:
 	case LuaVal::DataType::REF_OBJ:
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 	default:
 		TinyAssert(false, "can't convert LuaVal to float");
 		break;
@@ -796,6 +831,7 @@ double LuaVal::convertDouble() const
 	case LuaVal::DataType::STRING:
 	case LuaVal::DataType::REF_OBJ:
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 	default:
 		TinyAssert(false, "can't convert LuaVal to double");
 		break;
@@ -815,6 +851,7 @@ const char* LuaVal::convertCharPointer() const
 	case LuaVal::DataType::DOUBLE:
 	case LuaVal::DataType::REF_OBJ:
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 	default:
 		TinyAssert(false, "can't convert LuaVal to char pointer");
 		break;
@@ -838,6 +875,7 @@ std::string LuaVal::converString() const
 		return FormatString("%.14g", _data.d);
 	case LuaVal::DataType::REF_OBJ:
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 	default:
 		TinyAssert(false, "can't convert LuaVal to string");
 		break;
@@ -854,6 +892,25 @@ RefCountObj* LuaVal::convertRefObj() const
 		return _data.obj->get();
 
 	TinyAssert(false, "can't convert a LuaVal to RefObj");
+	return nullptr;
+}
+
+void* LuaVal::convertUserData() const
+{
+	if (_type == DataType::USER_DATA)
+	{
+		lua_State* L = LuaManager::instance()->getLuaMachine();
+		int oldTop = lua_gettop(L);
+		int type = lua_getglobal(L, LUAVAL_TABLE);
+		TinyAssert(type == LUA_TTABLE);
+		type = lua_rawgeti(L, -1, _data.tab->get()->refTableId);
+		TinyAssert(type == LUA_TUSERDATA);
+		void* data = lua_touserdata(L, -1);
+		lua_pop(L, 2);
+		TinyAssert(oldTop == lua_gettop(L));
+		return data;
+	}
+	TinyAssert(false, "can't convert a LuaVal to UserData");
 	return nullptr;
 }
 
@@ -897,6 +954,11 @@ bool LuaVal::isTable() const
 	return _type == DataType::TABLE;
 }
 
+bool LuaVal::isUserData() const
+{
+	return _type == DataType::USER_DATA;
+}
+
 LuaVal LuaVal::clone() const
 {
 	LuaVal val;
@@ -913,6 +975,9 @@ LuaVal LuaVal::clone() const
 	case LuaVal::DataType::TABLE:
 		val._type = _type;
 		val._data.tab = new std::shared_ptr<TableSaver>(_data.tab->get()->clone());
+		break;
+	case DataType::USER_DATA:
+		TinyAssert(false, "LuaVal::clone() : you can't clone a userdata");
 		break;
 	}
 	return val;
@@ -944,6 +1009,7 @@ bool LuaVal::equal(const LuaVal& other) const
 	case LuaVal::DataType::REF_OBJ:
 		return _data.obj->get() == other._data.obj->get();
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 		return *_data.tab == *other._data.tab;
 	}
 	TinyAssert(false, "unreachable code");
@@ -968,6 +1034,7 @@ void LuaVal::clear()
 		delete _data.obj;
 		break;
 	case LuaVal::DataType::TABLE:
+	case LuaVal::DataType::USER_DATA:
 		delete _data.tab;
 		break;
 	}
@@ -998,6 +1065,8 @@ std::string LuaVal::getKeyString(const LuaVal& key) const
 		return FormatString("[(Obj:%lX)]", (int64_t)(*_data.obj).get());
 	case LuaVal::DataType::TABLE:
 		return FormatString("[(Table:%lX)]", ((*_data.tab)->isLuaRefTable ? _data.tab->get()->refTableId : (int64_t)(*_data.tab)->originTable));
+	case LuaVal::DataType::USER_DATA:
+		return FormatString("[(UserData:%lX)]", ((*_data.tab)->isLuaRefTable ? _data.tab->get()->refTableId : (int64_t)(*_data.tab)->originTable));
 	}
 	TinyAssert(false, "unreachable code");
 	return "";
@@ -1010,6 +1079,17 @@ void LuaVal::setRefTable(int64_t refTableId)
 
 	clear();
 	_type = DataType::TABLE;
+	_data.tab = new std::shared_ptr<TableSaver>(new TableSaver(true));
+	_data.tab->get()->refTableId = refTableId;
+}
+
+void LuaVal::setUserData(int64_t refTableId)
+{
+	if (_type == DataType::USER_DATA && _data.tab->get()->refTableId == refTableId)
+		return;
+
+	clear();
+	_type = DataType::USER_DATA;
 	_data.tab = new std::shared_ptr<TableSaver>(new TableSaver(true));
 	_data.tab->get()->refTableId = refTableId;
 }
@@ -1257,6 +1337,7 @@ size_t LuaVal::HashFunc::operator()(const LuaVal& key) const
 	case DataType::REF_OBJ:
 		return std::hash<void*>()(key._data.obj->get());
 	case DataType::TABLE:
+	case DataType::USER_DATA:
 		if ((*key._data.tab)->isLuaRefTable)
 			return std::hash<int64_t>()((*key._data.tab)->refTableId);
 		else
@@ -1315,9 +1396,9 @@ bool LuaVal::TableSaver::operator==(const TableSaver& other) const
 		int type = lua_getglobal(L, LUAVAL_TABLE);
 		TinyAssert(type == LUA_TTABLE);
 		type = lua_rawgeti(L, -1, refTableId);
-		TinyAssert(type == LUA_TTABLE);
+		TinyAssert(type == LUA_TTABLE || type == LUA_TUSERDATA);
 		type = lua_rawgeti(L, -2, other.refTableId);
-		TinyAssert(type == LUA_TTABLE);
+		TinyAssert(type == LUA_TTABLE || type == LUA_TUSERDATA);
 		int result = lua_compare(L, -1, -2, LUA_OPEQ);
 		lua_pop(L, 3);
 		TinyAssert(oldTop == lua_gettop(L));
@@ -1341,9 +1422,9 @@ bool LuaVal::TableSaver::operator<(const TableSaver& other) const
 		int type = lua_getglobal(L, LUAVAL_TABLE);
 		TinyAssert(type == LUA_TTABLE);
 		type = lua_rawgeti(L, -1, refTableId);
-		TinyAssert(type == LUA_TTABLE);
+		TinyAssert(type == LUA_TTABLE || type == LUA_TUSERDATA);
 		type = lua_rawgeti(L, -2, other.refTableId);
-		TinyAssert(type == LUA_TTABLE);
+		TinyAssert(type == LUA_TTABLE || type == LUA_TUSERDATA);
 		int result = lua_compare(L, -2, -1, LUA_OPLT);
 		lua_pop(L, 4);
 		TinyAssert(oldTop == lua_gettop(L));

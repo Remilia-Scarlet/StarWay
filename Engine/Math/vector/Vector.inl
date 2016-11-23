@@ -1,4 +1,5 @@
 #include "TinyEngine/Engine/TinyAssert.h"
+#include "Vector.h"
 //////////////////////////////////////////////////////////////////////////
 // Global function
 //////////////////////////////////////////////////////////////////////////
@@ -47,6 +48,7 @@ VectorStorage<ValueType, Size> operator-(const VectorStorage<ValueType, Size>& v
 {
 	return vec1.minus(vec2);
 }
+
 //////////////////////////////////////////////////////////////////////////
 // Member function
 //////////////////////////////////////////////////////////////////////////
@@ -106,22 +108,40 @@ VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueTyp
 	_data[2] = z;
 	_data[3] = w;
 }
+//
+//template<class ValueType, int Size>
+//inline VectorStorage<ValueType, Size>::VectorStorage(const LuaVal & luaval)
+//{
+//	static_assert(Size <= 4, "only Vector size <= 4 can convert");
+//	reset();
+//	if (!luaval.isUserData())
+//	{
+//		TinyAssert(false, "LuaVal to Vector failed");
+//		return;
+//	}
+//	for (int i = 0; i < Size; ++i)
+//	{
+//		
+//	}
+//}
 
 template<class ValueType, int Size>
-inline VectorStorage<ValueType, Size>::VectorStorage(const LuaVal & luaval)
+inline VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::createFromLua(lua_State * L, int index)
 {
-	static_assert(Size <= 4, "only Vector size <= 4 can convert");
-	reset();
-	if (!luaval.isTable())
+	int top = lua_gettop(L);
+	int type = lua_type(L, index);
+	if (type != LUA_TUSERDATA)
 	{
-		TinyAssert(false, "LuaVal to Vector failed");
-		return;
+		TinyAssert(false, "can't convert");
+		return VectorStorage<ValueType, Size>();
 	}
-	for (int i = 0; i < Size; ++i)
+	if (lua_rawlen(L, index) != sizeof(VectorStorage<ValueType, Size>))
 	{
-		const char* name[4] = { "x","y","z","w" };
-		_data[i] = luaval.getField(name[i]).convert<ValueType>();
+		TinyAssert(false, "can't convert");
+		return VectorStorage<ValueType, Size>();
 	}
+	TinyAssert(lua_gettop(L) == top);
+	return VectorStorage<ValueType, Size>((ValueType*)lua_touserdata(L, index));
 }
 
 template <class ValueType, int Size>

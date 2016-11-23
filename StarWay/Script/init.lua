@@ -1,4 +1,9 @@
 function start()
+	local v3 = Vector3(1.2,1.3,1.4)
+	local v31 = Vector3(33.3,44.4,55.5)
+	local v123 = v3 + v31
+	Print(v31)
+	print(v31)
 	local scene = Scene:create()
 	
 	CreateGround(scene)
@@ -98,8 +103,11 @@ function CreateLight(scene)
 	
 	--point light
 	local pointLightObj = Object:create()
-	local pointLightComponent = PointLightComponet:create(Vector4(0.2,0.2,0.2,1.0),Vector4(0.5,0.5,0.5,1.0),Vector4(0.5,0.5,0.5,1.0),Vector3(0.57735,-0.57735,0.57735))
+	local pointLightComponent = PointLightComponet:create(Vector4(0.3,0.3,0.3,1.0),Vector4(0.7,0.7,0.7,1.0),Vector4(0.7,0.7,0.7,1.0),25.0,Vector3(0.0,0.1,0.0))
 	pointLightObj:addComponent(pointLightComponent)
-	scene:addObject(pointLightObj);
+	local trans = TransformComponent:create()
+	pointLightObj:addComponent(trans)
+	trans:setLocation(Vector3(0, 2, 2))
+	scene:addObject(pointLightObj)
 	
 end

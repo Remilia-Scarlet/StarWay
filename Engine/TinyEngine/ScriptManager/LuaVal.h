@@ -68,13 +68,14 @@ class LuaVal
 public:
 	enum class DataType : int8_t
 	{
-		NIL = 1,
-		BOOLEAN=2,
-		INT64 = 4,
-		DOUBLE = 8,
-		STRING = 16,
-		REF_OBJ = 32,
-		TABLE = 64
+		NIL,
+		BOOLEAN,
+		INT64,
+		DOUBLE,
+		STRING,
+		REF_OBJ,
+		TABLE,
+		USER_DATA
 	};
 	static const LuaVal NIL;
 
@@ -195,6 +196,7 @@ public:
 	RefCountPtr<T>	convertRefPtr_static() const; // Only when type is NIL or REF_OBJ can call this function. StaticCast to T pointer
 	template<class T>
 	RefCountPtr<T>	convertRefPtr_dynamic() const; // Only when type is NIL or REF_OBJ can call this function. DynamicCast to T pointer
+	void*			convertUserData() const;
 	template<class T>
 	typename std::remove_reference<typename T>::type convert() const;
 
@@ -207,6 +209,7 @@ public:
 	bool isString() const; // to check if type is STRING
 	bool isRefObj() const; // to check if type is REF_OBJ
 	bool isTable() const; // to check if type is TABLE
+	bool isUserData() const; // to check if type is USER_DATA
 
 	// Deep clone a LuaVal
 	LuaVal clone() const;
@@ -231,6 +234,7 @@ protected:
 	void clear();
 	std::string getKeyString(const LuaVal& key) const;
 	void setRefTable(int64_t refTableId);
+	void setUserData(int64_t refTableId);
 	bool isLuaRefTable() const;
 	int64_t getLuaRefTableId() const;
 protected:

@@ -6,6 +6,7 @@
 #include "Graphic\DX11\DX11ConstantBufferManager.h"
 #include "TinyEngine\Engine\Engine.h"
 #include "TinyEngine\Components\DirectionLightComponent.h"
+#include "TinyEngine\Components\PointLightComponet.h"
 
 
 bool Object::createLuaPrototype()
@@ -53,9 +54,15 @@ void Object::addComponent(const BaseComponentPtr& component)
 		ensureComponentMap();
 		(*_components)[component->getObjectId()] = component;
 		if (DynamicRefCountCast<CameraComponent>(component).isValid())
+		{
 			setFlag(ObjectFlag::IS_CAMERA, true);
-		else if(DynamicRefCountCast<DirectionLightComponent>(component).isValid())
+		}
+		else if (DynamicRefCountCast<DirectionLightComponent>(component).isValid()
+			|| DynamicRefCountCast<PointLightComponet>(component).isValid()
+			)
+		{
 			setFlag(ObjectFlag::IS_LIGHT, true);
+		}
 		component->setOwner(RefCountPtr<Object>(this));
 	}
 	else

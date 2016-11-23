@@ -18,27 +18,48 @@ RectStorage<ValueType>::RectStorage()
 	reset();
 }
 
-template<class ValueType>
-inline RectStorage<ValueType>::RectStorage(const LuaVal & luaval)
-{
-	if (!luaval.isTable())
-	{
-		TinyAssert(false);
-		reset();
-		return;
-	}
-	float x = luaval.getField("x").convertFloat();
-	float y = luaval.getField("y").convertFloat();
-	float w = luaval.getField("w").convertFloat();
-	float h = luaval.getField("h").convertFloat();
-	reset(x, y, w, h);
-}
+//template<class ValueType>
+//inline RectStorage<ValueType>::RectStorage(const LuaVal & luaval)
+//{
+//	if (!luaval.isTable())
+//	{
+//		TinyAssert(false);
+//		reset();
+//		return;
+//	}
+//	float x = luaval.getField("x").convertFloat();
+//	float y = luaval.getField("y").convertFloat();
+//	float w = luaval.getField("w").convertFloat();
+//	float h = luaval.getField("h").convertFloat();
+//	reset(x, y, w, h);
+//}
 
 
 template <class ValueType>
 RectStorage<ValueType>::RectStorage(ValueType x, ValueType y, ValueType w, ValueType h)
 {
 	reset(x, y, w, h);
+}
+
+template<class ValueType>
+inline RectStorage<ValueType> RectStorage<ValueType>::createFromLua(lua_State * L, int index)
+{
+	int top = lua_gettop(L);
+	int type = lua_type(L, index);
+	if (type != LUA_TUSERDATA)
+	{
+		TinyAssert(false, "can't convert");
+		return RectStorage<ValueType>();
+	}
+	if (lua_rawlen(L, index) != sizeof(RectStorage<ValueType>))
+	{
+		TinyAssert(false, "can't convert");
+		return RectStorage<ValueType>();
+	}
+	TinyAssert(lua_gettop(L) == top);
+	RectStorage<ValueType> ret;
+	memcpy(&ret, lua_touserdata(L, index), sizeof(RectStorage<ValueType>));
+	return ret;
 }
 
 template <class ValueType>

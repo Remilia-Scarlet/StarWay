@@ -63,6 +63,11 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 		TinyAssert(oldSize == lua_gettop(L));\
 	} while (0)
 
+#define LUA_SELF(CLASS_NAME) RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>()
+#define LUA_P1(P1_TYPE) std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->convert<P1_TYPE>(L,2);
+#define LUA_P2(P2_TYPE) std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->convert<P2_TYPE>(L,3);
+#define LUA_P3(P3_TYPE) std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->convert<P3_TYPE>(L,4);
+#define LUA_P4(P4_TYPE) std::remove_reference<P4_TYPE>::type p4 = LuaManager::instance()->convert<P4_TYPE>(L,5);
 
 #define LUA_CREATE_FUN_P0(CLASS_NAME)\
 	static int L_create(lua_State* L)\
@@ -76,7 +81,7 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	static int L_create(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(2);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
 		LuaManager::instance()->pushVal(CLASS_NAME##::create(std::move(p1)));\
 		return 1;\
 	}
@@ -85,8 +90,8 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	static int L_create(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(3);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
 		LuaManager::instance()->pushVal(CLASS_NAME##::create(std::move(p1),std::move(p2)));\
 		return 1;\
 	}
@@ -95,9 +100,9 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	static int L_create(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(4);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
-		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
+		LUA_P3(P3_TYPE);\
 		LuaManager::instance()->pushVal(CLASS_NAME##::create(std::move(p1),std::move(p2),std::move(p3)));\
 		return 1;\
 	}
@@ -106,10 +111,10 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	static int L_create(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(5);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
-		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
-		std::remove_reference<P4_TYPE>::type p4 = LuaManager::instance()->getVal(L,5).convert<std::remove_reference<P4_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
+		LUA_P3(P3_TYPE);\
+		LUA_P4(P4_TYPE);\
 		LuaManager::instance()->pushVal(CLASS_NAME##::create(std::move(p1),std::move(p2),std::move(p3),std::move(p4)));\
 		return 1;\
 	}
@@ -121,7 +126,7 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(1);\
-		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		LUA_SELF(CLASS_NAME);\
 		if(self.isValid())\
 			self->##FUN_NAME();\
 		return 0;\
@@ -134,8 +139,8 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(2);\
-		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		LUA_SELF(CLASS_NAME);\
+		LUA_P1(P1_TYPE);\
 		if(self.isValid())\
 			self->##FUN_NAME(std::move(p1));\
 		return 0;\
@@ -148,9 +153,9 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(3);\
-		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		LUA_SELF(CLASS_NAME);\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
 		if(self.isValid())\
 			self->##FUN_NAME(std::move(p1),std::move(p2));\
 		return 0;\
@@ -163,10 +168,10 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(4);\
-		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
-		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		LUA_SELF(CLASS_NAME);\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
+		LUA_P3(P3_TYPE);\
 		if(self.isValid())\
 			self->##FUN_NAME(std::move(p1),std::move(p2),std::move(p3));\
 		return 0;\
@@ -179,7 +184,7 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(1);\
-		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
+		LUA_SELF(CLASS_NAME);\
 		if(self.isValid())\
 			LuaManager::instance()->pushVal(LuaVal(self->##FUN_NAME()));\
 		return 1;\
@@ -192,8 +197,8 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(2);\
-		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		LUA_SELF(CLASS_NAME);\
+		LUA_P1(P1_TYPE);\
 		if(self.isValid())\
 			LuaManager::instance()->pushVal(LuaVal(self->##FUN_NAME(std::move(p1))));\
 		return 1;\
@@ -206,9 +211,9 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(3);\
-		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		LUA_SELF(CLASS_NAME);\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
 		if(self.isValid())\
 			LuaManager::instance()->pushVal(LuaVal(self->##FUN_NAME(std::move(p1),std::move(p2))));\
 		return 1;\
@@ -221,10 +226,10 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(4);\
-		RefCountPtr<CLASS_NAME> self = LuaManager::instance()->getVal(L,1).convertRefPtr_dynamic<CLASS_NAME>();\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
-		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		LUA_SELF(CLASS_NAME);\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
+		LUA_P3(P3_TYPE);\
 		if(self.isValid())\
 			LuaManager::instance()->pushVal(LuaVal(self->##FUN_NAME(std::move(p1),std::move(p2),std::move(p3))));\
 		return 1;\
@@ -248,7 +253,7 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(2);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
 		CLASS_NAME##::instance()->##FUN_NAME(std::move(p1));\
 		return 0;\
 	}
@@ -260,8 +265,8 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(3);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
 		CLASS_NAME##::instance()->##FUN_NAME(std::move(p1),std::move(p2));\
 		return 0;\
 	}
@@ -273,9 +278,9 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(4);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
-		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
+		LUA_P3(P3_TYPE);\
 		CLASS_NAME##::instance()->##FUN_NAME(std::move(p1),std::move(p2),std::move(p3));\
 		return 0;\
 	}
@@ -299,7 +304,7 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(2);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
 		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(std::move(p1)));\
 		return 1;\
 	}
@@ -311,8 +316,8 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(3);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
 		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(std::move(p1),std::move(p2)));\
 		return 1;\
 	}
@@ -324,9 +329,9 @@ static const int LUA_TOSTRING_MAX_DEEP = 3;
 	int CLASS_NAME##::L_##FUN_NAME##(lua_State* L)\
 	{\
 		ASSERT_PARAM_NUM(4);\
-		std::remove_reference<P1_TYPE>::type p1 = LuaManager::instance()->getVal(L,2).convert<std::remove_reference<P1_TYPE>::type>();\
-		std::remove_reference<P2_TYPE>::type p2 = LuaManager::instance()->getVal(L,3).convert<std::remove_reference<P2_TYPE>::type>();\
-		std::remove_reference<P3_TYPE>::type p3 = LuaManager::instance()->getVal(L,4).convert<std::remove_reference<P3_TYPE>::type>();\
+		LUA_P1(P1_TYPE);\
+		LUA_P2(P2_TYPE);\
+		LUA_P3(P3_TYPE);\
 		LuaManager::instance()->pushVal(CLASS_NAME##::instance()->##FUN_NAME(std::move(p1),std::move(p2),std::move(p3)));\
 		return 1;\
 	}

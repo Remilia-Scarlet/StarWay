@@ -197,10 +197,25 @@ LuaVal LuaManager::getVal(lua_State* L, int index)
 		v = lua_tostring(L, index);
 		break;
 	case LUA_TLIGHTUSERDATA:
-	case LUA_TUSERDATA:
 		{
 			RefCountObj* obj = (RefCountObj*)lua_touserdata(L, index);
 			v = obj;
+		}
+		break;
+	case LUA_TUSERDATA:
+		{
+			int oldTop = lua_gettop(L);
+			int tabIndex = lua_absindex(L, index);
+			int type = lua_getglobal(L, LUAVAL_TABLE);
+			TinyAssert(type == LUA_TTABLE);
+			int64_t index = ++s_luaTableIndex;
+			lua_pushinteger(L, index);
+			lua_pushnil(L);
+			lua_copy(L, tabIndex, -1);
+			lua_settable(L, -3);
+			v.setUserData(index);
+			lua_pop(L, 1);
+			TinyAssert(oldTop == lua_gettop(L));
 		}
 		break;
 	case LUA_TTABLE:

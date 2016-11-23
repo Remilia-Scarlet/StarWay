@@ -13,6 +13,8 @@
 #include "TinyEngine/Components/ScriptComponent.h"
 #include "TinyEngine/Components/DirectionLightComponent.h"
 #include "TinyEngine/Input/InputManager.h"
+#include "TinyEngine/Components/PointLightComponet.h"
+#include "Math/vector/LuaVector.h"
 
 LuaFuns* LuaFuns::instance()
 {
@@ -72,6 +74,8 @@ bool LuaFuns::registerFuncsToLua()
 	ScriptComponent::createLuaPrototype();
 	TextureComponent::createLuaPrototype();
 	TransformComponent::createLuaPrototype();
+	PointLightComponet::createLuaPrototype();
+	LuaVector::createLuaPrototype();
 
 	// singleton manager
 	InputManager::createLuaPrototype();

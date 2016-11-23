@@ -35,8 +35,10 @@ public:
 	// Only for Vector4
 	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w);
 
+	static VectorStorage createFromLua(lua_State* L, int index);
+
 	// From LuaVal
-	inline VectorStorage(const LuaVal& luaval);
+//	inline VectorStorage(const LuaVal& luaval);
 
 	inline ~VectorStorage() {}
 	// Get an elem
