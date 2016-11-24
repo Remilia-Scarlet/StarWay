@@ -29,11 +29,11 @@ PointLightComponetPtr PointLightComponet::create(
 
 int PointLightComponet::L_create(lua_State* L)
 {
-	Vector4 ambient = LuaManager::instance()->convert<Vector4>(L, 2);
-	Vector4 diffuse = LuaManager::instance()->convert<Vector4>(L, 3);
-	Vector4 specular = LuaManager::instance()->convert<Vector4>(L, 4);
-	float range = LuaManager::instance()->convert<float>(L, 5);
-	Vector3 att = LuaManager::instance()->convert<Vector3>(L, 6);
+	Vector4 ambient = LuaManager::instance()->getVal<Vector4>(L, 2);
+	Vector4 diffuse = LuaManager::instance()->getVal<Vector4>(L, 3);
+	Vector4 specular = LuaManager::instance()->getVal<Vector4>(L, 4);
+	float range = LuaManager::instance()->getVal<float>(L, 5);
+	Vector3 att = LuaManager::instance()->getVal<Vector3>(L, 6);
 	PointLightComponetPtr ptr = PointLightComponet::create(ambient, diffuse, specular, range, att);
 	LuaManager::instance()->pushVal(ptr);
 	return 1;

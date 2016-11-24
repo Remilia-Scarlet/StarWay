@@ -13,6 +13,7 @@ public:
 	typedef T ElementType;
 public:
 	RefCountPtr();
+	RefCountPtr(std::nullptr_t);
 	explicit RefCountPtr(T* obj);
 	RefCountPtr(const RefCountPtr<T>& other);
 	template<class T2,

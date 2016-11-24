@@ -1,3 +1,4 @@
+#include "RefCountPtr.h"
 //////////////////////////////////////////////////////////////////////////
 template <class T>
 T* RefCountPtr<T>::operator->() const
@@ -105,6 +106,12 @@ void RefCountPtr<T>::swap(RefCountPtr& other)
 
 template <class T>
 RefCountPtr<T>::RefCountPtr()
+	: _obj(nullptr), _refInfo(nullptr)
+{
+}
+
+template<class T>
+inline RefCountPtr<T>::RefCountPtr(std::nullptr_t)
 	: _obj(nullptr), _refInfo(nullptr)
 {
 }

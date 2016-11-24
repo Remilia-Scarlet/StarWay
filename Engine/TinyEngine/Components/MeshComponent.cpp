@@ -95,8 +95,8 @@ void MeshComponent::setPrimitiveTopology(PrimitiveTopology primitiveTopology)
 int MeshComponent::L_setPrimitiveTopology(lua_State* L)
 {
 	ASSERT_PARAM_NUM(2);
-	MeshComponentPtr self = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<MeshComponent>();
-	PrimitiveTopology topology = (PrimitiveTopology)LuaManager::instance()->getVal(L, 2).convertInt32();
+	MeshComponentPtr self = LuaManager::instance()->getVal<MeshComponentPtr>(L, 1);
+	PrimitiveTopology topology = (PrimitiveTopology)LuaManager::instance()->getVal<int>(L, 2);
 	if (!self.isValid())
 		return LUA_PARAM_ERROR(MeshComponent::L_setPrimitiveTopology);
 

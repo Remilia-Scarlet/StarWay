@@ -24,30 +24,34 @@ LuaFuns* LuaFuns::instance()
 
 int LuaFuns::GenerateCubeMesh(lua_State* L)
 {
-	LuaVal w = getVal(L, 1);
-	LuaVal h = getVal(L, 2);
-	LuaVal l = getVal(L, 3);
-	if (!w.isNumber() || !h.isNumber() || !l.isNumber())
+	if(!lua_isnumber(L,1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
 		return LUA_PARAM_ERROR(GenerateCubeMesh);
-	MeshComponentPtr mesh = GeometryGenerator::instance()->createCubeMesh(InputLayoutType::COMMON, w.convertFloat(), h.convertFloat(), l.convertFloat());
-	pushVal(L, mesh);
+
+	float w = LuaManager::instance()->getVal<float>(L, 1);
+	float h = LuaManager::instance()->getVal<float>(L, 2);
+	float l = LuaManager::instance()->getVal<float>(L, 3);
+
+	MeshComponentPtr mesh = GeometryGenerator::instance()->createCubeMesh(InputLayoutType::COMMON, w, h, l);
+	LuaManager::instance()->pushVal(L, mesh);
 	return 1;
 }
 
 int LuaFuns::GenerateSphereMesh(lua_State* L)
 {
-	LuaVal radius = getVal(L, 1);
-	LuaVal numSubdivisions = getVal(L, 2);
-	if (!radius.isNumber() || !numSubdivisions.isNumber())
-		return LUA_PARAM_ERROR(GenerateCubeMesh);
-	MeshComponentPtr mesh = GeometryGenerator::instance()->createSphereMeshData(InputLayoutType::COMMON, radius.convertFloat(), numSubdivisions.convertInt32());
-	pushVal(L, mesh);
+	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2))
+		return LUA_PARAM_ERROR(GenerateSphereMesh);
+
+	float radius = LuaManager::instance()->getVal<float>(L, 1);
+	int numSubdivisions = LuaManager::instance()->getVal<int>(L, 2);
+
+	MeshComponentPtr mesh = GeometryGenerator::instance()->createSphereMeshData(InputLayoutType::COMMON, radius, numSubdivisions);
+	LuaManager::instance()->pushVal(L, mesh);
 	return 1;
 }
 
 int LuaFuns::StartScene(lua_State* L)
 {
-	ScenePtr scene = getVal(L, 1).convertRefPtr_dynamic<Scene>();
+	ScenePtr scene = LuaManager::instance()->getVal<ScenePtr>(L, 1);
 	if(!scene.isValid())
 		return LUA_PARAM_ERROR(StartScene);
 	Engine::instance()->startScene(scene);
@@ -57,7 +61,7 @@ int LuaFuns::StartScene(lua_State* L)
 int LuaFuns::GetCurrentScene(lua_State* L)
 {
 	ScenePtr scene = Engine::instance()->getCurrentScene();
-	pushVal(L, scene);
+	LuaManager::instance()->pushVal(L, scene);
 	return 1;
 }
 
@@ -91,12 +95,3 @@ bool LuaFuns::registerFuncsToLua()
 	return true;
 }
 
-bool LuaFuns::pushVal(lua_State * L, const LuaVal& val)
-{
-	return LuaManager::instance()->pushVal(L, val);
-}
-
-LuaVal LuaFuns::getVal(lua_State * L, int index)
-{
-	return LuaManager::instance()->getVal(L, index);
-}

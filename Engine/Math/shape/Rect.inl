@@ -62,6 +62,15 @@ inline RectStorage<ValueType> RectStorage<ValueType>::createFromLua(lua_State * 
 	return ret;
 }
 
+template<class ValueType>
+template<class ValT>
+inline bool RectStorage<ValueType>::pushToLua(lua_State * L, const RectStorage<ValT>& val)
+{
+	void* data = lua_newuserdata(L, sizeof(RectStorage<ValT>));
+	memcpy(data, &val, sizeof(RectStorage<ValT>));
+	return true;
+}
+
 template <class ValueType>
 VectorStorage<ValueType, 2> RectStorage<ValueType>::getLocation() const
 {
@@ -183,13 +192,3 @@ bool RectStorage<ValueType>::equal(const RectStorage<ValueType>& other) const
 	return isEqual(_x, other._x) && isEqual(_y, other._y) && isEqual(_w, other._w) && isEqual(_h, other._h);
 }
 
-template<class ValueType>
-inline RectStorage<ValueType>::operator LuaVal() const
-{
-	LuaVal ret;
-	ret.setField("x", _x);
-	ret.setField("y", _y);
-	ret.setField("h", _h);
-	ret.setField("w", _w);
-	return ret;
-}

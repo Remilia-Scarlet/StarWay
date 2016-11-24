@@ -72,9 +72,9 @@ void Object::addComponent(const BaseComponentPtr& component)
 int Object::L_addComponent(lua_State* L)
 {
 	ASSERT_PARAM_NUM(2);
-	ObjectPtr self = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<Object>();
-	BaseComponentPtr com = LuaManager::instance()->getVal(L, 2).convertRefPtr_dynamic<BaseComponent>();
-	if (!self.isValid())
+	Object* self = LuaManager::instance()->getVal<Object*>(L, 1);
+	BaseComponentPtr com = LuaManager::instance()->getVal<BaseComponentPtr>(L, 2);
+	if (!self)
 		return luaL_error(L, "addComponent self is nil");
 	if (!com.isValid())
 		return luaL_error(L, "addComponent component is nil");
@@ -108,12 +108,12 @@ BaseComponentPtr Object::getComponent(const std::string& name)
 
 int Object::L_getComponent(lua_State* L)
 {
-	ObjectPtr self = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<Object>();
-	LuaVal componentName = LuaManager::instance()->getVal(L, 2);
-	if (!self.isValid() || !componentName.isString())
+	Object* self = LuaManager::instance()->getVal<Object*>(L, 1);
+	const char* componentName = LuaManager::instance()->getVal<const char*>(L, 2);
+	if (!self || componentName[0] != 0)
 		return LUA_PARAM_ERROR(Object::L_getComponent);
 
-	LuaManager::instance()->pushVal(L, self->getComponent(componentName.convertCharPointer()));
+	LuaManager::instance()->pushVal(L, self->getComponent(componentName));
 	return 1;
 }
 

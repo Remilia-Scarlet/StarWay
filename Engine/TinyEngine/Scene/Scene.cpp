@@ -51,8 +51,8 @@ void Scene::addObject(ObjectPtr obj)
 
 int Scene::L_addObject(lua_State* L)
 {
-	ScenePtr self = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<Scene>();
-	ObjectPtr para1 = LuaManager::instance()->getVal(L, 2).convertRefPtr_dynamic<Object>();
+	ScenePtr self = LuaManager::instance()->getVal<ScenePtr>(L, 1);
+	ObjectPtr para1 = LuaManager::instance()->getVal<ObjectPtr>(L, 2);
 	if (!self.isValid() || !para1.isValid())
 		return LUA_PARAM_ERROR(Scene::L_addObject);
 	self->addObject(para1);
@@ -69,8 +69,8 @@ void Scene::removeObject(ObjectPtr obj)
 
 int Scene::L_removeObject(lua_State* L)
 {
-	ScenePtr self = LuaManager::instance()->getVal(L, 1).convertRefPtr_dynamic<Scene>();
-	ObjectPtr para1 = LuaManager::instance()->getVal(L, 2).convertRefPtr_dynamic<Object>();
+	ScenePtr self = LuaManager::instance()->getVal<ScenePtr>(L, 1);
+	ObjectPtr para1 = LuaManager::instance()->getVal<ObjectPtr>(L, 2);
 	if (!self.isValid() || !para1.isValid())
 		return LUA_PARAM_ERROR(Scene::L_removeObject);
 	self->removeObject(para1);

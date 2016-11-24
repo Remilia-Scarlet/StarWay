@@ -17,6 +17,8 @@ public:
 	inline RectStorage(ValueType x, ValueType y, ValueType w, ValueType h);
 
 	static RectStorage createFromLua(lua_State* L, int index);
+	template<class ValT>
+	static bool pushToLua(lua_State* L, const RectStorage<ValT>& val);
 
 	// return Vector2(x,y)
 	inline VectorStorage<ValueType, 2> getLocation() const;
@@ -60,8 +62,6 @@ public:
 	inline void reset(const ValueType& x, const ValueType& y, const ValueType& w, const ValueType& h);
 
 	inline bool equal(const RectStorage<ValueType>& other) const;
-
-	inline operator LuaVal() const;
 protected:
 
 	ValueType _x;
@@ -80,3 +80,4 @@ inline bool operator==(const RectStorage<ValueType>& a, const RectStorage<ValueT
 #include "Rect.inl"
 
 typedef RectStorage<float> Rect;
+

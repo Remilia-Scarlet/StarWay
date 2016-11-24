@@ -607,6 +607,8 @@ void TestLuaVal()
 
 	lua_pop(L, 1);
 
+	LuaManager::instance()->pushVal(std::string("asd"));
+	LuaManager::instance()->pushVal(std::string("asd"),123,"abc");
 }
 void TestFileSystem()
 {
@@ -657,7 +659,7 @@ void TestFileSystem()
 }
 void UnitTest()
 {
-	return;
+
 	Common();
 	TestMatrix();
 	TestVector();

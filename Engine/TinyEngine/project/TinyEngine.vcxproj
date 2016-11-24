@@ -385,6 +385,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\ThirdParty\lua_5_3_3\README" />
+    <None Include="..\ScriptManager\LuaManager.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FDC4E310-0F62-4301-8645-2D0A34A92703}</ProjectGuid>

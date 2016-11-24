@@ -19,11 +19,19 @@ public:
 	template<typename... Args>
 	std::list<LuaVal> call(const char* funcName, const Args& ... args);
 	
+	// you can push a value to the top of stack
+	template<typename T>
+	bool pushVal(const T& val);
+
 	// you can push a LuaVal to the top of stack
-	bool pushVal(const LuaVal& val);
+	inline bool pushVal(const LuaVal& val);
+
+	// you can push a value to the top of a given stack
+	template<typename T>
+	bool pushVal(lua_State* L, const T& val);
 
 	// you can push a LuaVal to the top of a given stack
-	bool pushVal(lua_State* L, const LuaVal& val);
+	inline bool pushVal(lua_State* L, const LuaVal& val);
 
 	// you can push many LuaVals to stack. For example: pushVal(1, "abc", LuaVal::NIL, LuaVal{1,2,3}).
 	// Now lua stack is:
@@ -34,6 +42,9 @@ public:
 	template<typename... Args>
 	bool pushVal(const LuaVal& val1, const Args& ... args);
 
+	template<typename T, typename... Args>
+	bool pushVal(const T& val1, const Args& ... args);
+
 
 	// get a value at index. If index is negative, -1 is stack top, -size is stack bottom. If index is non-negative, 1 is statck bottom and size is stack top
 	LuaVal getVal(int index);
@@ -41,9 +52,9 @@ public:
 
 	// try to conver a value at index to a certain type.
 	template<class T>
-	typename std::remove_reference<T>::type convert(int index);
+	typename std::remove_reference<T>::type getVal(int index);
 	template<class T>
-	typename std::remove_reference<T>::type convert(lua_State* L, int index);
+	typename std::remove_reference<T>::type getVal(lua_State* L, int index);
 
 	// get lua machine
 	lua_State* getLuaMachine();
@@ -56,7 +67,8 @@ protected:
 
 	bool init();
 	std::list<LuaVal> doCall(int oldStackDeep, int paramNum);
-	bool pushVal();
+
+	inline bool pushVal();
 	
 	std::string doToString(int index, int deep);
 
@@ -71,147 +83,96 @@ protected:
 	// add all using ref so that to ensure it will not desconstruct while using
 	std::vector<RefCountPtr<RefCountObj> > _usingRefObj;
 	static int64_t s_luaTableIndex;
+
+protected:
+	template <class T>
+	struct CharArr2CharP
+	{
+		typedef T type;
+	};
+
+	template<size_t ArrSize>
+	struct CharArr2CharP<char[ArrSize]>
+	{
+		typedef char* type;
+	};
+
+	template<>
+	struct CharArr2CharP<char[]>
+	{
+		typedef char* type;
+	};
+
+
+	enum class LMConverterType
+	{
+		OTHER = -1,
+		NIL = 1,
+		BOOLEAN,
+		FLOAT_POINTER_NUMBER,
+		INTEGRAL_NUMBER,
+		STRING,
+		REF_OBJ,
+		LUAVAL
+	};
+
+	template<LMConverterType Type, class TAR>
+	struct LMConverter
+	{
+		static typename std::remove_reference<TAR>::type getVal(lua_State* L, int index);
+		static bool pushVal(lua_State* L, const TAR& val);
+	};
+
+	template<class TAR>
+	struct LMConverter<LMConverterType::NIL, TAR> //null
+	{
+		static bool pushVal(lua_State* L, std::nullptr_t);
+	};
+
+	template<class TAR>
+	struct LMConverter<LMConverterType::BOOLEAN, TAR> //bool
+	{
+		static bool getVal(lua_State* L, int index);
+		static bool pushVal(lua_State* L, bool val);
+	};
+
+	template<class TAR>
+	struct LMConverter<LMConverterType::FLOAT_POINTER_NUMBER, TAR> //float point number
+	{
+		static typename std::remove_reference<TAR>::type getVal(lua_State* L, int index);
+		static bool pushVal(lua_State* L, lua_Number val);
+	};
+
+	template<class TAR>
+	struct LMConverter<LMConverterType::INTEGRAL_NUMBER, TAR> //integral number
+	{
+		static typename std::remove_reference<TAR>::type getVal(lua_State* L, int index);
+		static bool pushVal(lua_State* L, lua_Integer val);
+	};
+
+	template<class TAR>
+	struct LMConverter<LMConverterType::STRING, TAR> //string
+	{
+		static typename std::remove_reference<typename CharArr2CharP<TAR>::type>::type getVal(lua_State* L, int index);
+		static bool pushVal(lua_State* L, const char* val);
+		static bool pushVal(lua_State* L, const std::string& val);
+	};
+
+	template<class TAR>
+	struct LMConverter<LMConverterType::REF_OBJ, TAR> //ref obj
+	{
+		static typename std::remove_reference<TAR>::type getVal(lua_State* L, int index);
+		static bool pushVal(lua_State* L, RefCountObj* val);
+		template<typename RefType>
+		static bool pushVal(lua_State* L, const RefCountPtr<RefType>& val);
+	};
+
+	template<class TAR>
+	struct LMConverter<LMConverterType::LUAVAL, TAR> //luaval
+	{
+		static LuaVal getVal(lua_State* L, int index);
+		static bool pushVal(lua_State* L, const LuaVal& val);
+	};
 };
 
-template<typename... Args>
-bool LuaManager::pushVal(const LuaVal& val1,const Args&... args)
-{
-	bool ret = pushVal(val1);
-	ret = ret && pushVal(args...);
-	return ret;
-}
-
-template<int T, class TAR>
-struct LMConverter
-{
-	static typename std::remove_reference<TAR>::type convert(lua_State* L,int index)
-	{
-		return typename std::remove_reference<TAR>::type::createFromLua(L, index);
-	}
-};
-
-template<class TAR>
-struct LMConverter<1, TAR> //bool
-{
-	static bool convert(lua_State* L, int index)
-	{
-		if (lua_type(L, index) != LUA_TBOOLEAN)
-		{
-			TinyAssert(false, "can't convert");
-			return false;
-		}
-		return lua_toboolean(L, index) == 1 ? true : false;
-	}
-};
-
-template<class TAR>
-struct LMConverter<2, TAR> //integral number
-{
-	static TAR convert(lua_State* L, int index)
-	{
-		if (lua_type(L, index) != LUA_TNUMBER)
-		{
-			TinyAssert(false, "can't convert");
-			return 0;
-		}
-		return TAR(lua_tonumber(L, index));
-	}
-};
-
-template<class TAR>
-struct LMConverter<3, TAR> //float point number
-{
-	static TAR convert(lua_State* L, int index)
-	{
-		if (lua_type(L, index) != LUA_TNUMBER)
-		{
-			TinyAssert(false, "can't convert");
-			return 0;
-		}
-		return lua_tointeger(L, index);
-	}
-};
-
-template<class TAR>
-struct LMConverter<4, TAR> //string
-{
-	static typename std::remove_reference<TAR>::type convert(lua_State* L, int index)
-	{
-		if (lua_type(L, index) != LUA_TSTRING)
-		{
-			TinyAssert(false, "can't convert");
-			return 0;
-		}
-		return typename std::remove_reference<TAR>::type(lua_tostring(L, index));
-	}
-};
-
-template<class TAR>
-struct LMConverter<5, TAR> //ref obj
-{
-	static typename std::remove_reference<TAR>::type convert(lua_State* L, int index)
-	{
-		if (lua_type(L, index) != LUA_TLIGHTUSERDATA)
-		{
-			TinyAssert(false, "can't convert");
-			return 0;
-		}
-		return typename std::remove_reference<TAR>::type(lua_touserdata(L, index));
-	}
-};
-
-template<class T>
-typename std::remove_reference<T>::type LuaManager::convert(int index)
-{
-	return convert<T>(_LuaState, index);
-}
-
-template<class T>
-typename std::remove_reference<T>::type LuaManager::convert(lua_State* L, int index)
-{
-	constexpr bool isBool = std::is_same<std::remove_cv<std::remove_reference<typename T>::type>::type, bool>::value;
-	constexpr bool isFloatPoint = std::is_floating_point<typename T>::value;
-	constexpr bool isIntegral = std::is_integral<typename T>::value;
-	constexpr bool isString = std::is_same<typename T, const char*>::value || std::is_same<std::remove_cv<std::remove_reference<typename T>::type>::type, std::string>::value;
-	constexpr bool isPointer = std::is_pointer<typename GetRefPtrInner<std::remove_cv<std::remove_reference<typename T>::type>::type>::type>::value;
-
-	constexpr int type =
-		(isBool ? 1
-			: (isFloatPoint ? 2
-				: (isIntegral ? 3
-					: (isString ? 4
-						: (isPointer ? 5
-							: -1)
-						)
-					)
-				)
-			);
-
-	return LMConverter<type, T>::convert(L, index);
-}
-
-template<typename... Args>
-typename std::list<LuaVal> LuaManager::call(const char* funcName, const Args& ... args)
-{
-	int type = lua_getglobal(_LuaState, funcName);
-	if (type == LUA_TFUNCTION)
-	{
-		++_runningLuaFunctions;
-		int oldStackDeep = lua_gettop(_LuaState) - 1;
-		pushVal(args...);
-		std::list<LuaVal> ret = doCall(oldStackDeep, sizeof...(Args));
-		--_runningLuaFunctions;
-		if (_runningLuaFunctions == 0)
-			_usingRefObj.clear();
-
-		int newTop = lua_gettop(_LuaState);
-		TinyAssert(newTop == oldStackDeep, "lua stack is destroyed");
-		return ret;
-	}
-	else
-	{
-		lua_pop(_LuaState, 1);
-		DebugString("Lua error : Can't call \"%s\" because it's nil", funcName);
-		return std::list<LuaVal>();
-	}
-}
+#include "LuaManager.inl"

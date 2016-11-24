@@ -13,7 +13,5 @@ public:
 	static int GetCurrentScene(lua_State* L);
 private:
 	bool registerFuncsToLua();
-	static bool pushVal(lua_State * L, const LuaVal& val);
-	static LuaVal getVal(lua_State * L, int index);
 };
 

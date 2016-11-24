@@ -353,5 +353,8 @@
     <None Include="..\..\ThirdParty\lua_5_3_3\README">
       <Filter>ThirdParty\lua_5_3_3</Filter>
     </None>
+    <None Include="..\ScriptManager\LuaManager.inl">
+      <Filter>ScriptManager</Filter>
+    </None>
   </ItemGroup>
 </Project>

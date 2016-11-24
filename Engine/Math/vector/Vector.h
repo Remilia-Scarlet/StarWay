@@ -36,9 +36,8 @@ public:
 	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w);
 
 	static VectorStorage createFromLua(lua_State* L, int index);
-
-	// From LuaVal
-//	inline VectorStorage(const LuaVal& luaval);
+	template<class ValT, int ValSize>
+	static bool pushToLua(lua_State* L, const VectorStorage<ValT, ValSize>& val);
 
 	inline ~VectorStorage() {}
 	// Get an elem
@@ -49,7 +48,6 @@ public:
 	inline VectorStorage& operator=(const ValueType* data);
 	inline VectorStorage& operator=(const ValueType& value);
 	inline VectorStorage& operator=(const VectorStorage& other);
-	inline operator LuaVal() const;
 
 	// Reset all elem to 0
 	inline void reset();

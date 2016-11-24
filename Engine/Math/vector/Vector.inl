@@ -108,22 +108,6 @@ VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueTyp
 	_data[2] = z;
 	_data[3] = w;
 }
-//
-//template<class ValueType, int Size>
-//inline VectorStorage<ValueType, Size>::VectorStorage(const LuaVal & luaval)
-//{
-//	static_assert(Size <= 4, "only Vector size <= 4 can convert");
-//	reset();
-//	if (!luaval.isUserData())
-//	{
-//		TinyAssert(false, "LuaVal to Vector failed");
-//		return;
-//	}
-//	for (int i = 0; i < Size; ++i)
-//	{
-//		
-//	}
-//}
 
 template<class ValueType, int Size>
 inline VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::createFromLua(lua_State * L, int index)
@@ -142,6 +126,15 @@ inline VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::createFrom
 	}
 	TinyAssert(lua_gettop(L) == top);
 	return VectorStorage<ValueType, Size>((ValueType*)lua_touserdata(L, index));
+}
+
+template<class ValueType, int Size>
+template<class ValT, int ValSize>
+bool VectorStorage<ValueType, Size>::pushToLua(lua_State * L, const VectorStorage<ValT, ValSize>& val)
+{
+	void* data = lua_newuserdata(L, sizeof(VectorStorage<ValT, ValSize>));
+	memcpy(data, val.getData(), sizeof(VectorStorage<ValT, ValSize>));
+	return true;
 }
 
 template <class ValueType, int Size>
@@ -184,18 +177,18 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const 
 	return *this;
 }
 
-template<class ValueType, int Size>
-inline VectorStorage<ValueType, Size>::operator LuaVal() const
-{
-	static_assert(Size <= 4, "only Vector size <= 4 can convert");
-	LuaVal ret;
-	for (int i = 0; i < Size; ++i)
-	{
-		const char* name[4] = { "x","y","z","w" };
-		ret.setField(name[i], _data[i]);
-	}
-	return ret;
-}
+//template<class ValueType, int Size>
+//inline VectorStorage<ValueType, Size>::operator LuaVal() const
+//{
+//	static_assert(Size <= 4, "only Vector size <= 4 can convert");
+//	LuaVal ret;
+//	for (int i = 0; i < Size; ++i)
+//	{
+//		const char* name[4] = { "x","y","z","w" };
+//		ret.setField(name[i], _data[i]);
+//	}
+//	return ret;
+//}
 
 template <class ValueType, int Size>
 void VectorStorage<ValueType, Size>::reset()
