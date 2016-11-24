@@ -45,7 +45,7 @@ function Vector3Len(vec3)
 end
 
 function Vector3(x,y,z)
-	return LuaVector:create(3)
+	return LuaVector:create(3,x,y,z)
 	--[[
 	local v = {x=x,y=y,z=z}
 	setmetatable(v,Vector3MetaTable)

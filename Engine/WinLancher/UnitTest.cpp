@@ -609,6 +609,7 @@ void TestLuaVal()
 
 	LuaManager::instance()->pushVal(std::string("asd"));
 	LuaManager::instance()->pushVal(std::string("asd"),123,"abc");
+	lua_pop(L, 4);
 }
 void TestFileSystem()
 {
