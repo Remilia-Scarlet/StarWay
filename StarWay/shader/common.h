@@ -127,6 +127,7 @@ void ComputeSpotLight(Material mat,
 	ambient *= spot;
 	diffuse *= att;
 	spec *= att;
+
 }
 
 void ComputePointLight(Material mat, 
@@ -146,7 +147,7 @@ void ComputePointLight(Material mat,
 	float3 lightVec = L.position - pos;
 
 	float d = length(lightVec);
-
+	ambient = float4(1, 0, 0, 1);
 	if (d > L.range)
 		return;
 
@@ -222,17 +223,17 @@ float4 CalcLight(PS_INPUT input)
 			spec += S;
 		}
 
-		for (int j = 0; j < directLightNum; ++j)
+		for (int j = 0; j < pointLightNum; ++j)
 		{
-			ComputePointLight(g_material, g_pointLight[i], input.pos, input.normal, toEyeW, A, D, S);
+			ComputePointLight(g_material, g_pointLight[j], float4(input.worldPos ,1), input.normal, toEyeW, A, D, S);
 			ambient += A;
 			diffuse += D;
 			spec += S;
 		}
 
-		for (int k = 0; k < directLightNum; ++k)
+		for (int k = 0; k < spotLightNum; ++k)
 		{
-			ComputeSpotLight(g_material, g_spotLight[i], input.pos, input.normal, toEyeW, A, D, S);
+			ComputeSpotLight(g_material, g_spotLight[k], float4(input.worldPos,1), input.normal, toEyeW, A, D, S);
 			ambient += A;
 			diffuse += D;
 			spec += S;

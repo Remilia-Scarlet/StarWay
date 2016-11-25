@@ -4,7 +4,7 @@ function start()
 	CreateGround(scene)
 	CreateObj(scene)
 	local freeCamera = CreateFreeCamera(scene)
-	CreateSplineCamera(scene,freeCamera)
+	--CreateSplineCamera(scene,freeCamera)
 	CreateLight(scene)
 	
 	StartScene(scene)
@@ -45,8 +45,19 @@ function CreateObj(scene)
 	obj:addComponent(transform)
 	transform:setLocation(Vector3(1,-1,1))
 --	transform:setEulerRotation(Vector3(0,45,0))
-	
 	scene:addObject(obj)
+
+	local sphereObj = Object:create()
+	local trans = TransformComponent:create()
+	sphereObj:addComponent(trans)
+	trans:setLocation(Vector3(2, 1, -2))
+	local meshConponent = GenerateSphereMesh(1.5,4)
+	sphereObj:addComponent(meshConponent)
+	local texture = TextureComponent:create("seafloor.dds","ShaderFirst_PS.cso")
+	sphereObj:addComponent(texture)
+	scene:addObject(sphereObj)
+	
+
 end
 
 function CreateFreeCamera(scene)
@@ -92,17 +103,24 @@ end
 function CreateLight(scene)
 	--direction light
 	local directionLightObj = Object:create()
-	local directionLightComponent = DirectionLightComponent:create(Vector4(0.2,0.2,0.2,1.0),Vector4(0.5,0.5,0.5,1.0),Vector4(0.5,0.5,0.5,1.0),Vector3(0.57735,-0.57735,0.57735))
+	local directionLightComponent = DirectionLightComponent:create(Vector4(0,0,0,1.0),Vector4(1,0.2,0.2,1.0),Vector4(0.0,0.0,0.0,1.0),Vector3(-0.707,-0.707,1))
 	directionLightObj:addComponent(directionLightComponent)
 	scene:addObject(directionLightObj);
 	
 	--point light
 	local pointLightObj = Object:create()
-	local pointLightComponent = PointLightComponet:create(Vector4(0.3,0.3,0.3,1.0),Vector4(0.7,0.7,0.7,1.0),Vector4(0.7,0.7,0.7,1.0),25.0,Vector3(0.0,0.1,0.0))
+	local pointLightComponent = PointLightComponet:create(Vector4(0.0,0.0,0.0,1.0),Vector4(0.7,0.7,0.7,1.0),Vector4(0.0,0.0,0.0,1.0),25.0,Vector3(0.0,0.1,0.0))
 	pointLightObj:addComponent(pointLightComponent)
 	local trans = TransformComponent:create()
 	pointLightObj:addComponent(trans)
-	trans:setLocation(Vector3(0, 2, 2))
+	trans:setLocation(Vector3(0, 0, 0))
+	local meshConponent = GenerateSphereMesh(0.5,3)
+	pointLightObj:addComponent(meshConponent)
+	local texture = TextureComponent:create("seafloor.dds","point_light_PS.cso")
+	pointLightObj:addComponent(texture)
+	local pointLightScript = ScriptComponent:create("PointLightMovement")
+	pointLightObj:addComponent(pointLightScript)
+	
 	scene:addObject(pointLightObj)
 	
 end
