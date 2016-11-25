@@ -132,7 +132,7 @@ template<class ValueType, int Size>
 template<class ValT, int ValSize>
 bool VectorStorage<ValueType, Size>::pushToLua(lua_State * L, const VectorStorage<ValT, ValSize>& val)
 {
-	void* data = lua_newuserdata(L, sizeof(VectorStorage<ValT, ValSize>));
+	void* data = LuaVector::allocAndPushUserData(sizeof(VectorStorage<ValT, ValSize>));
 	memcpy(data, val.getData(), sizeof(VectorStorage<ValT, ValSize>));
 	return true;
 }

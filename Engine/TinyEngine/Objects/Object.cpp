@@ -110,7 +110,7 @@ int Object::L_getComponent(lua_State* L)
 {
 	Object* self = LuaManager::instance()->getVal<Object*>(L, 1);
 	const char* componentName = LuaManager::instance()->getVal<const char*>(L, 2);
-	if (!self || componentName[0] != 0)
+	if (!self || componentName[0] == 0)
 		return LUA_PARAM_ERROR(Object::L_getComponent);
 
 	LuaManager::instance()->pushVal(L, self->getComponent(componentName));

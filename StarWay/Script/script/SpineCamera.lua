@@ -120,7 +120,7 @@ function SplineCamera:createSplineLine()
 	while t <= 1.0 do
 	--	Print(t)
 		local pos = self.currentSpline:get(t)
-		table.insert(vertex,{pos,Vector3(0,0,0),{x=0,y=0}} )
+		table.insert(vertex,{pos,Vector3(0,0,0),Vector2(0,0)} )
 		t = t + step
 		if(t >= 0.1 and t <= 0.9)then
 			step = 0.01

@@ -36,25 +36,35 @@ int MeshComponent::L_create(lua_State* L)
 	if (top != 3 && top != 4)
 		return LUA_PARAM_ERROR(MeshComponent::L_create);
 
-	LuaVal vertexs = LuaManager::instance()->getVal(L, 2);
-	if(vertexs.getType() != LuaVal::DataType::TABLE)
+	if(lua_type(L,2) != LUA_TTABLE)
 		return LUA_PARAM_ERROR(MeshComponent::L_create);
-	std::vector<CommonVertex> ver;
-	//for (int i = 1; i <= vertexs.getLenth(); ++i)
-	//{
-	//	LuaVal vertex = vertexs.getField(i);
-	//	Vector3 pos = (Vector3)vertex.getField(1);
-	//	Vector3 normal = (Vector3)vertex.getField(2);
-	//	Vector2 uv = (Vector2)vertex.getField(3);
 
-	//	ver.push_back({ pos,normal,uv });
-	//}
-	TinyAssert(false, "to do");
-
-	LuaVal indicsOrName = LuaManager::instance()->getVal(L, 3);
-	if (indicsOrName.getType() == LuaVal::DataType::STRING)
+	std::vector<CommonVertex> vertexArr;
+	lua_Integer arrLen = luaL_len(L, 2);
+	vertexArr.resize(arrLen);
+	for (lua_Integer i = 1; i <= arrLen; ++i)
 	{
-		MeshComponentPtr mesh = MeshComponent::create(InputLayoutType::COMMON, ver, indicsOrName.convertCharPointer());
+		CommonVertex& ver = vertexArr[i - 1];
+		int type = lua_geti(L, 2, i);//2:vertex array -1:one vertex
+		TinyAssert(type == LUA_TTABLE);
+		type = lua_geti(L, -1, 1);//2:vertex array -2:one vertex -1:pos
+		TinyAssert(type == LUA_TUSERDATA);
+		ver.pos = LuaManager::instance()->getVal<Vector3>(L, -1);
+		lua_pop(L, 1);//2:vertex array -1:one vertex
+		type = lua_geti(L, -1, 2);//2:vertex array -2:one vertex -1:normal
+		TinyAssert(type == LUA_TUSERDATA);
+		ver.normal = LuaManager::instance()->getVal<Vector3>(L, -1);
+		lua_pop(L, 1);//2:vertex array -1:one vertex
+		type = lua_geti(L, -1, 3);//2:vertex array -2:one vertex -1:uv
+		TinyAssert(type == LUA_TUSERDATA);
+		ver.uv = LuaManager::instance()->getVal<Vector2>(L, -1);
+		lua_pop(L, 1);//2:vertex array -1:one vertex
+
+		lua_pop(L, 1);//2:vertex array
+	}
+	if (lua_type(L,3) == LUA_TSTRING)
+	{
+		MeshComponentPtr mesh = MeshComponent::create(InputLayoutType::COMMON, vertexArr, lua_tostring(L, 3));
 		if (!mesh.isValid())
 		{
 			return luaL_error(L, "create mesh failed");
@@ -62,14 +72,19 @@ int MeshComponent::L_create(lua_State* L)
 		LuaManager::instance()->pushVal(L, mesh);
 		return 1;
 	}
-	else if (indicsOrName.getType() == LuaVal::DataType::TABLE)
+	else if (lua_type(L,3) == LUA_TTABLE && lua_type(L,4) == LUA_TSTRING)
 	{
 		std::vector<int> ind;
-		for (int i = 1; i <= indicsOrName.getLenth(); ++i)
+		lua_Integer indsLen = luaL_len(L, 3);
+		ind.resize(indsLen);
+		for (lua_Integer i = 1; i <= indsLen; ++i)
 		{
-			ind.push_back(indicsOrName.getField(i).convertInt32());
+			int type = lua_geti(L, 3, i);
+			TinyAssert(type == LUA_TNUMBER);
+			ind[i - 1] = (int)lua_tointeger(L, -1);
+			lua_pop(L, 1);
 		}
-		MeshComponentPtr mesh = MeshComponent::create(InputLayoutType::COMMON, ver, ind, LuaManager::instance()->getVal(L, 4).convertCharPointer());
+		MeshComponentPtr mesh = MeshComponent::create(InputLayoutType::COMMON, vertexArr, ind, lua_tostring(L, 4));
 		LuaManager::instance()->pushVal(L, mesh);
 		return 1;
 	}

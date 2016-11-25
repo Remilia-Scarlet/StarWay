@@ -7,5 +7,5 @@
   "$(Dependency)": "",
   "$(Output)": "$(GameRoot)\\output\\$(Platform)\\Script\\$(SubFolder)\\$(SourceName).out",
   "$(CompileExe)": "$(GameRoot)\\Tools\\luac\\build\\luac_$(Platform).exe",
-  "$(CompileParam)": "-s -o \"$(Output)\" \"$(SourcePath)\\$(SubFolder)\\$(SourceFullName)\""
+  "$(CompileParam)": "-o \"$(Output)\" \"$(SourcePath)\\$(SubFolder)\\$(SourceFullName)\""
 }

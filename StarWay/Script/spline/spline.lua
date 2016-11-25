@@ -18,7 +18,6 @@ function Spline:get(t)
 			break
 		end
 	end
-	
 	t = t - self.tTab[i]
 	
 	t = t / (self.tTab[i + 1] - self.tTab[i])
@@ -54,7 +53,7 @@ end
 function Spline:calcT(i)
 	local lenTab = {0}
 	for i = 2,#self.controlPoint do
-		table.insert(lenTab,Vector3Len(self.controlPoint[i] - self.controlPoint[i - 1]))
+		table.insert(lenTab,(self.controlPoint[i] - self.controlPoint[i - 1]):lenth())
 	end
 	local totolLen = 0.0
 	for j = 1,#lenTab do

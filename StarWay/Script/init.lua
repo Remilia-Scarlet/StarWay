@@ -1,13 +1,4 @@
 function start()
-	local v3 = Vector3(1.2,1.3,1.4)
-	local v31 = Vector3(33.3,44.4,55.5)
-	local v123 = v3 + v31
-	Print(v123)
-	print(v123)
-	Print(v123.x)
-		Print(v123.y)
-			Print(v123.z)
-				Print(v123.w)
 	local scene = Scene:create()
 	
 	CreateGround(scene)
@@ -94,7 +85,7 @@ function CreateSplineCamera(scene,freeCamera)
 	spineCametaTran:setLocation(Vector3(0, 2, -5))
 	spineCametaTran:faceToPoint(Vector3(1, 0, 1))
 	
-	--scene:addObject(spineCamera);
+	scene:addObject(spineCamera);
 end
 
 

@@ -35,9 +35,6 @@ CameraControl.handleMouse = function(dt)
 	else
 		mouseInfo.lastLIsDown = false
 	end
-	
-	local frontDirection = transformCom:getFrontDirection()
-	local rightDirection = transformCom:getRightDirection()
 end
 
 CameraControl.handleKey = function(dt)
