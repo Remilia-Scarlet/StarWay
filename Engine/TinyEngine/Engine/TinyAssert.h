@@ -3,27 +3,24 @@
 #include <string>
 #include <assert.h>
 #include <stdarg.h>
+#include <memory>
 
 void DebugString(std::string format, ...);
 
 #ifdef _DEBUG
-inline void TinyAssert(bool condition, const char* format, ...)
-{
-	if (!condition)
-	{
-		va_list _ArgList;
-		va_start(_ArgList, format);
-		char buffer[1024];
-		vsprintf(buffer, format, _ArgList);
-		va_end(_ArgList);
-		DebugString("Assert failed: %s", buffer);
-		assert(false);
-	}
-}
-inline void TinyAssert(bool condition) 
-{
-	assert(condition);
-}
+#define TinyAssert(EXPRESSION, FORMAT, ...)\
+do{\
+	if (!(EXPRESSION))\
+	{\
+		DebugString(FORMAT,__VA_ARGS__);\
+		assert(EXPRESSION);\
+	}\
+}while(0)
+
+#define TinyAssert(EXPRESSION) \
+do{\
+	assert(EXPRESSION);\
+}while(0)
 #else
 #define TinyAssert(...) do{}while(0)
 #endif

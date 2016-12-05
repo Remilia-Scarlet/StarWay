@@ -10,27 +10,23 @@
 void DebugString(std::string format, ...)
 {
 	format += "\n";
-	static char buffer[1024];
+	static std::unique_ptr<char[]> buffer(new char[10240]);
 	va_list args;
 	va_start(args, format);
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
-	vsprintf_s(buffer, format.c_str(), args);
-#else
-	vsprintf(buffer, format.c_str(), args);
-#endif
+	vsprintf(buffer.get(), format.c_str(), args);
 	va_end(args);
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
-	OutputDebugStringA(buffer);
+	OutputDebugStringA(buffer.get());
 #endif
 #if !NO_LOG_FILE 
 	std::ofstream logFile("log.txt", std::ios::out | std::ios::app);
 	if (logFile)
 	{
-		logFile << buffer << std::endl;
+		logFile << buffer.get() << std::endl;
 		logFile.close();
 	}
 #endif
-	printf(buffer);
+	printf(buffer.get());
 }
 
 
@@ -38,10 +34,10 @@ std::string FormatString(const char* format, ...)
 {
 	va_list _ArgList;
 	va_start(_ArgList, format);
-	char buffer[1024];
-	vsprintf(buffer, format, _ArgList);
+	static std::unique_ptr<char[]> buffer(new char[10240]);
+	vsprintf(buffer.get(), format, _ArgList);
 	va_end(_ArgList);
-	return buffer;
+	return buffer.get();
 }
 
 std::vector<std::string> split(const std::string& src, const std::string& separator)
