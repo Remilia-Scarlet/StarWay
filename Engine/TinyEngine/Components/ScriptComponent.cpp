@@ -36,14 +36,47 @@ void ScriptComponent::setOwner(const RefCountPtr<Object> & owner)
 void ScriptComponent::update(float dt)
 {
 	BaseComponent::update(dt);
+
+	lua_State* L = LuaManager::instance()->getLuaMachine();
+	int oldTop = lua_gettop(L);
+	int type = lua_getglobal(L, _luaFunctionTable.c_str());
+	TinyAssert(type == LUA_TTABLE);
+
+	//call init
 	if (!_inited)
 	{
 		_inited = true;
-		LuaVal callFunc = { _luaFunctionTable.c_str(),"init" };
-		LuaManager::instance()->call(CPP_CALL_LUA_NAME, callFunc, dt);
+
+		lua_pushstring(L, LUA_SCRIPT_INIT_FUN_NAME);
+		type = lua_gettable(L, -2);
+		if (type == LUA_TFUNCTION)
+		{
+			lua_pushnil(L);
+			lua_copy(L, -3, -1);
+			LuaManager::instance()->call(-2);
+		}
+		else
+			lua_pop(L, 1);
 	}
-	LuaVal callFunc = { _luaFunctionTable.c_str(),"update"};
-	LuaManager::instance()->call(CPP_CALL_LUA_NAME, callFunc, dt);
+	TinyAssert(oldTop + 1 == lua_gettop(L));
+
+	//call update
+	{
+		lua_pushstring(L, LUA_SCRIPT_UPDATE_FUN_NAME);
+		type = lua_gettable(L, -2);
+		if (type == LUA_TFUNCTION)
+		{
+			lua_pushnil(L);
+			lua_copy(L, -3, -1);
+			lua_pushnumber(L, dt);
+			LuaManager::instance()->call(-3);
+		}
+		else
+			lua_pop(L, 1);
+	}
+
+	lua_pop(L, 1);
+	TinyAssert(oldTop == lua_gettop(L));
 }
 
 bool ScriptComponent::init(const std::string& luaFunctionTable)

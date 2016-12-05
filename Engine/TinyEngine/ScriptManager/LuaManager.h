@@ -18,6 +18,15 @@ public:
 	// If Foo return 123,"abc". the list ret will be ret[0] == LuaVal(123), ret[1] == LuaVal("abc")
 	template<typename... Args>
 	std::list<LuaVal> call(const char* funcName, const Args& ... args);
+
+	// call a function at index. All values above this index will be treated as params, and will be poped after call this function. For example:
+	// -1: "abc"
+	// -2: 123
+	// -3: SomeFunction
+	// If you call LuaManager::instance()->call(-3)
+	// then 123 and "abc" will be the param, and call SomeFunction
+	// after calling, these three value will all be poped, and lua_top is 0 now.
+	std::list<LuaVal> call(int index);
 	
 	// you can push a value to the top of stack
 	template<typename T>

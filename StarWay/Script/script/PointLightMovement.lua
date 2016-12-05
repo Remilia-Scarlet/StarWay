@@ -5,7 +5,7 @@ PointLightMovement = {
 	detaTime = 0.0
 }
 
-PointLightMovement.init = function()
+function PointLightMovement:init()
 	local obj = PointLightMovement.obj
 	local transformCom = obj:getComponent("TransformComponent")
 	if(transformCom == nil)then
@@ -14,8 +14,7 @@ PointLightMovement.init = function()
 	PointLightMovement.originalPos = transformCom:getLocation()
 end
 
-PointLightMovement.update = function(dt)
-	local self = PointLightMovement
+function PointLightMovement:update(dt)
 	local obj = PointLightMovement.obj
 	local transformCom = obj:getComponent("TransformComponent")
 	if(transformCom == nil)then

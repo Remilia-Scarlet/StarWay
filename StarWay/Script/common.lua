@@ -1,15 +1,3 @@
-function CppCallLua(tab,...)
-	local callFun = _G
-	for i,f in ipairs(tab) do
-		if callFun ~= nil then
-			callFun = callFun[f]
-		end
-	end
-	if(callFun ~= _G and callFun ~= nil) then
-		callFun(...)
-	end
-end
-
 function Vector2(x,y)
 	return LuaVector:create(2,x,y)
 end

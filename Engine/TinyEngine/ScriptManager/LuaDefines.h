@@ -6,10 +6,11 @@
 #define ASSERT_PARAM_NUM(PARAM_NUM) do{if(lua_gettop(L) < PARAM_NUM)return luaL_error(L, "function param number wrong");}while(0)
 static const char* CPP_LUA_POTABLE = "ObjList";
 static const char* LUA_CPP_REF_NAME = "c_ref";
-static const char* CPP_CALL_LUA_NAME = "CppCallLua";
 static const char* LUAVAL_TABLE = "LuaValTable";
 static const char* COMPONENT_PARENT = "parent";
 static const char* SCRIPT_COMPONENT_TABLE_OBJ = "obj";
+static const char* LUA_SCRIPT_INIT_FUN_NAME = "init";
+static const char* LUA_SCRIPT_UPDATE_FUN_NAME = "update";
 static const int LUA_TOSTRING_MAX_DEEP = 3;
 
 // Used in prototype creating. First PROTOTYPE_PREPARE() then PROTOTYPE_REGISTER_FUN(FUN_NAME) if needed. Then PROTOTYPE_END(CLASS_NAME).

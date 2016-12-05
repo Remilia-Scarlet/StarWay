@@ -32,6 +32,30 @@ void LuaManager::destroyInstance()
 
 
 
+std::list<LuaVal> LuaManager::call(int index)
+{
+	int type = lua_type(_LuaState, index);
+	if (type == LUA_TFUNCTION)
+	{
+		++_runningLuaFunctions;
+		int oldStackDeep = lua_absindex(_LuaState, index) - 1;
+		std::list<LuaVal> ret = doCall(oldStackDeep, lua_gettop(_LuaState) - oldStackDeep - 1);
+		--_runningLuaFunctions;
+		if (_runningLuaFunctions == 0)
+			_usingRefObj.clear();
+
+		int newTop = lua_gettop(_LuaState);
+		TinyAssert(newTop == oldStackDeep, "lua stack is destroyed");
+		return ret;
+	}
+	else
+	{
+		lua_pop(_LuaState, 1);
+		DebugString("Lua error : Can't call lua index %d because it's nil", index);
+		return std::list<LuaVal>();
+	}
+}
+
 LuaVal LuaManager::getVal(int index)
 {
 	return getVal(_LuaState, index);

@@ -8,8 +8,8 @@ SplineCamera = {
 	currentSpline = nil
 }
 
-SplineCamera.init = function()
-	SplineCamera:changeSpline()
+function SplineCamera:init()
+	self:changeSpline()
 end
 
 function SplineCamera:changeSpline()
@@ -94,8 +94,7 @@ function SplineCamera:removeObj()
 	end
 end
 
-SplineCamera.update = function(dt)
-	local self = SplineCamera
+function SplineCamera:update(dt)
 	local obj = self.obj
 	self:handleKeyChangeCamera(dt)
 	local pos = self.currentSpline:get(self.t)
