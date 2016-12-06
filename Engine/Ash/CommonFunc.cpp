@@ -7,25 +7,29 @@
 #include <windows.h>
 #endif
 
-void DebugString(std::string format, ...)
+void DebugString(const char* fmt, ...)
 {
+	if (!fmt)
+		return;
+	std::string format = fmt;
 	format += "\n";
 	static std::unique_ptr<char[]> buffer(new char[10240]);
 	va_list args;
-	va_start(args, format);
+	va_start(args, fmt);
 	vsprintf(buffer.get(), format.c_str(), args);
 	va_end(args);
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 	OutputDebugStringA(buffer.get());
 #endif
-#if !NO_LOG_FILE 
-	std::ofstream logFile("log.txt", std::ios::out | std::ios::app);
-	if (logFile)
+	if (!NO_LOG_FILE)
 	{
-		logFile << buffer.get() << std::endl;
-		logFile.close();
+		std::ofstream logFile("log.txt", std::ios::out | std::ios::app);
+		if (logFile)
+		{
+			logFile << buffer.get() << std::endl;
+			logFile.close();
+		}
 	}
-#endif
 	printf(buffer.get());
 }
 
