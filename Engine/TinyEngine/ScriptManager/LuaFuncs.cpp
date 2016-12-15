@@ -4,7 +4,7 @@
 #include <functional>
 #include "TinyEngine/Scene/Scene.h"
 #include "TinyEngine/Components/MeshComponent.h"
-#include "TinyEngine/Other/GeometryGenerator.h"
+#include "TinyEngine/Graphic/GeometryGenerator.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
 #include "TinyEngine/Components/TextureComponent.h"
 #include "TinyEngine/Components/TransformComponent.h"

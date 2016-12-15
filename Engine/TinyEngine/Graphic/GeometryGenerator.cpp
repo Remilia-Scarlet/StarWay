@@ -1,5 +1,5 @@
 #include "TinyEngine/precomp.h"
-#include "TinyEngine/Other/GeometryGenerator.h"
+#include "TinyEngine/Graphic/GeometryGenerator.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
 #include "Graphic/Vertex/DefaultVertex.h"
 #include "Graphic/Vertex/CommonVertex.h"

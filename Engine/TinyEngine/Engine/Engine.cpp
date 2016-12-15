@@ -11,7 +11,7 @@
 #include "TinyEngine/Other/TimerManager.h"
 #include "TinyEngine/Input/InputManager.h"
 #include "TinyEngine/ScriptManager/LuaManager.h"
-#include "TinyEngine/Other/GeometryGenerator.h"
+#include "TinyEngine/Graphic/GeometryGenerator.h"
 #include "TinyEngine/Components/CameraComponent.h"
 #include "Graphic/Manager/LightManager.h"
 

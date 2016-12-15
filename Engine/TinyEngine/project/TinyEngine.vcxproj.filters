@@ -152,14 +152,17 @@
     <ClCompile Include="..\ScriptManager\LuaFuncs.cpp">
       <Filter>ScriptManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\Other\GeometryGenerator.cpp">
-      <Filter>Other</Filter>
-    </ClCompile>
     <ClCompile Include="..\Components\DirectionLightComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="..\Components\PointLightComponet.cpp">
       <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Graphic\GeometryGenerator.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Graphic\WavefrontObjReader.cpp">
+      <Filter>Graphic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -304,9 +307,6 @@
     <ClInclude Include="..\ScriptManager\LuaFuncs.h">
       <Filter>ScriptManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\Other\GeometryGenerator.h">
-      <Filter>Other</Filter>
-    </ClInclude>
     <ClInclude Include="..\ScriptManager\LuaDefines.h">
       <Filter>ScriptManager</Filter>
     </ClInclude>
@@ -315,6 +315,12 @@
     </ClInclude>
     <ClInclude Include="..\Components\PointLightComponet.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Graphic\GeometryGenerator.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Graphic\WavefrontObjReader.h">
+      <Filter>Graphic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -347,6 +353,9 @@
     </Filter>
     <Filter Include="ScriptManager">
       <UniqueIdentifier>{84ecb51d-1398-4016-b571-1531081763f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphic">
+      <UniqueIdentifier>{38f41109-1423-4a9e-a8eb-90f976c5f3ed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -301,10 +301,11 @@
     <ClCompile Include="..\Components\TransformComponent.cpp" />
     <ClCompile Include="..\Engine\Engine.cpp" />
     <ClCompile Include="..\Engine\LocalSetting.cpp" />
+    <ClCompile Include="..\Graphic\GeometryGenerator.cpp" />
+    <ClCompile Include="..\Graphic\WavefrontObjReader.cpp" />
     <ClCompile Include="..\Input\InputManager.cpp" />
     <ClCompile Include="..\Input\Windows\InputManagerWin.cpp" />
     <ClCompile Include="..\Objects\Object.cpp" />
-    <ClCompile Include="..\Other\GeometryGenerator.cpp" />
     <ClCompile Include="..\Other\Timer.cpp" />
     <ClCompile Include="..\Other\TimerManager.cpp" />
     <ClCompile Include="..\precomp.cpp">
@@ -360,11 +361,12 @@
     <ClInclude Include="..\Engine\EngineDefs.h" />
     <ClInclude Include="..\Engine\LocalSetting.h" />
     <ClInclude Include="..\Engine\TinyAssert.h" />
+    <ClInclude Include="..\Graphic\GeometryGenerator.h" />
+    <ClInclude Include="..\Graphic\WavefrontObjReader.h" />
     <ClInclude Include="..\Input\InputManager.h" />
     <ClInclude Include="..\Input\VirtualButton.h" />
     <ClInclude Include="..\Input\Windows\InputManagerWin.h" />
     <ClInclude Include="..\Objects\Object.h" />
-    <ClInclude Include="..\Other\GeometryGenerator.h" />
     <ClInclude Include="..\Other\Timer.h" />
     <ClInclude Include="..\Other\TimerManager.h" />
     <ClInclude Include="..\precomp.h" />
