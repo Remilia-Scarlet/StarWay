@@ -12,6 +12,10 @@
 #include "../Ash/FileSystem/File_Win.h"
 #include "../TinyEngine/ScriptManager/LuaManager.h"
 #include "ThirdParty/rapidjson/document.h"
+#include "../TinyEngine/Graphic/WavefrontObjReader.h"
+#include "../TinyEngine/Components/TextureComponent.h"
+#include "../TinyEngine/Components/TransformComponent.h"
+#include "../TinyEngine/Engine/Engine.h"
 
 void Common()
 {
@@ -660,13 +664,34 @@ void TestFileSystem()
 }
 void UnitTest()
 {
-	return;
-	Common();
-	TestMatrix();
-	TestVector();
-	TestQuaternion();
-//	TestTimer();
-	TestRect();
-	TestLuaVal();
-	TestFileSystem();
+
+//	Common();
+//	TestMatrix();
+//	TestVector();
+//	TestQuaternion();
+////	TestTimer();
+//	TestRect();
+//	TestLuaVal();
+//	TestFileSystem();
+
+	static bool yes = true;
+	if (yes)
+	{
+		yes = false;
+		WavefrontObjReader reader("DangoApple.obj");
+		std::vector<ObjectPtr> objs;
+		reader.readObjFile(objs);
+		for (auto& obj : objs)
+		{
+			TextureComponentPtr tex = TextureComponent::create("", "");
+			obj->addComponent(tex);
+
+			TransformComponentPtr trans = TransformComponent::create();
+			obj->addComponent(trans);
+
+			Engine::instance()->getCurrentScene()->addObject(obj);
+		}
+		
+	}
+
 }

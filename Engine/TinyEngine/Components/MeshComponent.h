@@ -19,8 +19,8 @@ public:
 	static MeshComponentPtr create(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::string& vsFilename);
 	static int L_create(lua_State* L);
 
-	void setMaterial(const Material& material);
-	const Material& getMaterial();
+	void setMaterial(const GfxMaterialPtr& material);
+	const GfxMaterialPtr& getMaterial();
 
 	void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
 	static int L_setPrimitiveTopology(lua_State* L);
@@ -67,10 +67,10 @@ bool MeshComponent::init(InputLayoutType inputLayout,const std::vector<VertexTyp
 	{
 		static_assert(sizeof(IndiceType) == 2 || sizeof(IndiceType) == 4, "You can only use 16 bit or 32 bit type to save index buffer");
 		_gfxMesh = GfxMesh::create(inputLayout,
-			vertexs.data(), 
+			vertexs.data(),
 			(int)vertexs.size() * sizeof(VertexType),
-			sizeof(VertexType), 
-			indices.data(), 
+			sizeof(VertexType),
+			indices.data(),
 			(int)indices.size() * sizeof(IndiceType),
 			(sizeof(IndiceType) == 2 ? IndexBufferDataFormat::BIT_16 : IndexBufferDataFormat::BIT_32)
 			);
@@ -78,10 +78,7 @@ bool MeshComponent::init(InputLayoutType inputLayout,const std::vector<VertexTyp
 		_vertexShader = ShaderMgr::instance()->getVSShader(vsFilename);
 		TINY_BREAK_IF(!_vertexShader.isValid());
 
-		Material defaultMat;
-		defaultMat.ambient = { 0.48f,0.77f,0.46f,1.0f };
-		defaultMat.diffuse = { 0.48f,0.77f,0.46f,1.0f };
-		defaultMat.specular = { 0.2f,0.2f,0.2f,16.0f };
+		GfxMaterialPtr defaultMat =	GfxMaterial::create({0.48f, 0.77f, 0.46f, 1.0f}, {0.48f, 0.77f, 0.46f, 1.0f}, {0.2f, 0.2f, 0.2f, 16.0f}, {0.f, 0.f, 0.f, 0.f});
 		setMaterial(defaultMat);
 
 		return true;

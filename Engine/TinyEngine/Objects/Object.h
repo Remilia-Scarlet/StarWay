@@ -23,6 +23,7 @@ class Object : public RefCountObj
 public:
 	static bool createLuaPrototype();
 public:
+	static ObjectPtr create(const std::string& objName);
 	static ObjectPtr create();
 	LUA_CREATE_FUN_P0(Object);
 
@@ -58,8 +59,10 @@ protected:
 	void ensureComponentMap();
 	void Object::setParent(ObjectPtr parent);
 	virtual bool init();
+	virtual bool init(const std::string& objName);
 
 	bool _enable;
+	std::string _name;
 	ObjectWeakPtr _parent;
 	std::unordered_map<ObjectID, ObjectPtr>* _children;
 	std::unordered_map<ObjectID, BaseComponentPtr>* _components;

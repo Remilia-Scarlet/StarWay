@@ -6,15 +6,8 @@
 #include "GfxIndexBuffer.h"
 #include "GfxVertexBuffer.h"
 #include "Math/vector/Vector.h"
+#include "GfxMaterial.h"
 enum class InputLayoutType;
-
-struct Material
-{
-	Vector4 ambient;
-	Vector4 diffuse;
-	Vector4 specular;
-	Vector4 reflect;
-};
 
 TINY_DEFINE_PTR(GfxMesh);
 class GfxMesh : public RefCountObj
@@ -39,8 +32,8 @@ public:
 	int getVertexNumber() const { return _vertexNumber; }
 	void setVertexNumber(int val) { _vertexNumber = val; }
 
-	void setMaterial(const Material& material);
-	const Material& getMaterial();
+	void setMaterial(const GfxMaterialPtr& material);
+	const GfxMaterialPtr& getMaterial();
 
 	void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
 	PrimitiveTopology getPrimitiveTopology() const;
@@ -52,7 +45,7 @@ private:
 	GfxVertexBuffer _vertexBuffer;
 	GfxIndexBuffer _indexBuffer;
 	int _vertexNumber;
-	Material _material;
+	GfxMaterialPtr _material;
 };
 
 

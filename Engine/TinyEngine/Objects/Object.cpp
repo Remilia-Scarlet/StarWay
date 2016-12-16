@@ -32,6 +32,15 @@ ObjectPtr Object::create()
 	return ptr;
 }
 
+ObjectPtr Object::create(const std::string& objName)
+{
+	Object* ret = new Object();
+	if (!ret || !ret->init(objName))
+		TINY_SAFE_DELETE(ret);
+	ObjectPtr ptr(ret);
+	return ptr;
+}
+
 void Object::addChild(ObjectPtr child)
 {
 	if (!child.isValid())
@@ -189,8 +198,15 @@ void Object::ensureComponentMap()
 
 bool Object::init()
 {
-	do 
+	std::string name = FormatString("Obj__%ld", getObjectId());
+	return init(name);
+}
+
+bool Object::init(const std::string& objName)
+{
+	do
 	{
+		_name = objName;
 		return true;
 	} while (0);
 	return false;

@@ -56,6 +56,9 @@
     <ClCompile Include="..\Manager\LightManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="..\gfx\GfxMaterial.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -113,6 +116,9 @@
     </ClInclude>
     <ClInclude Include="..\Manager\LightManager.h">
       <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\GfxMaterial.h">
+      <Filter>gfx</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

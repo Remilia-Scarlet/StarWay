@@ -92,12 +92,12 @@ int MeshComponent::L_create(lua_State* L)
 		return LUA_PARAM_ERROR(MeshComponent::L_create);
 }
 
-void MeshComponent::setMaterial(const Material& material)
+void MeshComponent::setMaterial(const GfxMaterialPtr& material)
 {
 	_gfxMesh->setMaterial(material);
 }
 
-const Material& MeshComponent::getMaterial()
+const GfxMaterialPtr& MeshComponent::getMaterial()
 {
 	return _gfxMesh->getMaterial();
 }

@@ -30,6 +30,9 @@
     <ProjectReference Include="..\..\..\StarWay\project\StarWay.vcxproj">
       <Project>{5b406d90-1356-43b0-8322-1aea0e86f3f1}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\TinyEngine\project\TinyEngine.vcxproj">
+      <Project>{fdc4e310-0f62-4301-8645-2d0a34a92703}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />

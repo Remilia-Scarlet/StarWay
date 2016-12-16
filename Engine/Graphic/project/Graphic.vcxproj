@@ -40,6 +40,7 @@
     <ClCompile Include="..\DX11\DX11Texture.cpp" />
     <ClCompile Include="..\DX11\DX11Wrapper.cpp" />
     <ClCompile Include="..\gfx\GfxIndexBuffer.cpp" />
+    <ClCompile Include="..\gfx\GfxMaterial.cpp" />
     <ClCompile Include="..\gfx\GfxMesh.cpp" />
     <ClCompile Include="..\gfx\GfxShaderPixel.cpp" />
     <ClCompile Include="..\gfx\GfxShaderVertex.cpp" />
@@ -69,6 +70,7 @@
     <ClInclude Include="..\DX11\DX11Wrapper.h" />
     <ClInclude Include="..\GfxDefines.h" />
     <ClInclude Include="..\gfx\GfxIndexBuffer.h" />
+    <ClInclude Include="..\gfx\GfxMaterial.h" />
     <ClInclude Include="..\gfx\GfxMesh.h" />
     <ClInclude Include="..\gfx\GfxShaderPixel.h" />
     <ClInclude Include="..\gfx\GfxShaderVertex.h" />
