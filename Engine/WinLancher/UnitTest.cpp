@@ -674,24 +674,24 @@ void UnitTest()
 //	TestLuaVal();
 //	TestFileSystem();
 
-	static bool yes = true;
-	if (yes)
-	{
-		yes = false;
-		WavefrontObjReader reader("DangoApple.obj");
-		std::vector<ObjectPtr> objs;
-		reader.readObjFile(objs);
-		for (auto& obj : objs)
-		{
-			TextureComponentPtr tex = TextureComponent::create("", "");
-			obj->addComponent(tex);
+	//static bool yes = true;
+	//if (yes)
+	//{
+	//	yes = false;
+	//	WavefrontObjReader reader("DangoApple.obj");
+	//	std::vector<ObjectPtr> objs;
+	//	reader.readObjFile(objs);
+	//	for (auto& obj : objs)
+	//	{
+	//		TextureComponentPtr tex = TextureComponent::create("", "");
+	//		obj->addComponent(tex);
 
-			TransformComponentPtr trans = TransformComponent::create();
-			obj->addComponent(trans);
+	//		TransformComponentPtr trans = TransformComponent::create();
+	//		obj->addComponent(trans);
 
-			Engine::instance()->getCurrentScene()->addObject(obj);
-		}
-		
-	}
+	//		Engine::instance()->getCurrentScene()->addObject(obj);
+	//	}
+	//	
+	//}
 
 }

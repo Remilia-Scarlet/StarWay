@@ -164,6 +164,12 @@
     <ClCompile Include="..\Graphic\WavefrontObjReader.cpp">
       <Filter>Graphic</Filter>
     </ClCompile>
+    <ClCompile Include="..\Graphic\WavefrontParser.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Graphic\WavefrontMtlReader.cpp">
+      <Filter>Graphic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
@@ -320,6 +326,12 @@
       <Filter>Graphic</Filter>
     </ClInclude>
     <ClInclude Include="..\Graphic\WavefrontObjReader.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Graphic\WavefrontParser.h">
+      <Filter>Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Graphic\WavefrontMtlReader.h">
       <Filter>Graphic</Filter>
     </ClInclude>
   </ItemGroup>

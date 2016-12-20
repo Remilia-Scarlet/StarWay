@@ -1,9 +1,9 @@
 #pragma once
 #include "Math\vector\Vector.h"
 #include "Graphic\Vertex\CommonVertex.h"
+#include "WavefrontParser.h"
 
 TINY_DEFINE_PTR(Object);
-class File;
 TINY_DEFINE_PTR(GfxMaterial);
 
 class WavefrontObjReader
@@ -13,28 +13,20 @@ public:
 public:
 	bool readObjFile(std::vector<ObjectPtr>& outObj);
 protected:
-	bool readToken();
-	bool parseToken();
-	bool isBlankChar(char chara);
-	
+	void registerCommand();
 	void handleO();
 	void handleV();
 	void handleVN();
 	void handleVT();
 	void handleF();
 	void handleUSEMTL();
-	void handleS();
 	void handleMTLLIB();
+
 	void finishedObj();
+	void readMaterialFile(const std::string& filename);
 
-	void readMaterialFile();
+	WavefrontParser _parser;
 
-
-	std::string _fileName;
-	std::vector<char> _fileData;
-	int _currentPos;
-
-	std::string _currentToken;
 	std::vector<ObjectPtr> _pawnObj;
 	ObjectPtr _currentObj;
 

@@ -302,7 +302,9 @@
     <ClCompile Include="..\Engine\Engine.cpp" />
     <ClCompile Include="..\Engine\LocalSetting.cpp" />
     <ClCompile Include="..\Graphic\GeometryGenerator.cpp" />
+    <ClCompile Include="..\Graphic\WavefrontMtlReader.cpp" />
     <ClCompile Include="..\Graphic\WavefrontObjReader.cpp" />
+    <ClCompile Include="..\Graphic\WavefrontParser.cpp" />
     <ClCompile Include="..\Input\InputManager.cpp" />
     <ClCompile Include="..\Input\Windows\InputManagerWin.cpp" />
     <ClCompile Include="..\Objects\Object.cpp" />
@@ -362,7 +364,9 @@
     <ClInclude Include="..\Engine\LocalSetting.h" />
     <ClInclude Include="..\Engine\TinyAssert.h" />
     <ClInclude Include="..\Graphic\GeometryGenerator.h" />
+    <ClInclude Include="..\Graphic\WavefrontMtlReader.h" />
     <ClInclude Include="..\Graphic\WavefrontObjReader.h" />
+    <ClInclude Include="..\Graphic\WavefrontParser.h" />
     <ClInclude Include="..\Input\InputManager.h" />
     <ClInclude Include="..\Input\VirtualButton.h" />
     <ClInclude Include="..\Input\Windows\InputManagerWin.h" />

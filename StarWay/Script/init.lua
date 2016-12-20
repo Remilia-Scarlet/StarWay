@@ -3,6 +3,7 @@ function start()
 	
 	--CreateGround(scene)
 	--CreateObj(scene)
+	CreateApple(scene)
 	local freeCamera = CreateFreeCamera(scene)
 	--CreateSplineCamera(scene,freeCamera)
 	--CreateLight(scene)
@@ -58,6 +59,18 @@ function CreateObj(scene)
 	scene:addObject(sphereObj)
 	
 
+end
+
+function CreateApple(scene)
+	local objs = LoadObj("DangoApple.obj")
+	for _,obj in pairs(objs) do
+		local texture = TextureComponent:create("","")
+		obj:addComponent(texture)
+	
+		local transform = TransformComponent:create()
+		obj:addComponent(transform)
+		scene:addObject(obj)
+	end
 end
 
 function CreateFreeCamera(scene)

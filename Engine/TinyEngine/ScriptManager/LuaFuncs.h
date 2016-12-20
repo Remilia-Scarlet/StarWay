@@ -11,6 +11,7 @@ public:
 	static int GenerateSphereMesh(lua_State* L);
 	static int StartScene(lua_State* L);
 	static int GetCurrentScene(lua_State* L);
+	static int LoadObj(lua_State* L);
 private:
 	bool registerFuncsToLua();
 };

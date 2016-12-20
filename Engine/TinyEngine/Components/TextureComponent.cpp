@@ -14,7 +14,18 @@ TextureComponentPtr TextureComponent::create( const std::string& fileName, const
 void TextureComponent::render()
 {
 	_gfxTexture->render();
+	_gfxMaterial->render();
 	_psShader->render();
+}
+
+void TextureComponent::setMaterial(const GfxMaterialPtr& material)
+{
+	_gfxMaterial = material;
+}
+
+const GfxMaterialPtr& TextureComponent::getMaterial()
+{
+	return _gfxMaterial;
 }
 
 bool TextureComponent::init(const std::string& fileName, const std::string& shadeName)
@@ -38,6 +49,9 @@ bool TextureComponent::init(const std::string& fileName, const std::string& shad
 			_gfxTexture = GfxTexture::create(nullptr, 0, fileName.c_str());
 
 		TINY_BREAK_IF(!_gfxTexture.isValid());
+
+		GfxMaterialPtr defaultMat = GfxMaterial::create({ 0.48f, 0.77f, 0.46f, 1.0f }, { 0.48f, 0.77f, 0.46f, 1.0f }, { 0.2f, 0.2f, 0.2f, 16.0f });
+		setMaterial(defaultMat);
 
 		_psShader = ShaderMgr::instance()->getPSShader(shadeName);
 		return true;

@@ -15,6 +15,7 @@
 #include "TinyEngine/Input/InputManager.h"
 #include "TinyEngine/Components/PointLightComponet.h"
 #include "Math/vector/LuaVector.h"
+#include "TinyEngine/Graphic/WavefrontObjReader.h"
 
 LuaFuns* LuaFuns::instance()
 {
@@ -65,6 +66,23 @@ int LuaFuns::GetCurrentScene(lua_State* L)
 	return 1;
 }
 
+int LuaFuns::LoadObj(lua_State* L)
+{
+	const char* filename = LuaManager::instance()->getVal<const char*>(L, 1);
+	if(!filename || filename[0] == 0)
+		return LUA_PARAM_ERROR(LoadObj);
+	WavefrontObjReader reader(filename);
+	std::vector<ObjectPtr> outObj;
+	reader.readObjFile(outObj);
+	lua_newtable(L);
+	for (int i = 1; i <= outObj.size(); ++i)
+	{
+		LuaManager::instance()->pushVal(L, outObj[i - 1]);
+		lua_rawseti(L, -2, i);
+	}
+	return 1;
+}
+
 bool LuaFuns::registerFuncsToLua()
 {
 	// object
@@ -90,6 +108,7 @@ bool LuaFuns::registerFuncsToLua()
 	REGIST_FUN(GenerateSphereMesh);
 	REGIST_FUN(StartScene);
 	REGIST_FUN(GetCurrentScene);
+	REGIST_FUN(LoadObj);
 #undef REGIST_FUN
 
 	return true;

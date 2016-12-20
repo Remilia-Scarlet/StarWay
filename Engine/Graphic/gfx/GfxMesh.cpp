@@ -14,16 +14,6 @@ GfxMesh::~GfxMesh()
 {
 }
 
-void GfxMesh::setMaterial(const GfxMaterialPtr& material)
-{
-	_material = material;
-}
-
-const GfxMaterialPtr& GfxMesh::getMaterial()
-{
-	return _material;
-}
-
 void GfxMesh::setPrimitiveTopology(PrimitiveTopology primitiveTopology)
 {
 	_indexBuffer.setPrimitiveTopology(primitiveTopology);
@@ -36,11 +26,6 @@ PrimitiveTopology GfxMesh::getPrimitiveTopology() const
 
 void GfxMesh::render(const GfxShaderVertexPtr& vs)
 {
-	ConstantBufferManager::instance()->setPSVector(13, _material->getAmbient());
-	ConstantBufferManager::instance()->setPSVector(14, _material->getDiffuse());
-	ConstantBufferManager::instance()->setPSVector(15, _material->getSpecular());
-	ConstantBufferManager::instance()->setPSVector(16, _material->getReflect());
-
 	GraphicMgr::instance()->setInputLayout(_inputLayoutType);
 	_vertexBuffer.setBuffer();
 	_indexBuffer.setBuffer();

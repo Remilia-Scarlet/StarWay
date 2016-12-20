@@ -19,9 +19,6 @@ public:
 	static MeshComponentPtr create(InputLayoutType inputLayout, const std::vector<VertexType>& vertexs, const std::string& vsFilename);
 	static int L_create(lua_State* L);
 
-	void setMaterial(const GfxMaterialPtr& material);
-	const GfxMaterialPtr& getMaterial();
-
 	void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
 	static int L_setPrimitiveTopology(lua_State* L);
 
@@ -77,9 +74,6 @@ bool MeshComponent::init(InputLayoutType inputLayout,const std::vector<VertexTyp
 		TINY_BREAK_IF(!_gfxMesh.isValid());
 		_vertexShader = ShaderMgr::instance()->getVSShader(vsFilename);
 		TINY_BREAK_IF(!_vertexShader.isValid());
-
-		GfxMaterialPtr defaultMat =	GfxMaterial::create({0.48f, 0.77f, 0.46f, 1.0f}, {0.48f, 0.77f, 0.46f, 1.0f}, {0.2f, 0.2f, 0.2f, 16.0f}, {0.f, 0.f, 0.f, 0.f});
-		setMaterial(defaultMat);
 
 		return true;
 	} while (0);

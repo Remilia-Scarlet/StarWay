@@ -50,10 +50,15 @@ bool LuaManager::LMConverter<LuaManager::LMConverterType::STRING, TAR>::pushVal(
 template<typename TAR>
 bool LuaManager::LMConverter<LuaManager::LMConverterType::REF_OBJ, TAR>::pushVal(lua_State* L, RefCountObj* val)
 {
-	lua_getglobal(L, CPP_LUA_POTABLE);
-	lua_rawgeti(L, -1, lua_Integer(val));
-	lua_replace(L, -2);
-	LuaManager::instance()->_usingRefObj.push_back(RefCountPtr<RefCountObj>(val));
+	if (val == nullptr)
+		lua_pushlightuserdata(L, nullptr);
+	else
+	{
+		lua_getglobal(L, CPP_LUA_POTABLE);
+		lua_rawgeti(L, -1, lua_Integer(val));
+		lua_replace(L, -2);
+		LuaManager::instance()->_usingRefObj.push_back(RefCountPtr<RefCountObj>(val));
+	}
 	return true;
 }
 
@@ -251,11 +256,12 @@ typename std::remove_reference<TAR>::type LuaManager::LMConverter<LuaManager::LM
 {
 	typedef typename GetRefPtrInner<typename std::remove_reference<TAR>::type>::type PurePtrType;
 	PurePtrType ptr = nullptr;
-	if (lua_type(L, index) == LUA_TLIGHTUSERDATA)
+	int ValType = lua_type(L, index);
+	if (ValType == LUA_TLIGHTUSERDATA)
 	{
 		ptr = dynamic_cast<PurePtrType>((RefCountObj*)lua_touserdata(L, index));
 	}
-	else if (lua_type(L, index) == LUA_TTABLE)
+	else if (ValType == LUA_TTABLE)
 	{
 		int oldTop = lua_gettop(L);
 		if (lua_getfield(L, index, LUA_CPP_REF_NAME) == LUA_TLIGHTUSERDATA)

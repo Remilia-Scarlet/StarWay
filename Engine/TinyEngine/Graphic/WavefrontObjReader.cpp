@@ -7,180 +7,74 @@
 #include "Graphic/Vertex/InputLayoutDefine.h"
 
 WavefrontObjReader::WavefrontObjReader(const std::string& fileName)
-	: _fileName(fileName)
-	, _currentPos(0)
+	: _parser(fileName)
 {
-
+	registerCommand();
 }
 
 bool WavefrontObjReader::readObjFile(std::vector<ObjectPtr>& outObj)
 {
 	outObj.clear();
-	File file;
-	bool result = file.open(_fileName, File::AccessMode::READ, File::CreateMode::OPEN_EXIST);
-	if (!result)
-	{
-		DebugString("Can't open %s for model loading", _fileName.c_str());
-		return false;
-	}
-	_fileData = file.readAll();
-	file.close();
-
-	result = true;
-	while(true)
-	{
-		result = readToken();
-		TINY_BREAK_IF(!result);
-		result = parseToken();
-		TINY_BREAK_IF(!result);
-	};
+	
+	bool result = _parser.startParse();
 	finishedObj();
 	outObj = std::move(_pawnObj);
 	return true;
 }
 
-bool WavefrontObjReader::readToken()
+void WavefrontObjReader::registerCommand()
 {
-	_currentToken.clear();
-	int size = (int) _fileData.size();
-	while (true)
-	{
-		if (_currentPos == _fileData.size())
-			return _currentToken.size() > 0;
-		char currentChar = _fileData[_currentPos];
-		if (currentChar == '#')
-		{
-			if (_currentToken.size() > 0)
-				return true;
-			do
-			{
-				++_currentPos;
-			} while (_currentPos < size && _fileData[_currentPos] != '\n');
-			if (_currentPos < size)
-				++_currentPos;
-		}
-		else if (isBlankChar(currentChar))
-		{
-			if (_currentToken.size() > 0)
-				return true;
-			++_currentPos;
-			while (_currentPos <  size && isBlankChar(_fileData[_currentPos]))
-			{
-				++_currentPos;
-			}
-		}
-		else
-		{
-			_currentToken.push_back(currentChar);
-			++_currentPos;
-		}
-	}
-}
-
-bool WavefrontObjReader::parseToken()
-{
-	const static std::string o = "o";
-	const static std::string v = "v";
-	const static std::string vn = "vn";
-	const static std::string vt = "vt";
-	const static std::string f = "f";
-	const static std::string usemtl = "usemtl";
-	const static std::string s = "s";
-	const static std::string mtllib = "mtllib";
-	if (_currentToken == o)
-	{
-		handleO();
-	}
-	else if (_currentToken == v)
-	{
-		handleV();
-	}
-	else if (_currentToken == vn)
-	{
-		handleVN();
-	}
-	else if (_currentToken == vt)
-	{
-		handleVT();
-	}
-	else if (_currentToken == f)
-	{
-		handleF();
-	}
-	else if (_currentToken == usemtl)
-	{
-		handleUSEMTL();
-	}
-	else if (_currentToken == s)
-	{
-		handleS();
-	}
-	else if (_currentToken == mtllib)
-	{
-		handleMTLLIB();
-	}
-	else
-	{
-	//	TinyAssert(false, "unknown command");
-		return false;
-	}
-	return true;
-}
-
-bool WavefrontObjReader::isBlankChar(char chara)
-{
-	return chara == '\n' || chara == ' ' || chara == '\t';
+	_parser.registerCommand("o", std::bind(&WavefrontObjReader::handleO, this));
+	_parser.registerCommand("v", std::bind(&WavefrontObjReader::handleV, this));
+	_parser.registerCommand("vt", std::bind(&WavefrontObjReader::handleVT, this));
+	_parser.registerCommand("vn", std::bind(&WavefrontObjReader::handleVN, this));
+	_parser.registerCommand("f", std::bind(&WavefrontObjReader::handleF, this));
+	_parser.registerCommand("usemtl", std::bind(&WavefrontObjReader::handleUSEMTL, this));
+	_parser.registerCommand("mtllib", std::bind(&WavefrontObjReader::handleMTLLIB, this));
 }
 
 void WavefrontObjReader::handleO()
 {
 	finishedObj();
-	readToken();
-	_currentObj = Object::create(_currentToken);
+	_currentObj = Object::create(_parser.nextParam());
 	_meshVertex.clear();
 }
 
 void WavefrontObjReader::handleV()
 {
-	readToken();
-	float x = std::stof(_currentToken);
-	readToken();
-	float y = std::stof(_currentToken);
-	readToken();
-	float z = std::stof(_currentToken);
+	float x = std::stof(_parser.nextParam());
+	float y = std::stof(_parser.nextParam());
+	float z = std::stof(_parser.nextParam());
 	_tempVecArr.push_back({ x,y,z });
 }
 
 void WavefrontObjReader::handleVN()
 {
-	readToken();
-	float x = std::stof(_currentToken);
-	readToken();
-	float y = std::stof(_currentToken);
-	readToken();
-	float z = std::stof(_currentToken);
+	float x = std::stof(_parser.nextParam());
+	float y = std::stof(_parser.nextParam());
+	float z = std::stof(_parser.nextParam());
 	_tempNormArr.push_back({ x,y,z });
 }
 
 void WavefrontObjReader::handleVT()
 {
-	readToken();
-	float x = std::stof(_currentToken);
-	readToken();
-	float y = std::stof(_currentToken);
+	float x = std::stof(_parser.nextParam());
+	float y = std::stof(_parser.nextParam());
 	_tempTexArr.push_back({ x,y });
 }
 
 void WavefrontObjReader::handleF()
 {
+	// 3 points a face
+	std::string token;
 	for (int i = 0; i < 3; ++i)
 	{
-		readToken();
+		token = _parser.nextParam();
 		int tempArr[3] = { 0 };
 		int tempArrIndex = 0;
-		for (size_t i = 0; i < _currentToken.length(); ++i)
+		for (size_t i = 0; i < token.length(); ++i)
 		{
-			char currentChar = _currentToken[i];
+			char currentChar = token[i];
 			if (currentChar >= '0' && currentChar <= '9')
 			{
 				tempArr[tempArrIndex] *= 10;
@@ -204,18 +98,13 @@ void WavefrontObjReader::handleF()
 
 void WavefrontObjReader::handleUSEMTL()
 {
-	readToken();
-}
-
-void WavefrontObjReader::handleS()
-{
-	readToken();
+	std::string name = _parser.nextParam();
 }
 
 void WavefrontObjReader::handleMTLLIB()
 {
-	readToken();
-	readMaterialFile();
+	std::string name = _parser.nextParam();
+	readMaterialFile(name);
 }
 
 void WavefrontObjReader::finishedObj()
@@ -229,9 +118,9 @@ void WavefrontObjReader::finishedObj()
 	}
 }
 
-void WavefrontObjReader::readMaterialFile()
+void WavefrontObjReader::readMaterialFile(const std::string& filename)
 {
-	WavefrontObjReader matReader(_currentToken);
+	WavefrontObjReader matReader(filename);
 	std::vector<ObjectPtr> outObj;
 	matReader.readObjFile(outObj);
 	_materials = std::move(matReader._materials);

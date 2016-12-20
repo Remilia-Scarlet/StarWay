@@ -32,9 +32,6 @@ public:
 	int getVertexNumber() const { return _vertexNumber; }
 	void setVertexNumber(int val) { _vertexNumber = val; }
 
-	void setMaterial(const GfxMaterialPtr& material);
-	const GfxMaterialPtr& getMaterial();
-
 	void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
 	PrimitiveTopology getPrimitiveTopology() const;
 
@@ -45,7 +42,6 @@ private:
 	GfxVertexBuffer _vertexBuffer;
 	GfxIndexBuffer _indexBuffer;
 	int _vertexNumber;
-	GfxMaterialPtr _material;
 };
 
 

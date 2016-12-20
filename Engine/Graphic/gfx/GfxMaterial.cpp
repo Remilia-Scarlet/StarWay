@@ -1,5 +1,6 @@
 #include "Graphic\precomp.h"
 #include "GfxMaterial.h"
+#include "Graphic\Manager\ConstantBufferManager.h"
 
 GfxMaterial::GfxMaterial()
 {
@@ -11,10 +12,21 @@ GfxMaterial::~GfxMaterial()
 
 }
 
-GfxMaterialPtr GfxMaterial::create(Vector4 ambient, Vector4 diffuse, Vector4 specular, Vector4 reflect)
+GfxMaterialPtr GfxMaterial::create(Vector4 ambient, Vector4 diffuse, Vector4 specular)
 {
 	GfxMaterial* ret = new GfxMaterial();
-	if (ret && ret->init(ambient, diffuse, specular, reflect))
+	if (ret && ret->init(ambient, diffuse, specular))
+	{
+		return GfxMaterialPtr(ret);
+	}
+	TINY_SAFE_DELETE(ret);
+	return GfxMaterialPtr();
+}
+
+GfxMaterialPtr GfxMaterial::create()
+{
+	GfxMaterial* ret = new GfxMaterial();
+	if (ret && ret->init(Vector4(), Vector4(), Vector4()))
 	{
 		return GfxMaterialPtr(ret);
 	}
@@ -52,24 +64,20 @@ void GfxMaterial::setSpecular(const Vector4& specular)
 	_specular = specular;
 }
 
-const Vector4& GfxMaterial::getReflect()
+void GfxMaterial::render()
 {
-	return _reflect;
+	ConstantBufferManager::instance()->setPSVector(13, _ambient);
+	ConstantBufferManager::instance()->setPSVector(14, _diffuse);
+	ConstantBufferManager::instance()->setPSVector(15, _specular);
 }
 
-void GfxMaterial::setReflect(const Vector4& reflect)
-{
-	_reflect = reflect;
-}
-
-bool GfxMaterial::init(Vector4 ambient, Vector4 diffuse, Vector4 specular, Vector4 reflect)
+bool GfxMaterial::init(Vector4 ambient, Vector4 diffuse, Vector4 specular)
 {
 	do 
 	{
 		_ambient = ambient;
 		_diffuse = diffuse;
 		_specular = specular;
-		_reflect = reflect;
 		return true;
 	} while (0);
 	return false;
