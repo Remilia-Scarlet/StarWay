@@ -121,7 +121,7 @@ bool WavefrontObjReader::parseToken()
 	}
 	else
 	{
-		TinyAssert(false, "unknown command");
+	//	TinyAssert(false, "unknown command");
 		return false;
 	}
 	return true;
@@ -215,6 +215,7 @@ void WavefrontObjReader::handleS()
 void WavefrontObjReader::handleMTLLIB()
 {
 	readToken();
+	readMaterialFile();
 }
 
 void WavefrontObjReader::finishedObj()
@@ -226,4 +227,12 @@ void WavefrontObjReader::finishedObj()
 		_currentObj->addComponent(mesh);
 		_pawnObj.push_back(_currentObj);
 	}
+}
+
+void WavefrontObjReader::readMaterialFile()
+{
+	WavefrontObjReader matReader(_currentToken);
+	std::vector<ObjectPtr> outObj;
+	matReader.readObjFile(outObj);
+	_materials = std::move(matReader._materials);
 }

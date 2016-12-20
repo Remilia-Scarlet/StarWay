@@ -4,6 +4,7 @@
 
 TINY_DEFINE_PTR(Object);
 class File;
+TINY_DEFINE_PTR(GfxMaterial);
 
 class WavefrontObjReader
 {
@@ -26,6 +27,8 @@ protected:
 	void handleMTLLIB();
 	void finishedObj();
 
+	void readMaterialFile();
+
 
 	std::string _fileName;
 	std::vector<char> _fileData;
@@ -40,5 +43,5 @@ protected:
 	std::vector<Vector2> _tempTexArr;
 
 	std::vector<CommonVertex> _meshVertex;
-	std::vector<GfxMaterialPtr> _materials;
+	std::map<std::string, GfxMaterialPtr> _materials;
 };
