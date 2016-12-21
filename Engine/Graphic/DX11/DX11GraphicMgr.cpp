@@ -48,6 +48,18 @@ void DX11GraphicMgr::preRender()
 
 void DX11GraphicMgr::draw()
 {
+	// TODO : optimize state management
+	ID3D11RasterizerState *	rasterState = NULL;
+	/*	_immediateContext->RSGetState(&rasterState);*/
+	D3D11_RASTERIZER_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	/*	rasterState->GetDesc(&desc);*/
+	desc.CullMode = D3D11_CULL_NONE;
+	desc.FillMode = _isWireFrame ? D3D11_FILL_WIREFRAME : D3D11_FILL_SOLID;
+	_d3dDevice->CreateRasterizerState(&desc, &rasterState);
+	_immediateContext->RSSetState(rasterState);
+	rasterState->Release();
+
 	if(_drawIndexNumber > 0)
 		_immediateContext->DrawIndexed(_drawIndexNumber, 0, 0);
 }
@@ -78,17 +90,7 @@ void DX11GraphicMgr::setVertexShader(const GfxShaderVertexPtr& vs)
 
 void DX11GraphicMgr::setWireFrame(bool isWireFrame)
 {
-	// TODO : optimize state management
-	ID3D11RasterizerState *	rasterState = NULL;
-/*	_immediateContext->RSGetState(&rasterState);*/
-	D3D11_RASTERIZER_DESC desc;
-	ZeroMemory(&desc, sizeof(desc));
-/*	rasterState->GetDesc(&desc);*/
-	desc.CullMode = D3D11_CULL_NONE;
-	desc.FillMode = isWireFrame ? D3D11_FILL_WIREFRAME : D3D11_FILL_SOLID;
-	_d3dDevice->CreateRasterizerState(&desc, &rasterState);
-	_immediateContext->RSSetState(rasterState);
-	rasterState->Release();
+	_isWireFrame = isWireFrame;
 }
 
 GfxInputLayoutPtr DX11GraphicMgr::initInputLayout(const VertexInputlayoutDescription& description)
@@ -280,6 +282,7 @@ bool DX11GraphicMgr::initState()
 }
 
 DX11GraphicMgr::DX11GraphicMgr()
+	:_isWireFrame(false)
 {
 }
 

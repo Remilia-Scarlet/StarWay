@@ -1,12 +1,12 @@
 function start()
 	local scene = Scene:create()
 	
-	--CreateGround(scene)
+	CreateGround(scene)
 	--CreateObj(scene)
 	CreateApple(scene)
 	local freeCamera = CreateFreeCamera(scene)
 	--CreateSplineCamera(scene,freeCamera)
-	--CreateLight(scene)
+	CreateLight(scene)
 	
 	StartScene(scene)
 end

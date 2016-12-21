@@ -17,6 +17,9 @@ bool WavefrontObjReader::readObjFile(std::vector<ObjectPtr>& outObj)
 	outObj.clear();
 	
 	bool result = _parser.startParse();
+	if (!result)
+		return false;
+
 	finishedObj();
 	outObj = std::move(_pawnObj);
 	return true;

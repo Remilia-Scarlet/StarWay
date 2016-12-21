@@ -12,7 +12,7 @@ cbuffer CommonInfo : register(b0)
 //--------------------------------------------------------------------------------------
 float4 main( PS_INPUT input) : SV_Target
 {
-	float4 color = float4(0.1,0.1,0.1,1);
+	float4 color = float4(0.6,0.6,0.6,1);
 	color += CalcLight(input, g_cameraPos, g_material);
     return color;
 }

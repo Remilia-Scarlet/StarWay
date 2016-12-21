@@ -32,7 +32,7 @@ protected:
 	ID3D11RenderTargetView*             _renderTargetView = NULL;
 	ID3D11Texture2D*                    _depthStencil = NULL;
 	ID3D11DepthStencilView*             _depthStencilView = NULL;
-
+	bool								_isWireFrame;
 
 	static const float s_clearColor[4]; //use this color to clear screen
 	virtual bool init(int width, int height, HWND hWnd);

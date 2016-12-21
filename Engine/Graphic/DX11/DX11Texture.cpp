@@ -37,6 +37,7 @@ DX11Texture::DX11Texture()
 	: _texture(nullptr)
 	, _samplerState(nullptr)
 	, _textureView(nullptr)
+	, _wireFrame(false)
 {
 }
 
@@ -50,14 +51,21 @@ DX11Texture::~DX11Texture()
 
 void DX11Texture::render()
 {
+	GraphicMgr::instance()->setWireFrame(_wireFrame);
+
 	if (_textureView && _samplerState)
 	{
-		GraphicMgr::instance()->setWireFrame(false);
 		GraphicMgr::instance()->getD3D11DeviceContext()->PSSetShaderResources(0, 1, &_textureView);
 		GraphicMgr::instance()->getD3D11DeviceContext()->PSSetSamplers(0, 1, &_samplerState);
 	}
-	else
-	{
-		GraphicMgr::instance()->setWireFrame(true);
-	}
+}
+
+bool DX11Texture::isWireFrame()
+{
+	return _wireFrame;
+}
+
+void DX11Texture::setWireFrame(bool wireFrame)
+{
+	_wireFrame = wireFrame;
 }
