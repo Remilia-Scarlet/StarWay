@@ -11,11 +11,49 @@ TextureComponentPtr TextureComponent::create( const std::string& fileName, const
 	return TextureComponentPtr(ret);
 }
 
+TextureComponentPtr TextureComponent::create()
+{
+	TextureComponent* ret = new TextureComponent();
+	if (!ret || !ret->init("",""))
+		TINY_SAFE_DELETE(ret);
+	return TextureComponentPtr(ret);
+}
+
+int TextureComponent::L_create(lua_State* L)
+{
+	int top = lua_gettop(L);
+	if (top != 1 && top != 3)
+		return LUA_PARAM_ERROR(TextureComponent::L_create);
+
+	if (top == 1)
+		LuaManager::instance()->pushVal(L,TextureComponent::create());
+	else
+	{
+		const char* texName = LuaManager::instance()->getVal<const char*>(L, 2);
+		const char* shaderName = LuaManager::instance()->getVal<const char*>(L, 3);
+		LuaManager::instance()->pushVal(L, TextureComponent::create(texName, shaderName));
+	}
+	return 1;
+}
+
+void TextureComponent::setTexture(const GfxTexturePtr& texture)
+{
+	_gfxTexture = texture;
+}
+
+const GfxTexturePtr& TextureComponent::getTexture()
+{
+	return _gfxTexture;
+}
+
 void TextureComponent::render()
 {
-	_gfxTexture->render();
-	_gfxMaterial->render();
-	_psShader->render();
+	if(_gfxTexture.isValid())
+		_gfxTexture->render();
+	if (_gfxMaterial.isValid())
+		_gfxMaterial->render();
+	if (_psShader.isValid())
+		_psShader->render();
 }
 
 void TextureComponent::setMaterial(const GfxMaterialPtr& material)

@@ -15,10 +15,12 @@ public:
 public:
 	const static TextureComponentPtr DefaultTexture;
 
+	static TextureComponentPtr create();
 	static TextureComponentPtr create(const std::string& fileName, const std::string& shadeName);
-	LUA_CREATE_FUN_P2(TextureComponent,const std::string&, const std::string&);
+	int L_create(lua_State* L);
 
-	GfxTexturePtr getTexture() { return _gfxTexture; }
+	void setTexture(const GfxTexturePtr& texture);
+	const GfxTexturePtr& getTexture();
 
 	void setMaterial(const GfxMaterialPtr& material);
 	const GfxMaterialPtr& getMaterial();

@@ -1,5 +1,6 @@
 #include "TinyEngine/precomp.h"
 #include "TinyEngine/Graphic/WavefrontMtlReader.h"
+#include "Ash/FileSystem/File_Win.h"
 
 WavefrontMtlReader::WavefrontMtlReader(const std::string& fileName)
 	:_parser(fileName)
@@ -29,9 +30,9 @@ void WavefrontMtlReader::registerCommand()
 
 void WavefrontMtlReader::handleNEWMTL()
 {
-	GfxMaterialPtr mat = GfxMaterial::create();
-	_materials[_parser.nextParam()] = mat;
-	_currentMat = mat;
+	finisheMtl();
+	_currentMat = GfxMaterial::create();
+	_currentName = _parser.nextParam();
 }
 
 void WavefrontMtlReader::handleNS()
@@ -74,6 +75,34 @@ void WavefrontMtlReader::handleILLUM()
 void WavefrontMtlReader::handleMAP_KD()
 {
 	std::string name = _parser.nextParam();
-	TextureComponentPtr tex = TextureComponent::create(name, "");
-	_textures[name] = tex;
+	auto it = _textures.find(name);
+	if (it == _textures.end())
+	{
+		File file;
+		bool result = file.open(name);
+		if (!result)
+			return;
+		std::vector<char> data = file.readAll();
+		file.close();
+		GfxTexturePtr tex = GfxTexture::create((uint8_t*)data.data(), (int)data.size(), name.c_str());
+		_textures[name] = tex;
+		_currentTex = tex;
+	}
+	else
+	{
+		_currentTex = it->second;
+	}
+}
+
+void WavefrontMtlReader::finisheMtl()
+{
+	if (_currentName.size() > 0)
+	{
+		TextureComponentPtr texCom = TextureComponent::create();
+		texCom->setMaterial(_currentMat);
+		texCom->setTexture(_currentTex);
+	}
+	_currentName.clear();
+	_currentTex = nullptr;
+	_currentMat = nullptr;
 }

@@ -13,6 +13,7 @@ public:
 	bool readMtlFile(std::map<std::string, TextureComponentPtr>& outTexture);
 protected:
 	void registerCommand();
+
 	void handleNEWMTL();
 	void handleNS();
 	void handleKA();
@@ -21,10 +22,13 @@ protected:
 	void handleILLUM();
 	void handleMAP_KD();
 
+	void finisheMtl();
+
 	WavefrontParser _parser;
 	std::map<std::string, TextureComponentPtr> _components;
+	std::string _currentName;
 
 	std::map<std::string, GfxTexturePtr> _textures;
-	std::map<std::string, GfxMaterialPtr> _materials;
+	GfxTexturePtr _currentTex;
 	GfxMaterialPtr _currentMat;
 };
