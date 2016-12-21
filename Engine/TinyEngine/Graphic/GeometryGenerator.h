@@ -7,8 +7,8 @@ class GeometryGenerator
 public:
 	static GeometryGenerator* instance();
 public:
-	MeshComponentPtr createCubeMesh(InputLayoutType layoutType, float width, float height, float lenth);
-	MeshComponentPtr createSphereMeshData(InputLayoutType layoutType, float radius, int numSubdivisions);
+	MeshComponentPtr createCubeMesh(float width, float height, float lenth);
+	MeshComponentPtr createSphereMeshData(float radius, int numSubdivisions);
 protected:
 	void subdivideTriangle(std::vector<Vector3>& pos, std::vector<int>& indices);
 };

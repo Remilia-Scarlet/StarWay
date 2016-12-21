@@ -1,7 +1,8 @@
 #include "TinyEngine\precomp.h"
 #include "MeshComponent.h"
-#include "Graphic\Vertex\CommonVertex.h"
+#include "Graphic\Vertex\DefaultVertex.h"
 #include "Graphic\Vertex\InputLayoutDefine.h"
+#include "Graphic\Manager\DefaultMgr.h"
 MeshComponent::MeshComponent()
 	:BaseComponent(TO_STRING(MeshComponent))
 {
@@ -64,7 +65,7 @@ int MeshComponent::L_create(lua_State* L)
 	}
 	if (lua_type(L,3) == LUA_TSTRING)
 	{
-		MeshComponentPtr mesh = MeshComponent::create(InputLayoutType::COMMON, vertexArr, lua_tostring(L, 3));
+		MeshComponentPtr mesh = MeshComponent::create(vertexArr, lua_tostring(L, 3));
 		if (!mesh.isValid())
 		{
 			return luaL_error(L, "create mesh failed");
@@ -84,7 +85,7 @@ int MeshComponent::L_create(lua_State* L)
 			ind[i - 1] = (int)lua_tointeger(L, -1);
 			lua_pop(L, 1);
 		}
-		MeshComponentPtr mesh = MeshComponent::create(InputLayoutType::COMMON, vertexArr, ind, lua_tostring(L, 4));
+		MeshComponentPtr mesh = MeshComponent::create(vertexArr, ind, lua_tostring(L, 4));
 		LuaManager::instance()->pushVal(L, mesh);
 		return 1;
 	}
@@ -117,5 +118,8 @@ PrimitiveTopology MeshComponent::getPrimitiveTopology() const
 void MeshComponent::render()
 {
 	_gfxMesh->render(_vertexShader);
-	_vertexShader->render();
+	if (_vertexShader.isValid())
+		_vertexShader->render();
+	else
+		DefaultMgr::instance()->getDefaultVS()->render();
 }

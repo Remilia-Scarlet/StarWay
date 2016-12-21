@@ -2,6 +2,7 @@
 #include "TextureComponent.h"
 #include <fstream>
 #include "Graphic\Manager\ShaderMgr.h"
+#include "Graphic\Manager\DefaultMgr.h"
 
 TextureComponentPtr TextureComponent::create( const std::string& fileName, const std::string& shadeName)
 {
@@ -19,15 +20,28 @@ TextureComponentPtr TextureComponent::create()
 	return TextureComponentPtr(ret);
 }
 
+TextureComponentPtr TextureComponent::create(const std::string & fileName)
+{
+	TextureComponent* ret = new TextureComponent();
+	if (!ret || !ret->init(fileName, ""))
+		TINY_SAFE_DELETE(ret);
+	return TextureComponentPtr(ret);
+}
+
 int TextureComponent::L_create(lua_State* L)
 {
 	int top = lua_gettop(L);
-	if (top != 1 && top != 3)
+	if (top < 1 || top > 3)
 		return LUA_PARAM_ERROR(TextureComponent::L_create);
 
 	if (top == 1)
 		LuaManager::instance()->pushVal(L,TextureComponent::create());
-	else
+	else if (top == 2)
+	{
+		const char* texName = LuaManager::instance()->getVal<const char*>(L, 2);
+		LuaManager::instance()->pushVal(L, TextureComponent::create(texName));
+	}
+	else if (top == 3)
 	{
 		const char* texName = LuaManager::instance()->getVal<const char*>(L, 2);
 		const char* shaderName = LuaManager::instance()->getVal<const char*>(L, 3);
@@ -48,12 +62,22 @@ const GfxTexturePtr& TextureComponent::getTexture()
 
 void TextureComponent::render()
 {
-	if(_gfxTexture.isValid())
+	if (_gfxTexture.isValid())
 		_gfxTexture->render();
+	else
+		DefaultMgr::instance()->getDefaultTexture()->render();
+
 	if (_gfxMaterial.isValid())
 		_gfxMaterial->render();
+	else
+		DefaultMgr::instance()->getDefaultMaterial()->render();
+
 	if (_psShader.isValid())
 		_psShader->render();
+	else if (_gfxTexture.isValid())
+		DefaultMgr::instance()->getDefaultPSWithTex()->render();
+	else
+		DefaultMgr::instance()->getDefaultPSWithNoTex()->render();
 }
 
 void TextureComponent::setMaterial(const GfxMaterialPtr& material)
@@ -82,13 +106,12 @@ bool TextureComponent::init(const std::string& fileName, const std::string& shad
 			file.close();
 			_gfxTexture = GfxTexture::create((uint8_t*)buffer, (int)size, fileName.c_str());
 			delete[] buffer;
+			TINY_BREAK_IF(!_gfxTexture.isValid());
 		}
 		else
-			_gfxTexture = GfxTexture::create(nullptr, 0, fileName.c_str());
+			_gfxTexture = nullptr;
 
-		TINY_BREAK_IF(!_gfxTexture.isValid());
-
-		GfxMaterialPtr defaultMat = GfxMaterial::create({ 0.48f, 0.77f, 0.46f, 1.0f }, { 0.48f, 0.77f, 0.46f, 1.0f }, { 0.2f, 0.2f, 0.2f, 16.0f });
+		GfxMaterialPtr defaultMat = DefaultMgr::instance()->getDefaultMaterial();
 		setMaterial(defaultMat);
 
 		_psShader = ShaderMgr::instance()->getPSShader(shadeName);

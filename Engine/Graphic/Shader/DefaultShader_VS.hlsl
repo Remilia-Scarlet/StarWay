@@ -2,7 +2,16 @@
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
-PS_INPUT main(VS_INPUT_COMMON input )
+
+cbuffer CommonInfo : register(b0)
+{
+	matrix g_viewMatrix : register(c0);
+	matrix g_projectionMatrix : register(c4);
+	matrix g_worldMatrix : register(c8);
+}
+
+
+PS_INPUT main(VS_INPUT input )
 {
     PS_INPUT output = (PS_INPUT)0;
 	output.worldPos = mul(float4(input.pos, 1), g_worldMatrix).xyz;

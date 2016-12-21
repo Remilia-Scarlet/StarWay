@@ -2,16 +2,22 @@
 #include "Graphic/GfxDefines.h"
 #include "Math/vector/Vector.h"
 #include <vector>
+#include "InputLayoutDefine.h"
 
-struct InputLayoutStruct;
-class DefaultVertex
+class CommonVertex
 {
+	TINY_VERTEX(CommonVertex)
 public:
-	DefaultVertex() {}
-	DefaultVertex(const Vector3& pos)
+	CommonVertex() {}
+	CommonVertex(const Vector3& pos, Vector3 normal, const Vector2& uv)
 		:pos(pos)
+		, normal(normal)
+		, uv(uv)
 	{}
 	Vector3 pos;
-	static std::vector<InputLayoutStruct> getInputLayoutStruct();
+	Vector3 normal;
+	Vector2 uv;
+
+	static const VertexInputlayoutDescription& getInputLayoutDescription();
 };
 

@@ -1,9 +1,4 @@
-struct VS_INPUT_DEFAULT
-{
-	float4 pos : POSITION;
-};
-
-struct VS_INPUT_COMMON
+struct VS_INPUT
 {
 	float3 pos : POSITION;
 	float3 normal : NORMAL;
@@ -62,15 +57,6 @@ struct SpotLight
 	float3 att;
 	float pad;
 };
-
-cbuffer CommonInfo : register(b0)
-{
-	matrix g_viewMatrix : register(c0);
-	matrix g_projectionMatrix : register(c4);
-	matrix g_worldMatrix : register(c8);
-	float3 g_cameraPos : register(c12);
-	Material g_material : register(c13);
-}
 
 cbuffer LightInfo : register(b1)
 {
@@ -200,7 +186,7 @@ void ComputeDirectionalLight(Material mat,
 	}
 }
 
-float4 CalcLight(PS_INPUT input)
+float4 CalcLight(PS_INPUT input, float3 cameraPos, Material material)
 {
 	float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -212,11 +198,11 @@ float4 CalcLight(PS_INPUT input)
 	if (directLightNum != 0 || pointLightNum != 0 || spotLightNum != 0)
 	{
 		input.normal = normalize(input.normal);
-		float3 toEyeW = normalize(g_cameraPos - input.worldPos);
+		float3 toEyeW = normalize(cameraPos - input.worldPos);
 		float4 A, D, S;
 		for (int i = 0; i < directLightNum; ++i)
 		{
-			ComputeDirectionalLight(g_material, g_directionalLight[i], input.normal, toEyeW, A, D, S);
+			ComputeDirectionalLight(material, g_directionalLight[i], input.normal, toEyeW, A, D, S);
 			ambient += A;
 			diffuse += D;
 			spec += S;
@@ -224,7 +210,7 @@ float4 CalcLight(PS_INPUT input)
 
 		for (int j = 0; j < pointLightNum; ++j)
 		{
-			ComputePointLight(g_material, g_pointLight[j], float4(input.worldPos ,1), input.normal, toEyeW, A, D, S);
+			ComputePointLight(material, g_pointLight[j], float4(input.worldPos ,1), input.normal, toEyeW, A, D, S);
 			ambient += A;
 			diffuse += D;
 			spec += S;
@@ -232,13 +218,13 @@ float4 CalcLight(PS_INPUT input)
 
 		for (int k = 0; k < spotLightNum; ++k)
 		{
-			ComputeSpotLight(g_material, g_spotLight[k], float4(input.worldPos,1), input.normal, toEyeW, A, D, S);
+			ComputeSpotLight(material, g_spotLight[k], float4(input.worldPos,1), input.normal, toEyeW, A, D, S);
 			ambient += A;
 			diffuse += D;
 			spec += S;
 		}
 	}
 	float4 litColor = ambient + diffuse + spec;
-	litColor.a = g_material.diffuse.a;
+	litColor.a = material.diffuse.a;
 	return litColor;
 }

@@ -5,27 +5,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\precomp.h" />
-    <ClInclude Include="..\shader\common.h">
-      <Filter>shader</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shader">
       <UniqueIdentifier>{f18dc8d3-02b1-46e7-a3b2-2ab30027ed0e}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\shader\default_shader_PS.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
-    <FxCompile Include="..\shader\default_shader_VS.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
-    <FxCompile Include="..\shader\ShaderFirst_PS.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
-    <FxCompile Include="..\shader\ShaderFirst_VS.hlsl">
-      <Filter>shader</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

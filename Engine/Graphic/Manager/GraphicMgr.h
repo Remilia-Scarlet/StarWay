@@ -3,6 +3,8 @@
 #include "Graphic/gfx/GfxShaderPixel.h"
 #include "Math/vector/Vector.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
+#include "Graphic/gfx/GfxInputLayout.h"
+#include "Graphic/gfx/GfxTexture.h"
 
 #if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
 	class DX11GraphicMgr;
@@ -48,7 +50,8 @@ public:
 	virtual void setViewPort(const ViewPort& viewPort) = 0;
 	virtual ViewPort getViewPort() = 0;
 
-	virtual void setInputLayout(InputLayoutType inputLayoutType) = 0;
+	template<class VertexType>
+	GfxInputLayoutPtr getInputLayout();
 
 	virtual void setPixelShader(const GfxShaderPixelPtr& ps) = 0;
 	virtual void setVertexShader(const GfxShaderVertexPtr& vs) = 0;
@@ -64,10 +67,25 @@ protected:
 	GraphicMgr();
 	virtual ~GraphicMgr();
 	virtual void clearDevice() = 0;
+	virtual GfxInputLayoutPtr initInputLayout(const VertexInputlayoutDescription& description) = 0;
 	int _drawIndexNumber;
+	std::unordered_map<std::string, GfxInputLayoutPtr> _inputLayouts;
 
 	static GraphicMgr* s_instance;
 };
+
+template <class VertexType>
+GfxInputLayoutPtr GraphicMgr::getInputLayout()
+{
+	auto it = _inputLayouts.find(VertexType::getName());
+	if (it != _inputLayouts.end())
+		return it->second;
+
+	const VertexInputlayoutDescription& description = VertexType::getInputLayoutDescription();
+	GfxInputLayoutPtr layout = initInputLayout(description);
+	_inputLayouts[VertexType::getName()] = layout;
+	return layout;
+}
 
 #if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
 #include "Graphic/DX11/DX11GraphicMgr.h"

@@ -2,7 +2,8 @@
 #include <string>
 #include <vector>
 
-class CommonVertex;
+#define TINY_VERTEX(CLASS_NAME) public:static const char* getName(){return #CLASS_NAME;}
+
 enum class InputLayoutEleType
 {
 	FLOAT,
@@ -12,15 +13,16 @@ enum class InputLayoutEleType
 };
 struct InputLayoutStruct
 {
-	std::string _semanticName;
+	const char* _semanticName;
 	InputLayoutEleType _type;
 };
 
-enum class InputLayoutType
+class VertexInputlayoutDescription
 {
-	DEFAULT,
-	COMMON,
-	TYPE_NUMBER
-};
+public:
+	VertexInputlayoutDescription(std::initializer_list<InputLayoutStruct> description);
 
-std::vector<std::vector<InputLayoutStruct>>  GetInputLayoutDescs();
+	const std::vector<InputLayoutStruct>& getDescription() const { return _description; }
+protected:
+	std::vector<InputLayoutStruct> _description;
+};

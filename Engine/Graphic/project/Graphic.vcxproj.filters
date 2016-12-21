@@ -44,9 +44,6 @@
     <ClCompile Include="..\DX11\DX11Wrapper.cpp">
       <Filter>DX11</Filter>
     </ClCompile>
-    <ClCompile Include="..\Vertex\CommonVertex.cpp">
-      <Filter>Vertex</Filter>
-    </ClCompile>
     <ClCompile Include="..\Vertex\InputLayoutDefine.cpp">
       <Filter>Vertex</Filter>
     </ClCompile>
@@ -58,6 +55,15 @@
     </ClCompile>
     <ClCompile Include="..\gfx\GfxMaterial.cpp">
       <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gfx\GfxInputLayout.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DX11\DX11InputLayout.cpp">
+      <Filter>DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Manager\DefaultMgr.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -105,9 +111,6 @@
     <ClInclude Include="..\DX11\DX11Wrapper.h">
       <Filter>DX11</Filter>
     </ClInclude>
-    <ClInclude Include="..\Vertex\CommonVertex.h">
-      <Filter>Vertex</Filter>
-    </ClInclude>
     <ClInclude Include="..\Vertex\InputLayoutDefine.h">
       <Filter>Vertex</Filter>
     </ClInclude>
@@ -119,6 +122,18 @@
     </ClInclude>
     <ClInclude Include="..\gfx\GfxMaterial.h">
       <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gfx\GfxInputLayout.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DX11\DX11InputLayout.h">
+      <Filter>DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shader\common.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Manager\DefaultMgr.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -134,5 +149,19 @@
     <Filter Include="Vertex">
       <UniqueIdentifier>{30613ab7-cdba-4024-85dc-9e5fdaeb4781}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{ed3904a7-d92f-4f09-9a0d-762f5f6ea5ee}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Shader\DefaultShader_PS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\DefaultShader_VS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\DefaultShader_NoTex_PS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

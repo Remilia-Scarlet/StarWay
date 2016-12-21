@@ -9,16 +9,11 @@ public:
 	static ShaderMgr* instance();
 public:
 	GfxShaderVertexPtr getVSShader(const std::string& filename);
-	GfxShaderVertexPtr getDefaultVSShader() { return _defaultVShader; }
-
 	GfxShaderPixelPtr getPSShader(const std::string& filename);
-	GfxShaderPixelPtr getDefaultPSShader() { return _defaultPShader; }
 protected:
 	ShaderMgr();
 	virtual ~ShaderMgr();
 	static ShaderMgr* s_instance;
-	GfxShaderVertexPtr _defaultVShader;
-	GfxShaderPixelPtr _defaultPShader;
 
 	virtual bool init();
 	std::unordered_map<std::string, GfxShaderVertexPtr> _vsShaders;

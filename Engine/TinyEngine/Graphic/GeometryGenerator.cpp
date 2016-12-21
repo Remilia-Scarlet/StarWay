@@ -2,7 +2,6 @@
 #include "TinyEngine/Graphic/GeometryGenerator.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
 #include "Graphic/Vertex/DefaultVertex.h"
-#include "Graphic/Vertex/CommonVertex.h"
 
 GeometryGenerator* GeometryGenerator::instance()
 {
@@ -10,7 +9,7 @@ GeometryGenerator* GeometryGenerator::instance()
 	return &s_instance;
 }
 
-MeshComponentPtr GeometryGenerator::createCubeMesh(InputLayoutType layoutType, float width, float height, float lenth)
+MeshComponentPtr GeometryGenerator::createCubeMesh(float width, float height, float lenth)
 {
 	float w2 = width / 2.f;
 	float h2 = height / 2.f;
@@ -22,50 +21,29 @@ MeshComponentPtr GeometryGenerator::createCubeMesh(InputLayoutType layoutType, f
 								  14, 12, 13, 15, 12, 14,
 								  19, 17, 16, 18, 17, 19,
 								  22, 20, 21, 23, 20, 22};
-	const char* shaderName = "ShaderFirst_VS.cso";
-	if (layoutType == InputLayoutType::DEFAULT)
-	{
-		std::vector<DefaultVertex> vertexBuffer = {
-			DefaultVertex({-w2,h2,-d2}),  DefaultVertex({w2,h2,-d2}),
-			DefaultVertex({w2,h2,d2}),	DefaultVertex({-w2,h2,d2}),
-			DefaultVertex({-w2,-h2,-d2}), DefaultVertex({w2,-h2,-d2}),
-			DefaultVertex({w2,-h2,d2}),   DefaultVertex({-w2,-h2,d2}),
-			DefaultVertex({-w2,-h2,d2}),  DefaultVertex({-w2,-h2,-d2}),
-			DefaultVertex({-w2,h2,-d2}),  DefaultVertex({-w2,h2,d2}),
-			DefaultVertex({w2,-h2,d2}),   DefaultVertex({w2,-h2,-d2}),
-			DefaultVertex({w2,h2,-d2}),   DefaultVertex({w2,h2,d2}),
-			DefaultVertex({-w2,-h2,-d2}), DefaultVertex({w2,-h2,-d2}),
-			DefaultVertex({w2,h2,-d2}),   DefaultVertex({-w2,h2,-d2}),
-			DefaultVertex({-w2,-h2,d2}),  DefaultVertex({w2,-h2,d2}),
-			DefaultVertex({w2,h2,d2}),	DefaultVertex({-w2,h2,d2}),
-		};
-		return MeshComponent::create(layoutType, vertexBuffer, indices, shaderName);
-	}
-	else if (layoutType == InputLayoutType::COMMON)
-	{
-		std::vector<CommonVertex> vertexBuffer = {
-			CommonVertex({-w2, h2, -d2}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}),   CommonVertex({w2, h2, -d2}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}),
-			CommonVertex({w2, h2, d2}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}),	 CommonVertex({-w2, h2, d2}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}),
-			CommonVertex({-w2, -h2, -d2}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}), CommonVertex({w2, -h2, -d2}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}),
-			CommonVertex({w2, -h2, d2}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}),   CommonVertex({-w2, -h2, d2}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}),
-			CommonVertex({-w2, -h2, d2}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}),  CommonVertex({-w2, -h2, -d2}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}),
-			CommonVertex({-w2, h2, -d2}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}),  CommonVertex({-w2, h2, d2}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}),
-			CommonVertex({w2, -h2, d2}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}),	CommonVertex({w2, -h2, -d2}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}),
-			CommonVertex({w2, h2, -d2}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}),	CommonVertex({w2, h2, d2}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}),
-			CommonVertex({-w2, -h2, -d2}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}), CommonVertex({w2, -h2, -d2}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}),
-			CommonVertex({w2, h2, -d2}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}),   CommonVertex({-w2, h2, -d2}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}),
-			CommonVertex({-w2, -h2, d2}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}),   CommonVertex({w2, -h2, d2}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}),
-			CommonVertex({w2, h2, d2}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}),	 CommonVertex({-w2, h2, d2}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}),
-		};
-		return MeshComponent::create(layoutType, vertexBuffer, indices, shaderName);
-	}
+
+	std::vector<CommonVertex> vertexBuffer = {
+		CommonVertex({-w2, h2, -d2}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}),   CommonVertex({w2, h2, -d2}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}),
+		CommonVertex({w2, h2, d2}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}),	 CommonVertex({-w2, h2, d2}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}),
+		CommonVertex({-w2, -h2, -d2}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}), CommonVertex({w2, -h2, -d2}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}),
+		CommonVertex({w2, -h2, d2}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}),   CommonVertex({-w2, -h2, d2}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}),
+		CommonVertex({-w2, -h2, d2}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}),  CommonVertex({-w2, -h2, -d2}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}),
+		CommonVertex({-w2, h2, -d2}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}),  CommonVertex({-w2, h2, d2}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}),
+		CommonVertex({w2, -h2, d2}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}),	CommonVertex({w2, -h2, -d2}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}),
+		CommonVertex({w2, h2, -d2}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}),	CommonVertex({w2, h2, d2}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}),
+		CommonVertex({-w2, -h2, -d2}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}), CommonVertex({w2, -h2, -d2}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}),
+		CommonVertex({w2, h2, -d2}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}),   CommonVertex({-w2, h2, -d2}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}),
+		CommonVertex({-w2, -h2, d2}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}),   CommonVertex({w2, -h2, d2}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}),
+		CommonVertex({w2, h2, d2}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}),	 CommonVertex({-w2, h2, d2}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}),
+	};
+	return MeshComponent::create(vertexBuffer, indices);
+
 	TinyAssert(false, "unreachable code");
 	return MeshComponentPtr();
 }
 
-MeshComponentPtr GeometryGenerator::createSphereMeshData(InputLayoutType layoutType, float radius, int numSubdivisions)
+MeshComponentPtr GeometryGenerator::createSphereMeshData(float radius, int numSubdivisions)
 {
-	const char* shaderName = "ShaderFirst_VS.cso";
 	// Put a cap on the number of subdivisions.
 	numSubdivisions = min(numSubdivisions, 5);
 
@@ -95,45 +73,24 @@ MeshComponentPtr GeometryGenerator::createSphereMeshData(InputLayoutType layoutT
 	for (int i = 0; i < numSubdivisions; ++i)
 		subdivideTriangle(pos,indices);
 
-	if (layoutType == InputLayoutType::DEFAULT)
+	std::vector<CommonVertex> vertexBuffer;
+	vertexBuffer.reserve(pos.size());
+	// Project vertices onto sphere and scale.
+	for (int i = 0; i < int(pos.size()); ++i)
 	{
-		std::vector<DefaultVertex> vertexBuffer(pos.begin(), pos.end());
-		// Project vertices onto sphere and scale.
-		for (int i = 0; i < int(vertexBuffer.size()); ++i)
-		{
-			// Project onto unit sphere.
-			Vector4 normal(vertexBuffer[i].pos.X(), vertexBuffer[i].pos.Y(), vertexBuffer[i].pos.Z(), 0.f);
-			normal.normalizeInPlace();
+		// Project onto unit sphere.
+		Vector4 normal(pos[i].X(), pos[i].Y(), pos[i].Z(), 0.f);
+		normal.normalizeInPlace();
 
-			// Project onto sphere.
-			Vector4 p = radius * normal;
+		// Project onto sphere.
+		Vector4 p = radius * normal;
 
-			vertexBuffer[i].pos = { p.X(),p.Y(),p.Z() };
-		}
-		return MeshComponent::create(layoutType, vertexBuffer, indices, shaderName);
+		float theta = atan2(p.X(), p.Z());
+		float phi = acosf(p.Y() / radius);
+
+		vertexBuffer.push_back(CommonVertex(p.XYZ(), normal.XYZ(), Vector2(theta / float(2 * M_PI), phi / float(M_PI))));
 	}
-	else if (layoutType == InputLayoutType::COMMON)
-	{
-		std::vector<CommonVertex> vertexBuffer;
-		vertexBuffer.reserve(pos.size());
-		// Project vertices onto sphere and scale.
-		for (int i = 0; i < int(pos.size()); ++i)
-		{
-			// Project onto unit sphere.
-			Vector4 normal(pos[i].X(), pos[i].Y(), pos[i].Z(), 0.f);
-			normal.normalizeInPlace();
-
-			// Project onto sphere.
-			Vector4 p = radius * normal;
-
-			float theta = atan2(p.X(), p.Z());
-			float phi = acosf(p.Y() / radius);
-
-			vertexBuffer.push_back(CommonVertex(p.XYZ(), normal.XYZ(), Vector2(theta / float(2 * M_PI), phi / float(M_PI))));
-		}
-		return MeshComponent::create(layoutType, vertexBuffer, indices, shaderName);
-	}
-	return MeshComponentPtr();
+	return MeshComponent::create(vertexBuffer, indices);
 }
 
 void GeometryGenerator::subdivideTriangle(std::vector<Vector3>& pos, std::vector<int>& indices)

@@ -7,7 +7,7 @@
 #include "GfxVertexBuffer.h"
 #include "Math/vector/Vector.h"
 #include "GfxMaterial.h"
-enum class InputLayoutType;
+#include "GfxInputLayout.h"
 
 TINY_DEFINE_PTR(GfxMesh);
 class GfxMesh : public RefCountObj
@@ -17,11 +17,11 @@ protected:
 	virtual ~GfxMesh();
 
 public:
-	static GfxMeshPtr create(InputLayoutType inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat);
+	static GfxMeshPtr create(const GfxInputLayoutPtr& inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat);
 
 public:
-	InputLayoutType getInputLayoutType() const { return _inputLayoutType; }
-	void setInputLayoutType(InputLayoutType val) { _inputLayoutType = val; }
+	const GfxInputLayoutPtr& getInputLayoutType() const { return _inputLayoutType; }
+	void setInputLayoutType(const GfxInputLayoutPtr& val) { _inputLayoutType = val; }
 
 	const GfxVertexBuffer& getVertexBuffer() const { return _vertexBuffer; }
 	void setVertexBuffer(const GfxVertexBuffer& val) { _vertexBuffer = val; }
@@ -37,8 +37,8 @@ public:
 
 	void render(const GfxShaderVertexPtr& vs);
 private:
-	virtual bool init(InputLayoutType inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat);
-	InputLayoutType _inputLayoutType;
+	virtual bool init(const GfxInputLayoutPtr& inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat);
+	GfxInputLayoutPtr _inputLayoutType;
 	GfxVertexBuffer _vertexBuffer;
 	GfxIndexBuffer _indexBuffer;
 	int _vertexNumber;

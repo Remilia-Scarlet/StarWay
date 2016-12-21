@@ -3,9 +3,12 @@
 #include "InputLayoutDefine.h"
 
 
-std::vector<InputLayoutStruct> DefaultVertex::getInputLayoutStruct()
+const VertexInputlayoutDescription& CommonVertex::getInputLayoutDescription()
 {
-	return std::vector<InputLayoutStruct>{
-		{"POSITION", InputLayoutEleType::VECTOR3}
+	static VertexInputlayoutDescription description{
+		{ "POSITION", InputLayoutEleType::VECTOR3 },
+		{ "NORMAL", InputLayoutEleType::VECTOR3 },
+		{ "TEXCOORD", InputLayoutEleType::VECTOR2 }
 	};
+	return description;
 }

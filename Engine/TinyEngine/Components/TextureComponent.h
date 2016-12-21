@@ -16,8 +16,9 @@ public:
 	const static TextureComponentPtr DefaultTexture;
 
 	static TextureComponentPtr create();
+	static TextureComponentPtr create(const std::string& fileName);
 	static TextureComponentPtr create(const std::string& fileName, const std::string& shadeName);
-	int L_create(lua_State* L);
+	static int L_create(lua_State* L);
 
 	void setTexture(const GfxTexturePtr& texture);
 	const GfxTexturePtr& getTexture();

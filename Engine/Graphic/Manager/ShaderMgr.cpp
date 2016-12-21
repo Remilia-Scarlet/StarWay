@@ -27,16 +27,12 @@ ShaderMgr* ShaderMgr::instance()
 GfxShaderVertexPtr ShaderMgr::getVSShader(const std::string& filename)
 {
 	if (filename.empty())
-		return _defaultVShader;
+		return nullptr;
 
 	GfxShaderVertexPtr& shader = _vsShaders[filename];
 	if (!shader.isValid())
 	{
-		GfxShaderVertexPtr p = GfxShaderVertex::create(filename);
-		if (p.isValid())
-			shader = p;
-		else
-			shader = _defaultVShader;
+		shader = GfxShaderVertex::create(filename);
 	}
 	return shader;
 }
@@ -44,16 +40,12 @@ GfxShaderVertexPtr ShaderMgr::getVSShader(const std::string& filename)
 GfxShaderPixelPtr ShaderMgr::getPSShader(const std::string& filename)
 {
 	if (filename.empty())
-		return _defaultPShader;
+		return nullptr;
 
 	GfxShaderPixelPtr& shader = _psShaders[filename];
 	if (!shader.isValid())
 	{
-		GfxShaderPixelPtr p = GfxShaderPixel::create(filename);
-		if (p.isValid())
-			shader = p;
-		else
-			shader = _defaultPShader;
+		shader = GfxShaderPixel::create(filename);
 	}
 	return shader;
 }
@@ -65,20 +57,12 @@ ShaderMgr::ShaderMgr()
 
 ShaderMgr::~ShaderMgr()
 {
-	if (_defaultVShader.isValid())
-		_defaultVShader = nullptr;
-	if (_defaultPShader.isValid())
-		_defaultPShader = nullptr;
 }
 
 bool ShaderMgr::init()
 {
 	do 
 	{
-		_defaultVShader = getVSShader("default_shader_VS.cso");
-		TINY_BREAK_IF(!_defaultVShader.isValid());
-		_defaultPShader = getPSShader("default_shader_PS.cso");
-		TINY_BREAK_IF(!_defaultPShader.isValid());
 		return true;
 	} while (0);
 	TinyAssert(false, "ShaderMgr creating failed!");

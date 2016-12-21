@@ -32,7 +32,7 @@ int LuaFuns::GenerateCubeMesh(lua_State* L)
 	float h = LuaManager::instance()->getVal<float>(L, 2);
 	float l = LuaManager::instance()->getVal<float>(L, 3);
 
-	MeshComponentPtr mesh = GeometryGenerator::instance()->createCubeMesh(InputLayoutType::COMMON, w, h, l);
+	MeshComponentPtr mesh = GeometryGenerator::instance()->createCubeMesh(w, h, l);
 	LuaManager::instance()->pushVal(L, mesh);
 	return 1;
 }
@@ -45,7 +45,7 @@ int LuaFuns::GenerateSphereMesh(lua_State* L)
 	float radius = LuaManager::instance()->getVal<float>(L, 1);
 	int numSubdivisions = LuaManager::instance()->getVal<int>(L, 2);
 
-	MeshComponentPtr mesh = GeometryGenerator::instance()->createSphereMeshData(InputLayoutType::COMMON, radius, numSubdivisions);
+	MeshComponentPtr mesh = GeometryGenerator::instance()->createSphereMeshData(radius, numSubdivisions);
 	LuaManager::instance()->pushVal(L, mesh);
 	return 1;
 }

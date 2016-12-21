@@ -1,6 +1,6 @@
 #pragma once
 #include "Math\vector\Vector.h"
-#include "Graphic\Vertex\CommonVertex.h"
+#include "Graphic\Vertex\DefaultVertex.h"
 #include "WavefrontParser.h"
 
 TINY_DEFINE_PTR(Object);

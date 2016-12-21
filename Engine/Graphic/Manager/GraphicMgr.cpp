@@ -5,6 +5,7 @@
 #include "Graphic/DX11/DX11GraphicMgr.h"
 #endif
 
+
 GraphicMgr* GraphicMgr::s_instance = nullptr;
 
 PlatformGraphicMgr* GraphicMgr::instance()

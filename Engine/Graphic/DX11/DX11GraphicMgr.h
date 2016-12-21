@@ -15,8 +15,6 @@ public:
 
 	virtual void setPixelShader(const GfxShaderPixelPtr& ps)override;
 	virtual void setVertexShader(const GfxShaderVertexPtr& vs)override;
-
-	virtual void setInputLayout(InputLayoutType inputLayoutType) override;
 	
 	ID3D11DeviceContext* getD3D11DeviceContext() { return _immediateContext; }
 	ID3D11Device* getD3D11Device() { return _d3dDevice; }
@@ -34,11 +32,11 @@ protected:
 	ID3D11RenderTargetView*             _renderTargetView = NULL;
 	ID3D11Texture2D*                    _depthStencil = NULL;
 	ID3D11DepthStencilView*             _depthStencilView = NULL;
-	ID3D11InputLayout*					_inputLayout[static_cast<size_t>(InputLayoutType::TYPE_NUMBER)];
+
 
 	static const float s_clearColor[4]; //use this color to clear screen
 	virtual bool init(int width, int height, HWND hWnd);
-	bool initInputLayout();
+	virtual GfxInputLayoutPtr initInputLayout(const VertexInputlayoutDescription& description) override;
 	bool initDevice(int width, int height, HWND hWnd);
 	bool initDepthStencil(int width, int height);
 	bool initState();

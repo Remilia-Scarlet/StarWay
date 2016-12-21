@@ -9,6 +9,7 @@
 #include "DX11Wrapper.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
 #include "Graphic/Manager/LightManager.h"
+#include "DX11InputLayout.h"
 
 const float DX11GraphicMgr::s_clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 void DX11GraphicMgr::setViewPort(const ViewPort& viewPort)
@@ -75,11 +76,6 @@ void DX11GraphicMgr::setVertexShader(const GfxShaderVertexPtr& vs)
 		TinyAssert(false, "DX11GraphicMgr::setVertexShader no shader");
 }
 
-void DX11GraphicMgr::setInputLayout(InputLayoutType inputLayoutType)
-{
-	_immediateContext->IASetInputLayout(_inputLayout[(size_t)inputLayoutType]);
-}
-
 void DX11GraphicMgr::setWireFrame(bool isWireFrame)
 {
 	// TODO : optimize state management
@@ -95,7 +91,7 @@ void DX11GraphicMgr::setWireFrame(bool isWireFrame)
 	rasterState->Release();
 }
 
-bool DX11GraphicMgr::initInputLayout()
+GfxInputLayoutPtr DX11GraphicMgr::initInputLayout(const VertexInputlayoutDescription& description)
 {
 	bool ret = true;
 	struct InputElementInfo
@@ -122,50 +118,54 @@ bool DX11GraphicMgr::initInputLayout()
 		}
 	};
 
-	for (int i = 0; i < static_cast<int>(InputLayoutType::TYPE_NUMBER); ++i)
+	std::vector<D3D11_INPUT_ELEMENT_DESC> layout;
+	std::string shaderCode =
+		"struct VS_INPUT\n"
+		"{\n"
+		;
+	int valueNumber = 0;
+	const std::vector<InputLayoutStruct>& desc = description.getDescription();
+	for (const InputLayoutStruct& desc : desc)
 	{
-		std::vector<D3D11_INPUT_ELEMENT_DESC> layout;
-		std::string shaderCode =
-			"struct VS_INPUT\n"
-			"{\n"
-			;
-		int valueNumber = 0;
-		std::vector<std::vector<InputLayoutStruct> > desc = GetInputLayoutDescs();
-		for (const InputLayoutStruct& desc : desc[i])
-		{
-			layout.push_back({desc._semanticName.c_str(), 0, convertInputLayoutEleTypeFun(desc._type)._format, 0, (UINT)valueNumber, D3D11_INPUT_PER_VERTEX_DATA, 0});
-			shaderCode += convertInputLayoutEleTypeFun(desc._type)._typeInfo;
-			shaderCode += FormatString(" value%d : %s;\n", valueNumber, desc._semanticName.c_str());
-			valueNumber += convertInputLayoutEleTypeFun(desc._type)._size;
-		}
-		shaderCode +=
-			"};\n"
-			"float4 main(VS_INPUT input) : SV_POSITION\n"
-			"{\n"
-			"return float4(0,0,0,0);\n"
-			"}\n"
-			;
-		ID3DBlob* shaderBlob;
-		bool successed = DX11Wrapper::CompileShader(shaderCode.c_str(), (int)shaderCode.length(), "main","vs_5_0", &shaderBlob);
-
-		if (successed)
-		{
-			// Create the actual input layout
-			HRESULT hr = _d3dDevice->CreateInputLayout(layout.data(),
-				(UINT)layout.size(),
-				shaderBlob->GetBufferPointer(),
-				(UINT)shaderBlob->GetBufferSize(),
-				&_inputLayout[i]);
-			TINY_SAFE_RELEASE(shaderBlob);
-			if (FAILED(hr))
-				ret = false;
-			else
-				SET_DEBUG_NAME(_inputLayout[i], FormatString("Inputlayout%d", i).c_str());
-		}
-		else
-			ret = false;
+		layout.push_back({desc._semanticName, 0, convertInputLayoutEleTypeFun(desc._type)._format, 0, (UINT)valueNumber, D3D11_INPUT_PER_VERTEX_DATA, 0});
+		shaderCode += convertInputLayoutEleTypeFun(desc._type)._typeInfo;
+		shaderCode += FormatString(" value%d : %s;\n", valueNumber, desc._semanticName);
+		valueNumber += convertInputLayoutEleTypeFun(desc._type)._size;
 	}
-	return ret;
+	shaderCode +=
+		"};\n"
+		"float4 main(VS_INPUT input) : SV_POSITION\n"
+		"{\n"
+		"return float4(0,0,0,0);\n"
+		"}\n"
+		;
+	ID3DBlob* shaderBlob;
+	bool successed = DX11Wrapper::CompileShader(shaderCode.c_str(), (int)shaderCode.length(), "main","vs_5_0", &shaderBlob);
+
+	ID3D11InputLayout* d3dInputLayout = nullptr;
+	if (successed)
+	{
+		// Create the actual input layout
+		HRESULT hr = _d3dDevice->CreateInputLayout(layout.data(),
+			(UINT)layout.size(),
+			shaderBlob->GetBufferPointer(),
+			(UINT)shaderBlob->GetBufferSize(),
+			&d3dInputLayout);
+		TINY_SAFE_RELEASE(shaderBlob);
+		if (FAILED(hr))
+			ret = false;
+		else
+			SET_DEBUG_NAME(d3dInputLayout, "Inputlayout");
+	}
+	else
+		ret = false;
+	if (ret)
+	{
+		PlatformInputLayoutPtr layout = DX11InputLayout::create(d3dInputLayout);
+		return layout;
+	}
+	else
+		return nullptr;
 }
 
 
@@ -296,9 +296,6 @@ bool DX11GraphicMgr::init(int width, int height, HWND hWnd)
 		TINY_BREAK_IF(!initDevice(width, height, hWnd));
 		//init DepthStencil
 		TINY_BREAK_IF(!initDepthStencil(width, height));
-		// init input layout
-		TINY_BREAK_IF(!initInputLayout());
-
 #ifdef _DEBUG
 		LocalSetting::instance()->_d3dDevice = _d3dDevice;
 #endif // _DEBUG
@@ -318,8 +315,4 @@ void DX11GraphicMgr::clearDevice()
 	TINY_SAFE_RELEASE(_swapChain);
 	TINY_SAFE_RELEASE(_immediateContext);
 	TINY_SAFE_RELEASE(_d3dDevice);
-	for (int i = 0; i < (int)InputLayoutType::TYPE_NUMBER; ++i)
-	{
-		TINY_SAFE_RELEASE(_inputLayout[i]);
-	}
 }

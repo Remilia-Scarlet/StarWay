@@ -13,7 +13,8 @@ bool WavefrontMtlReader::readMtlFile(std::map<std::string, TextureComponentPtr>&
 	outTexture.clear();
 
 	bool result = _parser.startParse();
-	outTexture = std::move(_textures);
+	finisheMtl();
+	outTexture = std::move(_components);
 	return true;
 }
 

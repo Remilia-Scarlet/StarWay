@@ -26,13 +26,13 @@ PrimitiveTopology GfxMesh::getPrimitiveTopology() const
 
 void GfxMesh::render(const GfxShaderVertexPtr& vs)
 {
-	GraphicMgr::instance()->setInputLayout(_inputLayoutType);
+	_inputLayoutType->render();
 	_vertexBuffer.setBuffer();
 	_indexBuffer.setBuffer();
 	GraphicMgr::instance()->setDrawIndexNumber(_vertexNumber);
 }
 
-GfxMeshPtr GfxMesh::create(InputLayoutType inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat)
+GfxMeshPtr GfxMesh::create(const GfxInputLayoutPtr& inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat)
 {
 	GfxMesh* ret = new GfxMesh();
 	if (!ret || !ret->init(inputLayoutType, vertexBuffer, vertexBufferSize, vertexBufferStride, indexBuffer, indexBufferSize, dataFormat))
@@ -40,7 +40,7 @@ GfxMeshPtr GfxMesh::create(InputLayoutType inputLayoutType, const void* vertexBu
 	return GfxMeshPtr(ret);
 }
 
-bool GfxMesh::init(InputLayoutType inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat)
+bool GfxMesh::init(const GfxInputLayoutPtr& inputLayoutType, const void* vertexBuffer, int vertexBufferSize, int vertexBufferStride, const void* indexBuffer, int indexBufferSize, IndexBufferDataFormat dataFormat)
 {
 	do
 	{

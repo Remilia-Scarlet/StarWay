@@ -111,7 +111,7 @@ void WavefrontObjReader::finishedObj()
 {
 	if (_currentObj.isValid())
 	{
-		MeshComponentPtr mesh = MeshComponent::create(InputLayoutType::COMMON, _meshVertex, "ShaderFirst_VS.cso");
+		MeshComponentPtr mesh = MeshComponent::create(_meshVertex);
 		mesh->setPrimitiveTopology(PrimitiveTopology::TRIANGLE_LIST);
 		_currentObj->addComponent(mesh);
 		_pawnObj.push_back(_currentObj);

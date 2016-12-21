@@ -20,7 +20,7 @@ function CreateGround(scene)
 			local meshComponent = GenerateCubeMesh(size,0.0,size)
 			obj:addComponent(meshComponent)
 			
-			local texture = TextureComponent:create("","")
+			local texture = TextureComponent:create()
 			obj:addComponent(texture)
 			
 			local transform = TransformComponent:create()
@@ -39,7 +39,7 @@ function CreateObj(scene)
 	local meshComponent = GenerateCubeMesh(2,2,2)
 	obj:addComponent(meshComponent)
 	
-	local texture = TextureComponent:create("seafloor.dds","ShaderFirst_PS.cso")
+	local texture = TextureComponent:create("seafloor.dds")
 	obj:addComponent(texture)
 	
 	local transform = TransformComponent:create()
@@ -54,7 +54,7 @@ function CreateObj(scene)
 	trans:setLocation(Vector3(2, 1, -2))
 	local meshConponent = GenerateSphereMesh(1.5,4)
 	sphereObj:addComponent(meshConponent)
-	local texture = TextureComponent:create("seafloor.dds","ShaderFirst_PS.cso")
+	local texture = TextureComponent:create("seafloor.dds")
 	sphereObj:addComponent(texture)
 	scene:addObject(sphereObj)
 	
@@ -64,7 +64,7 @@ end
 function CreateApple(scene)
 	local objs = LoadObj("DangoApple.obj")
 	for _,obj in pairs(objs) do
-		local texture = TextureComponent:create("","")
+		local texture = TextureComponent:create()
 		obj:addComponent(texture)
 	
 		local transform = TransformComponent:create()
