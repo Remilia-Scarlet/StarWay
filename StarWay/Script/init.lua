@@ -4,6 +4,7 @@ function start()
 	CreateGround(scene)
 	--CreateObj(scene)
 	CreateApple(scene)
+	CreateDangoCube(scene)
 	local freeCamera = CreateFreeCamera(scene)
 	--CreateSplineCamera(scene,freeCamera)
 	CreateLight(scene)
@@ -12,25 +13,20 @@ function start()
 end
 
 function CreateGround(scene)
-	local size = 2
-	for i = -10 , 10 do
-		for j = -10 , 10 do
-			local obj = Object:create()
-			
-			local meshComponent = GenerateCubeMesh(size,0.0,size)
-			obj:addComponent(meshComponent)
-			
-			local texture = TextureComponent:create()
-			obj:addComponent(texture)
-			texture:setWireFrame(true)
-			
-			local transform = TransformComponent:create()
-			obj:addComponent(transform)
-			transform:setLocation(Vector3(i*size,-2,j*size))
-			
-			scene:addObject(obj)
-		end
-	end 
+	local obj = Object:create()
+	
+	local meshComponent = GenerateCubeMesh(30,1,30)
+	obj:addComponent(meshComponent)
+	
+	local texture = TextureComponent:create()
+	obj:addComponent(texture)
+	
+	local transform = TransformComponent:create()
+	obj:addComponent(transform)
+	transform:setLocation(Vector3(0,-4,0))
+	
+	scene:addObject(obj)
+
 end
 
 function CreateObj(scene)
@@ -67,6 +63,16 @@ function CreateApple(scene)
 	for _,obj in pairs(objs) do
 		local transform = TransformComponent:create()
 		obj:addComponent(transform)
+		scene:addObject(obj)
+	end
+end
+
+function CreateDangoCube(scene)
+	local objs = LoadObj("DangoCube.obj")
+	for _,obj in pairs(objs) do
+		local transform = TransformComponent:create()
+		obj:addComponent(transform)
+		transform:setLocation(Vector3(2,0,0))
 		scene:addObject(obj)
 	end
 end

@@ -30,6 +30,7 @@ bool DX11Texture::init(const uint8_t* ddsData, int dataSize, const char* debugNa
 		}
 		return true;
 	} while (0);
+	DebugString("Failed to create DX11Texture %s", debugName);
 	return false;
 }
 
