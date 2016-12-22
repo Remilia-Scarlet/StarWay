@@ -13,6 +13,8 @@ bool WavefrontMtlReader::readMtlFile(std::map<std::string, TextureComponentPtr>&
 	outTexture.clear();
 
 	bool result = _parser.startParse();
+	if (!result)
+		return false;
 	finisheMtl();
 	outTexture = std::move(_components);
 	return true;
@@ -102,6 +104,7 @@ void WavefrontMtlReader::finisheMtl()
 		TextureComponentPtr texCom = TextureComponent::create();
 		texCom->setMaterial(_currentMat);
 		texCom->setTexture(_currentTex);
+		_components[_currentName] = texCom;
 	}
 	_currentName.clear();
 	_currentTex = nullptr;

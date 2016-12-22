@@ -5,6 +5,7 @@
 #include <string>
 #include "TinyEngine/Components/MeshComponent.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
+#include "WavefrontMtlReader.h"
 
 WavefrontObjReader::WavefrontObjReader(const std::string& fileName)
 	: _parser(fileName)
@@ -40,7 +41,6 @@ void WavefrontObjReader::handleO()
 {
 	finishedObj();
 	_currentObj = Object::create(_parser.nextParam());
-	_meshVertex.clear();
 }
 
 void WavefrontObjReader::handleV()
@@ -101,7 +101,7 @@ void WavefrontObjReader::handleF()
 
 void WavefrontObjReader::handleUSEMTL()
 {
-	std::string name = _parser.nextParam();
+	_mtlName = _parser.nextParam();
 }
 
 void WavefrontObjReader::handleMTLLIB()
@@ -117,14 +117,25 @@ void WavefrontObjReader::finishedObj()
 		MeshComponentPtr mesh = MeshComponent::create(_meshVertex);
 		mesh->setPrimitiveTopology(PrimitiveTopology::TRIANGLE_LIST);
 		_currentObj->addComponent(mesh);
+		_meshVertex.clear();
+
+		auto it = _materials.find(_mtlName);
+		TextureComponentPtr texture = nullptr;
+		if (it == _materials.end())
+			texture = TextureComponent::create();
+		else
+			texture = it->second;
+		_currentObj->addComponent(texture);
+		_mtlName.clear();
+
 		_pawnObj.push_back(_currentObj);
 	}
 }
 
 void WavefrontObjReader::readMaterialFile(const std::string& filename)
 {
-	WavefrontObjReader matReader(filename);
-	std::vector<ObjectPtr> outObj;
-	matReader.readObjFile(outObj);
-	_materials = std::move(matReader._materials);
+	WavefrontMtlReader matReader(filename);
+	std::map<std::string,TextureComponentPtr> outMtl;
+	matReader.readMtlFile(outMtl);
+	_materials = std::move(outMtl);
 }

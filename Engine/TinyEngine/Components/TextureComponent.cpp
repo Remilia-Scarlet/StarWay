@@ -90,6 +90,27 @@ const GfxMaterialPtr& TextureComponent::getMaterial()
 	return _gfxMaterial;
 }
 
+void TextureComponent::setWireFrame(bool wireFrame)
+{
+	if (_gfxTexture == nullptr || _gfxTexture == DefaultMgr::instance()->getDefaultTexture())
+	{
+		_gfxTexture = GfxTexture::create();
+	}
+	_gfxTexture->setWireFrame(wireFrame);
+}
+
+LUA_MEMBER_FUN_P1R0_IMPL(TextureComponent, setWireFrame, bool);
+
+bool TextureComponent::isWireFrame()
+{
+	if (_gfxTexture == nullptr)
+		return DefaultMgr::instance()->getDefaultTexture()->isWireFrame();
+	return _gfxTexture->isWireFrame();
+}
+
+LUA_MEMBER_FUN_P0R1_IMPL(TextureComponent, isWireFrame);
+
+
 bool TextureComponent::init(const std::string& fileName, const std::string& shadeName)
 {
 	do 
@@ -133,6 +154,8 @@ bool TextureComponent::createLuaPrototype()
 	LUA_PROTOTYPE_PREPARE();
 
 	LUA_PROTOTYPE_REGIST_FUN(create);
+	LUA_PROTOTYPE_REGIST_FUN(setWireFrame);
+	LUA_PROTOTYPE_REGIST_FUN(isWireFrame);
 
 	LUA_PROTOTYPE_END(TextureComponent);
 	return true;

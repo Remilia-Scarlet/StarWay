@@ -9,8 +9,8 @@ class DX11Texture : public GfxTexture
 public:
 	virtual void render() override;
 public:
-	bool isWireFrame();
-	void setWireFrame(bool wireFrame);
+	virtual bool isWireFrame() override;
+	virtual void setWireFrame(bool wireFrame) override;
 protected:
 	virtual bool init(const uint8_t* ddsData, int dataSize, const char* debugName) override;
 	ID3D11Resource* _texture;

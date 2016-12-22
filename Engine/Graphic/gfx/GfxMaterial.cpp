@@ -66,9 +66,9 @@ void GfxMaterial::setSpecular(const Vector4& specular)
 
 void GfxMaterial::render()
 {
-	ConstantBufferManager::instance()->setPSVector(13, _ambient);
-	ConstantBufferManager::instance()->setPSVector(14, _diffuse);
-	ConstantBufferManager::instance()->setPSVector(15, _specular);
+	ConstantBufferManager::instance()->setPSVector(1, _ambient);
+	ConstantBufferManager::instance()->setPSVector(2, _diffuse);
+	ConstantBufferManager::instance()->setPSVector(3, _specular);
 }
 
 bool GfxMaterial::init(Vector4 ambient, Vector4 diffuse, Vector4 specular)

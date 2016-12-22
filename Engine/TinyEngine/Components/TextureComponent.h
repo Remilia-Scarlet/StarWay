@@ -26,6 +26,11 @@ public:
 	void setMaterial(const GfxMaterialPtr& material);
 	const GfxMaterialPtr& getMaterial();
 
+	void setWireFrame(bool wireFrame);
+	LUA_MEMBER_FUN_P1R0_DECL(TextureComponent, setWireFrame, bool);
+	bool isWireFrame();
+	LUA_MEMBER_FUN_P0R1_DECL(TextureComponent, isWireFrame);
+
 	virtual void render() override;
 protected:
 	virtual bool init(const std::string& fileName, const std::string& shadeName);

@@ -20,6 +20,8 @@ public:
 	GfxTexture();
 	virtual ~GfxTexture();
 
+	virtual bool isWireFrame() = 0;
+	virtual void setWireFrame(bool wireFrame) = 0;
 	virtual void render() = 0;
 protected:
 	virtual bool init(const uint8_t* ddsData, int dataSize, const char* debugName) = 0;

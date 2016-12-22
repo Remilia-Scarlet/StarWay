@@ -22,6 +22,7 @@ function CreateGround(scene)
 			
 			local texture = TextureComponent:create()
 			obj:addComponent(texture)
+			texture:setWireFrame(true)
 			
 			local transform = TransformComponent:create()
 			obj:addComponent(transform)
@@ -64,9 +65,6 @@ end
 function CreateApple(scene)
 	local objs = LoadObj("DangoApple.obj")
 	for _,obj in pairs(objs) do
-		local texture = TextureComponent:create()
-		obj:addComponent(texture)
-	
 		local transform = TransformComponent:create()
 		obj:addComponent(transform)
 		scene:addObject(obj)
