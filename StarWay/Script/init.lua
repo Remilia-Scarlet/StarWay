@@ -120,7 +120,7 @@ end
 function CreateLight(scene)
 	--direction light
 	local directionLightObj = Object:create()
-	local directionLightComponent = DirectionLightComponent:create(Vector4(0,0,0,1.0),Vector4(1,0.2,0.2,1.0),Vector4(0.0,0.0,0.0,1.0),Vector3(-0.707,-0.707,1))
+	local directionLightComponent = DirectionLightComponent:create(Vector4(0.2,0.2,0.2,0.1),Vector4(1,0.2,0.2,1.0),Vector4(0.0,0.0,0.0,1.0),Vector3(-0.707,-0.707,1))
 	directionLightObj:addComponent(directionLightComponent)
 	scene:addObject(directionLightObj);
 	
