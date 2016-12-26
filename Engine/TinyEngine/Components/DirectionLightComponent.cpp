@@ -42,7 +42,7 @@ bool DirectionLightComponent::init(const Vector4& ambient, const Vector4& diffus
 		_light.ambient = ambient;
 		_light.diffuse = diffuse;
 		_light.specular = specular;
-		_light.direction = direction;
+		_light.direction = direction.normalized();
 		return true;
 	} while (0);
 	return false;

@@ -71,6 +71,7 @@ void ComputeSpotLight(Material mat,
 	float4 position, 
 	float3 normal,  
 	float3 toEye,    
+	float4 texColor,
 	out float4 ambient, 
 	out float4 diffuse, 
 	out float4 spec) 
@@ -120,6 +121,7 @@ void ComputePointLight(Material mat,
 	float4 position,  
 	float3 normal, 
 	float3 toEye, 
+	float4 texColor,
 	out float4 ambient, 
 	out float4 diffuse, 
 	out float4 spec)  
@@ -132,13 +134,12 @@ void ComputePointLight(Material mat,
 	float3 lightVec = L.position - pos;
 
 	float d = length(lightVec);
-	ambient = float4(1, 0, 0, 1);
 	if (d > L.range)
 		return;
 
 	lightVec /= d;
 
-	ambient = mat.ambient * L.ambient;
+	ambient = mat.ambient;// *L.ambient;
 
 	float diffuseFactor = dot(lightVec, normal);
 
@@ -161,6 +162,7 @@ void ComputeDirectionalLight(Material mat,
 	DirectionalLight L,
 	float3 normal, 
 	float3 toEye,
+	float4 texColor,
 	out float4 ambient, 
 	out float4 diffuse, 
 	out float4 spec) 
@@ -186,7 +188,7 @@ void ComputeDirectionalLight(Material mat,
 	}
 }
 
-float4 CalcLight(PS_INPUT input, float3 cameraPos, Material material)
+float4 CalcLight(PS_INPUT input, float3 cameraPos, Material material, float4 texColor)
 {
 	float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -199,10 +201,14 @@ float4 CalcLight(PS_INPUT input, float3 cameraPos, Material material)
 	{
 		input.normal = normalize(input.normal);
 		float3 toEyeW = normalize(cameraPos - input.worldPos);
+	//	material.ambient = texColor * texColor.w + material.ambient * (1 - texColor.w);
+
+		material.diffuse = texColor * texColor.w + material.diffuse * (1 - texColor.w);
+		material.ambient = material.diffuse;
 		float4 A, D, S;
 		for (int i = 0; i < directLightNum; ++i)
 		{
-			ComputeDirectionalLight(material, g_directionalLight[i], input.normal, toEyeW, A, D, S);
+			ComputeDirectionalLight(material, g_directionalLight[i], input.normal, toEyeW, texColor, A, D, S);
 			ambient += A;
 			diffuse += D;
 			spec += S;
@@ -210,7 +216,7 @@ float4 CalcLight(PS_INPUT input, float3 cameraPos, Material material)
 
 		for (int j = 0; j < pointLightNum; ++j)
 		{
-			ComputePointLight(material, g_pointLight[j], float4(input.worldPos ,1), input.normal, toEyeW, A, D, S);
+			ComputePointLight(material, g_pointLight[j], float4(input.worldPos ,1), input.normal, toEyeW, texColor, A, D, S);
 			ambient += A;
 			diffuse += D;
 			spec += S;
@@ -218,7 +224,7 @@ float4 CalcLight(PS_INPUT input, float3 cameraPos, Material material)
 
 		for (int k = 0; k < spotLightNum; ++k)
 		{
-			ComputeSpotLight(material, g_spotLight[k], float4(input.worldPos,1), input.normal, toEyeW, A, D, S);
+			ComputeSpotLight(material, g_spotLight[k], float4(input.worldPos,1), input.normal, toEyeW, texColor, A, D, S);
 			ambient += A;
 			diffuse += D;
 			spec += S;

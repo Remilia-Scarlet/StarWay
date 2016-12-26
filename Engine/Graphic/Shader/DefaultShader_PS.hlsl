@@ -12,9 +12,9 @@ SamplerState samLinear : register( s0 );
 //--------------------------------------------------------------------------------------
 // Pixel Shader
 //--------------------------------------------------------------------------------------
-float4 main( PS_INPUT input) : SV_Target
+float4 main( PS_INPUT input, float4 pos : SV_POSITION) : SV_Target
 {
 	float4 color = txDiffuse.Sample(samLinear, input.tex);
-	color += CalcLight(input, g_cameraPos, g_material);
+	color = CalcLight(input, g_cameraPos, g_material, color);
     return color;
 }
