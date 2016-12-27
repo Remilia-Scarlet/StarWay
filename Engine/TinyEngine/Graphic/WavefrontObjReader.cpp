@@ -63,7 +63,7 @@ void WavefrontObjReader::handleVT()
 {
 	float x = std::stof(_parser.nextParam());
 	float y = std::stof(_parser.nextParam());
-	_tempTexArr.push_back({ x,y });
+	_tempTexArr.push_back({x,1-y });
 }
 
 void WavefrontObjReader::handleF()

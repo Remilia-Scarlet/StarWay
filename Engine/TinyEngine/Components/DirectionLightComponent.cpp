@@ -1,5 +1,6 @@
 #include "TinyEngine\precomp.h"
 #include "DirectionLightComponent.h"
+#include "TransformComponent.h"
 
 
 bool DirectionLightComponent::createLuaPrototype()
@@ -12,10 +13,10 @@ bool DirectionLightComponent::createLuaPrototype()
 	return true;
 }
 
-DirectionLightComponentPtr DirectionLightComponent::create(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular, const Vector3& direction)
+DirectionLightComponentPtr DirectionLightComponent::create(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular)
 {
 	DirectionLightComponent* ret = new DirectionLightComponent();
-	if (ret && ret->init(ambient, diffuse, specular, direction))
+	if (ret && ret->init(ambient, diffuse, specular))
 		return DirectionLightComponentPtr(ret);
 	TINY_SAFE_DELETE(ret);
 	return DirectionLightComponentPtr();
@@ -23,6 +24,12 @@ DirectionLightComponentPtr DirectionLightComponent::create(const Vector4& ambien
 
 void DirectionLightComponent::render()
 {
+	if (!_owner.isValid())
+		return;
+	TransformComponentPtr trans = _owner.lock()->getComponent<TransformComponent>();
+	if (!trans.isValid())
+		return;
+	_light.direction = Vector3(0,0,1).rotateInPlace(trans->getRotation());
 	LightManager::instance()->applyDirectionLight(_light);
 }
 
@@ -35,14 +42,13 @@ DirectionLightComponent::~DirectionLightComponent()
 {
 }
 
-bool DirectionLightComponent::init(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular, const Vector3& direction)
+bool DirectionLightComponent::init(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular)
 {
 	do
 	{
 		_light.ambient = ambient;
 		_light.diffuse = diffuse;
 		_light.specular = specular;
-		_light.direction = direction.normalized();
 		return true;
 	} while (0);
 	return false;

@@ -19,6 +19,7 @@ protected:
 	void handleKA();
 	void handleKD();
 	void handleKS();
+	void handleKE();
 	void handleILLUM();
 	void handleMAP_KD();
 

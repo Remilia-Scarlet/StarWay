@@ -60,7 +60,7 @@ bool DefaultMgr::init()
 	{
 		_defaultTexture = GfxTexture::create();
 		TINY_BREAK_IF(!_defaultTexture.isValid());
-		_defaultMaterial = GfxMaterial::create({ 1.f, 1.f, 1.f, 1.f }, { 0.64f, 0.64f, 0.64f, 1.0f }, { 0.5f, 0.5f, 0.5f, 96.078f });
+		_defaultMaterial = GfxMaterial::create({ 0.3f, 0.3f, 0.3f, 1.f }, { 0.64f, 0.64f, 0.64f, 1.0f }, { 0.5f, 0.5f, 0.5f, 96.078f }, { 0.f,0.f,0.f,0.f });
 		TINY_BREAK_IF(!_defaultMaterial.isValid());
 		_defaultPSWithTex = ShaderMgr::instance()->getPSShader("DefaultShader_PS.cso");
 		TINY_BREAK_IF(!_defaultPSWithTex.isValid());

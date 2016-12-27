@@ -120,13 +120,16 @@ end
 function CreateLight(scene)
 	--direction light
 	local directionLightObj = Object:create()
-	local directionLightComponent = DirectionLightComponent:create(Vector4(0.6,0.6,0.6,1),Vector4(1,1,1,1.0),Vector4(0.0,0.0,0.0,1.0),Vector3(-0.707,-0.707,1))
+	local directionLightComponent = DirectionLightComponent:create(Vector4(1,1,1,1),Vector4(1,1,1,1),Vector4(1,1,1,1))
 	directionLightObj:addComponent(directionLightComponent)
+	local directionLightTrans = TransformComponent:create()
+	directionLightTrans:setEulerRotation(Vector3(45,45,0))
+	directionLightObj:addComponent(directionLightTrans)
 	scene:addObject(directionLightObj);
 	
 	--point light
 	local pointLightObj = Object:create()
-	local pointLightComponent = PointLightComponet:create(Vector4(0.0,0.0,0.0,1.0),Vector4(1,1,1,1.0),Vector4(0.0,0.0,0.0,1.0),20.0,Vector3(0.0,0.1,0.05))
+	local pointLightComponent = PointLightComponet:create(Vector4(0,0,0,0),Vector4(1,1,1,1),Vector4(1,1,1,1),20.0,Vector3(0.0,0.1,0.05))
 	pointLightObj:addComponent(pointLightComponent)
 	local trans = TransformComponent:create()
 	pointLightObj:addComponent(trans)

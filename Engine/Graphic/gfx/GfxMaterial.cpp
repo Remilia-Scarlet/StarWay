@@ -12,10 +12,10 @@ GfxMaterial::~GfxMaterial()
 
 }
 
-GfxMaterialPtr GfxMaterial::create(Vector4 ambient, Vector4 diffuse, Vector4 specular)
+GfxMaterialPtr GfxMaterial::create(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular, const Vector4& emit)
 {
 	GfxMaterial* ret = new GfxMaterial();
-	if (ret && ret->init(ambient, diffuse, specular))
+	if (ret && ret->init(ambient, diffuse, specular, emit))
 	{
 		return GfxMaterialPtr(ret);
 	}
@@ -26,7 +26,7 @@ GfxMaterialPtr GfxMaterial::create(Vector4 ambient, Vector4 diffuse, Vector4 spe
 GfxMaterialPtr GfxMaterial::create()
 {
 	GfxMaterial* ret = new GfxMaterial();
-	if (ret && ret->init(Vector4(), Vector4(), Vector4()))
+	if (ret && ret->init(Vector4(), Vector4(), Vector4(), Vector4()))
 	{
 		return GfxMaterialPtr(ret);
 	}
@@ -64,6 +64,16 @@ void GfxMaterial::setSpecular(const Vector4& specular)
 	_specular = specular;
 }
 
+const Vector4& GfxMaterial::getEmit()
+{
+	return _emit;
+}
+
+void GfxMaterial::setEmit(const Vector4& emit)
+{
+	_emit = emit;
+}
+
 void GfxMaterial::render()
 {
 	ConstantBufferManager::instance()->setPSVector(1, _ambient);
@@ -71,13 +81,14 @@ void GfxMaterial::render()
 	ConstantBufferManager::instance()->setPSVector(3, _specular);
 }
 
-bool GfxMaterial::init(Vector4 ambient, Vector4 diffuse, Vector4 specular)
+bool GfxMaterial::init(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular, const Vector4& emit)
 {
 	do 
 	{
 		_ambient = ambient;
 		_diffuse = diffuse;
 		_specular = specular;
+		_emit = emit;
 		return true;
 	} while (0);
 	return false;

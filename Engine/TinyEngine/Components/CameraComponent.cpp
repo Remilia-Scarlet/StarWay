@@ -128,7 +128,7 @@ void CameraComponent::render()
 	ConstantBufferManager::instance()->setVSMatrix(4, projMatrix);
 
 	// set camera pos
-	ConstantBufferManager::instance()->setPSVector(12, Vector4(trans->getLocation().X(), trans->getLocation().Y(), trans->getLocation().Z(), 0));
+	ConstantBufferManager::instance()->setPSVector(0, Vector4(trans->getLocation().X(), trans->getLocation().Y(), trans->getLocation().Z(), 0));
 }
 
 bool CameraComponent::init()

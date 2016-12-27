@@ -27,6 +27,7 @@ void WavefrontMtlReader::registerCommand()
 	_parser.registerCommand("Ka", std::bind(&WavefrontMtlReader::handleKA, this));
 	_parser.registerCommand("Kd", std::bind(&WavefrontMtlReader::handleKD, this));
 	_parser.registerCommand("Ks", std::bind(&WavefrontMtlReader::handleKS, this));
+	_parser.registerCommand("Ke", std::bind(&WavefrontMtlReader::handleKE, this));
 	_parser.registerCommand("illum", std::bind(&WavefrontMtlReader::handleILLUM, this));
 	_parser.registerCommand("map_Kd", std::bind(&WavefrontMtlReader::handleMAP_KD, this));
 }
@@ -68,6 +69,14 @@ void WavefrontMtlReader::handleKS()
 	specular.Y() = std::stof(_parser.nextParam());
 	specular.Z() = std::stof(_parser.nextParam());
 	_currentMat->setSpecular(specular);
+}
+
+void WavefrontMtlReader::handleKE()
+{
+	float x = std::stof(_parser.nextParam());
+	float y = std::stof(_parser.nextParam());
+	float z = std::stof(_parser.nextParam());
+	_currentMat->setEmit({ x,y,z,1 });
 }
 
 void WavefrontMtlReader::handleILLUM()

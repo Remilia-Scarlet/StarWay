@@ -18,13 +18,14 @@ struct Material
 	float4 ambient;
 	float4 diffuse;
 	float4 specular;// w is weight
+	float4 emit;
 };
 
 struct DirectionalLight
 {
-	float4 ambient;
-	float4 diffuse;
-	float4 specular;
+	float4 ambient;//xyz:color w:intensity
+	float4 diffuse;//xyz:color w:intensity
+	float4 specular;//xyz:color w:intensity
 	float3 direction;
 	float pad;
 };
@@ -139,7 +140,7 @@ void ComputePointLight(Material mat,
 
 	lightVec /= d;
 
-	ambient = mat.ambient;// *L.ambient;
+	ambient = mat.ambient * L.ambient * L.ambient.w;
 
 	float diffuseFactor = dot(lightVec, normal);
 
@@ -173,7 +174,7 @@ void ComputeDirectionalLight(Material mat,
 
 	float3 lightVec = -L.direction;
 
-	ambient = mat.ambient * L.ambient;
+	ambient = mat.ambient * L.ambient * L.ambient.w;
 
 	float diffuseFactor = dot(lightVec, normal);
 
@@ -183,54 +184,62 @@ void ComputeDirectionalLight(Material mat,
 
 		float3 v = reflect(-lightVec, normal);
 		float specFactor = pow(max(dot(v, toEye), 0.0f), mat.specular.w);
-		diffuse = diffuseFactor * mat.diffuse * L.diffuse;
+		diffuse = diffuseFactor * mat.diffuse * L.diffuse * L.diffuse.w;
 		spec = specFactor * mat.specular * L.specular;
 	}
 }
 
 float4 CalcLight(PS_INPUT input, float3 cameraPos, Material material, float4 texColor)
 {
-	float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
-
 	float directLightNum = g_lightNumber.x;
 	float pointLightNum = g_lightNumber.y;
 	float spotLightNum = g_lightNumber.z;
+	float4 litColor = float4(0, 0, 0, 0);
 	if (directLightNum != 0 || pointLightNum != 0 || spotLightNum != 0)
 	{
 		input.normal = normalize(input.normal);
 		float3 toEyeW = normalize(cameraPos - input.worldPos);
-	//	material.ambient = texColor * texColor.w + material.ambient * (1 - texColor.w);
 
-		material.diffuse = texColor * texColor.w + material.diffuse * (1 - texColor.w);
-		material.ambient = material.diffuse;
-		float4 A, D, S;
+		float3 amb = material.ambient.xyz * material.ambient.w;
+		float3 dif = material.diffuse.xyz * material.diffuse.w;
+
+		amb *= texColor.xyz * texColor.w + dif * (1 - texColor.w);
+		dif = texColor.xyz * texColor.w + dif * (1 - texColor.w);
+
+		material.ambient = float4(amb, 1);
+		material.diffuse = float4(dif, 1);
+
+		float4 outA = float4(0, 0, 0, 0);
+		float4 outD = float4(0, 0, 0, 0);
+		float4 outS = float4(0, 0, 0, 0);
+		float4 ambient = float4(0, 0, 0, 0);
+		float4 diffuse = float4(0, 0, 0, 0);
+		float4 spec = float4(0, 0, 0, 0);
 		for (int i = 0; i < directLightNum; ++i)
 		{
-			ComputeDirectionalLight(material, g_directionalLight[i], input.normal, toEyeW, texColor, A, D, S);
-			ambient += A;
-			diffuse += D;
-			spec += S;
+			ComputeDirectionalLight(material, g_directionalLight[i], input.normal, toEyeW, texColor, outA, outD, outS);
+			ambient += outA;
+			diffuse += outD;
+			spec += outS;
 		}
 
 		for (int j = 0; j < pointLightNum; ++j)
 		{
-			ComputePointLight(material, g_pointLight[j], float4(input.worldPos ,1), input.normal, toEyeW, texColor, A, D, S);
-			ambient += A;
-			diffuse += D;
-			spec += S;
+			ComputePointLight(material, g_pointLight[j], float4(input.worldPos ,1), input.normal, toEyeW, texColor, outA, outD, outS);
+			ambient += outA;
+			diffuse += outD;
+			spec += outS;
 		}
 
 		for (int k = 0; k < spotLightNum; ++k)
 		{
-			ComputeSpotLight(material, g_spotLight[k], float4(input.worldPos,1), input.normal, toEyeW, texColor, A, D, S);
-			ambient += A;
-			diffuse += D;
-			spec += S;
+			ComputeSpotLight(material, g_spotLight[k], float4(input.worldPos,1), input.normal, toEyeW, texColor, outA, outD, outS);
+			ambient += outA;
+			diffuse += outD;
+			spec += outS;
 		}
+		litColor = ambient + diffuse + spec;
 	}
-	float4 litColor = ambient + diffuse + spec;
-	litColor.a = material.diffuse.a;
+	litColor.a = 1;
 	return litColor;
 }
