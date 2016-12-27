@@ -108,5 +108,5 @@ std::string WavefrontParser::nextToken(bool isCommand)
 }
 bool WavefrontParser::isBlankChar(char chara)
 {
-	return chara == ' ' || chara == '\t';
+	return chara == ' ' || chara == '\t' || chara == '\r';
 }
