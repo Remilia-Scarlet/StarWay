@@ -48,7 +48,7 @@ function CreateObj(scene)
 	local sphereObj = Object:create()
 	local trans = TransformComponent:create()
 	sphereObj:addComponent(trans)
-	trans:setLocation(Vector3(4, 0, -3))
+	trans:setLocation(Vector3(3, 0, -3))
 	local meshConponent = GenerateSphereMesh(1.5,4)
 	sphereObj:addComponent(meshConponent)
 	local texture = TextureComponent:create()
@@ -72,7 +72,7 @@ function CreateDangoCube(scene)
 	for _,obj in pairs(objs) do
 		local transform = TransformComponent:create()
 		obj:addComponent(transform)
-		transform:setLocation(Vector3(2,0,0))
+		transform:setLocation(Vector3(6,0,0))
 		scene:addObject(obj)
 	end
 end

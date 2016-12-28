@@ -48,7 +48,7 @@ void WavefrontObjReader::handleV()
 	float x = std::stof(_parser.nextParam());
 	float y = std::stof(_parser.nextParam());
 	float z = std::stof(_parser.nextParam());
-	_tempVecArr.push_back({ x,y,z });
+	_tempVecArr.push_back({ x, y, -z });
 }
 
 void WavefrontObjReader::handleVN()
@@ -56,14 +56,14 @@ void WavefrontObjReader::handleVN()
 	float x = std::stof(_parser.nextParam());
 	float y = std::stof(_parser.nextParam());
 	float z = std::stof(_parser.nextParam());
-	_tempNormArr.push_back({ x,y,z });
+	_tempNormArr.push_back({ x, y, -z });
 }
 
 void WavefrontObjReader::handleVT()
 {
 	float x = std::stof(_parser.nextParam());
 	float y = std::stof(_parser.nextParam());
-	_tempTexArr.push_back({x,1-y });
+	_tempTexArr.push_back({x, 1 - y });
 }
 
 void WavefrontObjReader::handleF()
