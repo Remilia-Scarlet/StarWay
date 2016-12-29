@@ -2,6 +2,9 @@
 #include "Scene.h"
 #include "TinyEngine/Engine/Engine.h"
 #include "Graphic/Manager/LightManager.h"
+#include "TinyEngine/Components/DirectionLightComponent.h"
+#include "TinyEngine/Components/PointLightComponet.h"
+#include "Graphic/Manager/GraphicMgr.h"
 
 bool Scene::createLuaPrototype()
 {
@@ -91,6 +94,41 @@ void Scene::update(float dt)
 
 void Scene::render()
 {
+	//build shadow map
+	for (auto itLight = _lights.begin(); itLight != _lights.end(); ++itLight)
+	{
+		ObjectPtr obj = itLight->second.lock();
+		if (!obj.isValid())
+			continue;
+
+		if (obj->getFlag(ObjectFlag::IS_DIRECTIONAL_LIGHT))
+		{
+			DirectionLightComponentPtr lightCom = obj->getComponent<DirectionLightComponent>();
+			if (!lightCom.isValid())
+				continue;
+
+			bool result = lightCom->prepareRenderShadowMap();
+			if (result)
+			{
+				for (auto itObj = _objects.begin(); itObj != _objects.end(); ++itObj)
+				{
+					if (itObj->second.isValid() && !(itObj->second->getFlag(ObjectFlag::IS_CAMERA) || itObj->second->getFlag(ObjectFlag::IS_LIGHT)))
+					{
+						itObj->second->render();
+					}
+				}
+			}
+			lightCom->finishedRenderShadowMap();
+		}
+		else if (obj->getFlag(ObjectFlag::IS_POINT_LIGHT))
+		{
+			PointLightComponetPtr lightCom = obj->getComponent<PointLightComponet>();
+			if (!lightCom.isValid())
+				continue;
+		}
+	}
+
+	// render
 	for (auto itCamera = _cameras.begin(); itCamera != _cameras.end();)
 	{
 		if (itCamera->second.isValid())

@@ -131,6 +131,15 @@ void CameraComponent::render()
 	ConstantBufferManager::instance()->setPSVector(0, Vector4(trans->getLocation().X(), trans->getLocation().Y(), trans->getLocation().Z(), 0));
 }
 
+void CameraComponent::setOwner(const RefCountPtr<Object> & owner)
+{
+	BaseComponent::setOwner(owner);
+	if (owner.isValid())
+	{
+		owner->setFlag(ObjectFlag::IS_CAMERA, true);
+	}
+}
+
 bool CameraComponent::init()
 {
 	do 

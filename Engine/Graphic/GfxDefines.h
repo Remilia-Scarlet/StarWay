@@ -36,3 +36,6 @@
 #else
 	#error Unknown Platform
 #endif
+
+const static int SHADOW_MAP_WIDTH = 1024;
+const static int SHADOW_MAP_HEIGHT = 1024;

@@ -26,25 +26,27 @@ LightManager* LightManager::instance()
 
 void LightManager::applyDirectionLight(const DirectionLight& directionLight)
 {
-	if (_lightInfo.lightNumber.X() < (float)MAX_LIGHT)
+	if (_lightInfo.directLightNumber < (float)MAX_LIGHT)
 	{
-		_lightInfo.directionalLight[int(_lightInfo.lightNumber.X())] = directionLight;
-		++_lightInfo.lightNumber.X();
+		_lightInfo.directionalLight[_lightInfo.directLightNumber] = directionLight;
+		++_lightInfo.directLightNumber;
 	}
 }
 
 void LightManager::applyPointLight(const PointLight& pointLight)
 {
-	if (_lightInfo.lightNumber.Y() < (float)MAX_LIGHT)
+	if (_lightInfo.pointLightNumber < (float)MAX_LIGHT)
 	{
-		_lightInfo.pointLight[int(_lightInfo.lightNumber.Y())] = pointLight;
-		++_lightInfo.lightNumber.Y();
+		_lightInfo.pointLight[_lightInfo.pointLightNumber] = pointLight;
+		++_lightInfo.pointLightNumber;
 	}
 }
 
 void LightManager::preRender()
 {
-	_lightInfo.lightNumber.reset();
+	_lightInfo.directLightNumber = 0;
+	_lightInfo.pointLightNumber = 0;
+	_lightInfo.spotLightNumber = 0;
 }
 
 void LightManager::render()
@@ -72,3 +74,4 @@ bool LightManager::init()
 	TinyAssert(false, "LightManager creating failed!");
 	return false;
 }
+

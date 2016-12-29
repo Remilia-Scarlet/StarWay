@@ -62,16 +62,6 @@ void Object::addComponent(const BaseComponentPtr& component)
 	{
 		ensureComponentMap();
 		(*_components)[component->getObjectId()] = component;
-		if (DynamicRefCountCast<CameraComponent>(component).isValid())
-		{
-			setFlag(ObjectFlag::IS_CAMERA, true);
-		}
-		else if (DynamicRefCountCast<DirectionLightComponent>(component).isValid()
-			|| DynamicRefCountCast<PointLightComponet>(component).isValid()
-			)
-		{
-			setFlag(ObjectFlag::IS_LIGHT, true);
-		}
 		component->setOwner(RefCountPtr<Object>(this));
 	}
 	else

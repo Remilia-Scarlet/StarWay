@@ -20,6 +20,9 @@ public:
 	ID3D11Device* getD3D11Device() { return _d3dDevice; }
 
 	void setWireFrame(bool isWireFrame);
+
+	virtual void setRenderBuffer(const GfxRenderBufferPtr& buffer) override;
+	virtual void resetRenderBuffer() override;
 protected:
 	DX11GraphicMgr();
 	virtual ~DX11GraphicMgr();
@@ -32,6 +35,8 @@ protected:
 	ID3D11RenderTargetView*             _renderTargetView = NULL;
 	ID3D11Texture2D*                    _depthStencil = NULL;
 	ID3D11DepthStencilView*             _depthStencilView = NULL;
+	ID3D11Texture2D*                    _shadowMapDepthStencil = NULL;
+	ID3D11DepthStencilView*             _shadowMapDepthStencilView = NULL;
 	bool								_isWireFrame;
 
 	static const float s_clearColor[4]; //use this color to clear screen

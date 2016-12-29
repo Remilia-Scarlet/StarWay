@@ -61,7 +61,10 @@ struct SpotLight
 
 cbuffer LightInfo : register(b1)
 {
-	float4 g_lightNumber;//x : direction light number; y : point light number; z : spot light number; w : not used
+	int g_DirectLightNumber;
+	int g_PointLightNumber;
+	int g_SpotLightNumber;
+	int __pad;
 	DirectionalLight g_directionalLight[5];
 	PointLight g_pointLight[5];
 	SpotLight g_spotLight[5];
@@ -191,9 +194,9 @@ void ComputeDirectionalLight(Material mat,
 
 float4 CalcLight(PS_INPUT input, float3 cameraPos, Material material, float4 texColor)
 {
-	float directLightNum = g_lightNumber.x;
-	float pointLightNum = g_lightNumber.y;
-	float spotLightNum = g_lightNumber.z;
+	int directLightNum = g_DirectLightNumber;
+	int pointLightNum = g_PointLightNumber;
+	int spotLightNum = g_SpotLightNumber;
 	float4 litColor = float4(0, 0, 0, 0);
 	if (directLightNum != 0 || pointLightNum != 0 || spotLightNum != 0)
 	{

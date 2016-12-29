@@ -1,5 +1,6 @@
 #pragma once
 #include "Math\vector\Vector.h"
+#include "Graphic\gfx\GfxRenderBuffer.h"
 
 const static int MAX_LIGHT = 5;
 
@@ -43,7 +44,10 @@ struct SpotLight
 
 struct LightInfo
 {
-	Vector4 lightNumber;//x : direction light number; y : point light number; z : spot light number; w : not used
+	int directLightNumber;
+	int pointLightNumber;
+	int spotLightNumber;
+	int __pad;
 	DirectionLight directionalLight[MAX_LIGHT];
 	PointLight pointLight[MAX_LIGHT];
 	SpotLight spotLight[MAX_LIGHT];

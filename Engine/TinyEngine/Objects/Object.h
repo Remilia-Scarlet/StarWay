@@ -15,7 +15,10 @@ class BaseComponent;
 enum class ObjectFlag
 {
 	IS_CAMERA,   //check if this obj is a camera
-	IS_LIGHT
+	IS_LIGHT,
+	IS_DIRECTIONAL_LIGHT,
+	IS_POINT_LIGHT,
+	IS_SPOT_LIGHT
 };
 
 class Object : public RefCountObj

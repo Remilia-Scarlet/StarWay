@@ -17,11 +17,16 @@ public:
 	LUA_CREATE_FUN_P3(DirectionLightComponent, const Vector4&, const Vector4&, const Vector4&);
 
 	virtual void render() override;
+	bool prepareRenderShadowMap();
+	void finishedRenderShadowMap();
+
+	const GfxRenderBufferPtr& getShadowMapBuffer();
 protected:
 	bool init(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular);
-
+	virtual void setOwner(const RefCountPtr<Object> & owner) override;
 	DirectionLightComponent();
 	virtual ~DirectionLightComponent();
 	DirectionLight _light;
+	GfxRenderBufferPtr _shadowMapBuffer;
 };
 

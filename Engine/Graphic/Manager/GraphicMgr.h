@@ -5,6 +5,7 @@
 #include "Graphic/Vertex/InputLayoutDefine.h"
 #include "Graphic/gfx/GfxInputLayout.h"
 #include "Graphic/gfx/GfxTexture.h"
+#include "Graphic/gfx/GfxRenderBuffer.h"
 
 #if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
 	class DX11GraphicMgr;
@@ -63,6 +64,9 @@ public:
 
 	virtual void setDrawIndexNumber(int number) { _drawIndexNumber = number; }
 	virtual int getDrawIndexNumber() { return _drawIndexNumber; }
+
+	virtual void setRenderBuffer(const GfxRenderBufferPtr& buffer) = 0;
+	virtual void resetRenderBuffer() = 0;
 protected:
 	GraphicMgr();
 	virtual ~GraphicMgr();

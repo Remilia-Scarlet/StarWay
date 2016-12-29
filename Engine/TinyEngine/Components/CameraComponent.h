@@ -54,7 +54,7 @@ public:
 
 public:
 	virtual void render() override;
-
+	virtual void setOwner(const RefCountPtr<Object> & owner) override;
 protected:
 	CameraComponent();
 	~CameraComponent();

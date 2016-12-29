@@ -72,3 +72,13 @@ bool PointLightComponet::init(const Vector4& ambient, const Vector4& diffuse, co
 	} while (0);
 	return false;
 }
+
+void PointLightComponet::setOwner(const RefCountPtr<Object> & owner)
+{
+	BaseComponent::setOwner(owner);
+	if (owner.isValid())
+	{
+		owner->setFlag(ObjectFlag::IS_LIGHT, true);
+		owner->setFlag(ObjectFlag::IS_POINT_LIGHT, true);
+	}
+}

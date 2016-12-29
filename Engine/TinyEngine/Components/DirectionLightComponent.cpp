@@ -1,7 +1,8 @@
 #include "TinyEngine\precomp.h"
 #include "DirectionLightComponent.h"
 #include "TransformComponent.h"
-
+#include "Graphic\Manager\GraphicMgr.h"
+#include "Graphic\Manager\ConstantBufferManager.h"
 
 bool DirectionLightComponent::createLuaPrototype()
 {
@@ -33,6 +34,41 @@ void DirectionLightComponent::render()
 	LightManager::instance()->applyDirectionLight(_light);
 }
 
+bool DirectionLightComponent::prepareRenderShadowMap()
+{
+	if (!_shadowMapBuffer.isValid() || !_owner.isValid())
+		return false;
+
+	TransformComponentPtr trans = _owner.lock()->getComponent<TransformComponent>();
+	if (!trans.isValid())
+		return false;
+
+	// set world matrix
+	Matrix4 worldMat = trans->getNodeToParentMatrix();
+	ConstantBufferManager::instance()->setVSMatrix(8, worldMat);
+
+	// set view matrix
+	Matrix4 viewMatrix = trans->getParentToNodeMatrix();
+	ConstantBufferManager::instance()->setVSMatrix(0, viewMatrix);
+
+	// set proj matrix
+	Matrix4 projMatrix = CreateProjMatrix(_fieldOfView, _viewPort.Width / _viewPort.Height, _nearClipPlane, _farClipPlane);
+	ConstantBufferManager::instance()->setVSMatrix(4, projMatrix);
+
+	GraphicMgr::instance()->setRenderBuffer(_shadowMapBuffer);
+	return true;
+}
+
+void DirectionLightComponent::finishedRenderShadowMap()
+{
+	GraphicMgr::instance()->resetRenderBuffer();
+}
+
+const GfxRenderBufferPtr& DirectionLightComponent::getShadowMapBuffer()
+{
+	return _shadowMapBuffer;
+}
+
 DirectionLightComponent::DirectionLightComponent()
 	:BaseComponent(TO_STRING(DirectionLightComponent))
 {
@@ -49,7 +85,20 @@ bool DirectionLightComponent::init(const Vector4& ambient, const Vector4& diffus
 		_light.ambient = ambient;
 		_light.diffuse = diffuse;
 		_light.specular = specular;
+		_shadowMapBuffer = GfxRenderBuffer::create(SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+		TINY_BREAK_IF(!_shadowMapBuffer.isValid());
 		return true;
 	} while (0);
+	TinyAssert(false);
 	return false;
+}
+
+void DirectionLightComponent::setOwner(const RefCountPtr<Object> & owner)
+{
+	BaseComponent::setOwner(owner);
+	if (owner.isValid())
+	{
+		owner->setFlag(ObjectFlag::IS_LIGHT, true);
+		owner->setFlag(ObjectFlag::IS_DIRECTIONAL_LIGHT, true);
+	}
 }
