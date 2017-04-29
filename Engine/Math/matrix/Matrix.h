@@ -175,7 +175,11 @@ inline MatrixStorage<ValueType, 4, 4> CreateScalingMatrix(const ValueType& x, co
 
 // create a projection matrix
 template<class ValueType>
-inline MatrixStorage<ValueType, 4, 4> CreateProjMatrix(const ValueType& fieldOfView, const ValueType& aspectHByW, const ValueType& nearZ, const ValueType& farZ);
+inline MatrixStorage<ValueType, 4, 4> CreatePerspectiveProjMatrix(const ValueType& fieldOfView, const ValueType& aspectHByW, const ValueType& nearZ, const ValueType& farZ);
+
+// create a projection matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateOrthographicProjMatrix(const ValueType& viewWidth, const ValueType& viewHeight, const ValueType& nearZ, const ValueType& farZ);
 
 // check equal
 template <class ValueType, int RowNum, int ColNum>

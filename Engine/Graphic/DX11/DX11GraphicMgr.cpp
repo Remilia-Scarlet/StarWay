@@ -101,9 +101,9 @@ void DX11GraphicMgr::setRenderBuffer(const GfxRenderBufferPtr& buffer)
 
 	DX11RenderBufferPtr dx11buffer = StaticRefCountCast<DX11RenderBuffer>(buffer);
 	ID3D11RenderTargetView* renderTargetView = dx11buffer->getRenderTargetView();
-	_immediateContext->OMSetRenderTargets(1, &renderTargetView, _shadowMapDepthStencilView);
+	_immediateContext->OMSetRenderTargets(1, &renderTargetView, _depthStencilView);
 
-	setViewPort({ 0,0,SHADOW_MAP_WIDTH,SHADOW_MAP_HEIGHT,0.f,1.f });
+	setViewPort({ 0.f,0.f,(float)SHADOW_MAP_WIDTH,(float)SHADOW_MAP_HEIGHT,0.f,1.f });
 }
 
 void DX11GraphicMgr::resetRenderBuffer()
@@ -274,13 +274,6 @@ bool DX11GraphicMgr::initDepthStencil(int width, int height)
 		return false;
 	SET_DEBUG_NAME(_depthStencil, "DepthStencil");
 
-	descDepth.Width = SHADOW_MAP_WIDTH;
-	descDepth.Height = SHADOW_MAP_HEIGHT;
-	hr = _d3dDevice->CreateTexture2D(&descDepth, NULL, &_shadowMapDepthStencil);
-	if (FAILED(hr))
-		return false;
-	SET_DEBUG_NAME(_depthStencil, "ShadowMapDepthStencil");
-
 	// Create the depth stencil view
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
 	ZeroMemory(&descDSV, sizeof(descDSV));
@@ -291,13 +284,6 @@ bool DX11GraphicMgr::initDepthStencil(int width, int height)
 	if (FAILED(hr))
 		return false;
 	SET_DEBUG_NAME(_depthStencilView,"DepthStencilView");
-
-	hr = _d3dDevice->CreateDepthStencilView(_shadowMapDepthStencil, &descDSV, &_shadowMapDepthStencilView);
-	if (FAILED(hr))
-		return false;
-	SET_DEBUG_NAME(_shadowMapDepthStencilView, "ShadowMapDepthStencilView");
-
-	_immediateContext->OMSetRenderTargets(1, &_renderTargetView, _depthStencilView);
 	return true;
 }
 
@@ -348,6 +334,4 @@ void DX11GraphicMgr::clearDevice()
 	TINY_SAFE_RELEASE(_swapChain);
 	TINY_SAFE_RELEASE(_immediateContext);
 	TINY_SAFE_RELEASE(_d3dDevice);
-	TINY_SAFE_RELEASE(_shadowMapDepthStencil);
-	TINY_SAFE_RELEASE(_shadowMapDepthStencilView);
 }

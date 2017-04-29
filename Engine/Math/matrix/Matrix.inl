@@ -80,7 +80,7 @@ inline MatrixStorage<ValueType, 4, 4> CreateScalingMatrix(const ValueType& x, co
 
 // create a projection matrix
 template<class ValueType>
-inline MatrixStorage<ValueType, 4, 4> CreateProjMatrix(const ValueType& fieldOfView, const ValueType& aspectHByW, const ValueType& nearZ, const ValueType& farZ)
+inline MatrixStorage<ValueType, 4, 4> CreatePerspectiveProjMatrix(const ValueType& fieldOfView, const ValueType& aspectHByW, const ValueType& nearZ, const ValueType& farZ)
 {
 	// copied from DirectX::XMMatrixPerspectiveFovLH
 	ValueType fov = fieldOfView * (ValueType)DEG_TO_RAD / (ValueType)2;
@@ -98,6 +98,26 @@ inline MatrixStorage<ValueType, 4, 4> CreateProjMatrix(const ValueType& fieldOfV
 		(ValueType)0,	(ValueType)0,	-range * nearZ,	(ValueType)0
 	};
 }
+
+// create a projection matrix
+template<class ValueType>
+inline MatrixStorage<ValueType, 4, 4> CreateOrthographicProjMatrix(const ValueType& viewWidth, const ValueType& viewHeight, const ValueType& nearZ, const ValueType& farZ)
+{
+	// copied from DirectX::XMMatrixOrthographicLH
+	TinyAssert(!isEqual(viewWidth, ValueType(0)));
+	TinyAssert(!isEqual(viewHeight, ValueType(0)));
+	TinyAssert(!isEqual(nearZ, farZ));
+
+	ValueType range = ValueType(1) / (farZ - nearZ);
+
+	return MatrixStorage<ValueType, 4, 4> {
+		(ValueType)2 / viewWidth,	(ValueType)0,				(ValueType)0,		(ValueType)0,
+		(ValueType)0,				(ValueType)2 / viewHeight,	(ValueType)0,		(ValueType)0,
+		(ValueType)0,				(ValueType)0,				range,				(ValueType)0,
+		(ValueType)0,				(ValueType)0,				-range * nearZ,		(ValueType)1
+	};
+}
+
 
 template <class ValueType, int RowNum, int ColNum>
 bool operator==(const MatrixStorage<ValueType, RowNum, ColNum>& left, const MatrixStorage<ValueType, RowNum, ColNum>& right)

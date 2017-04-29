@@ -124,7 +124,7 @@ void CameraComponent::render()
 	ConstantBufferManager::instance()->setVSMatrix(0, viewMatrix);
 
 	// set proj matrix
-	Matrix4 projMatrix = CreateProjMatrix(_fieldOfView, _viewPort.Width / _viewPort.Height, _nearClipPlane, _farClipPlane);
+	Matrix4 projMatrix = CreatePerspectiveProjMatrix(_fieldOfView, _viewPort.Width / _viewPort.Height, _nearClipPlane, _farClipPlane);
 	ConstantBufferManager::instance()->setVSMatrix(4, projMatrix);
 
 	// set camera pos

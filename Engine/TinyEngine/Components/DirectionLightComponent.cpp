@@ -52,7 +52,7 @@ bool DirectionLightComponent::prepareRenderShadowMap()
 	ConstantBufferManager::instance()->setVSMatrix(0, viewMatrix);
 
 	// set proj matrix
-	Matrix4 projMatrix = CreateProjMatrix(_fieldOfView, _viewPort.Width / _viewPort.Height, _nearClipPlane, _farClipPlane);
+	Matrix4 projMatrix = CreateOrthographicProjMatrix((float)SHADOW_MAP_WIDTH, (float)SHADOW_MAP_HEIGHT, 0.02f, 400.f);
 	ConstantBufferManager::instance()->setVSMatrix(4, projMatrix);
 
 	GraphicMgr::instance()->setRenderBuffer(_shadowMapBuffer);
