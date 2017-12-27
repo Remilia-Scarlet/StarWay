@@ -1,5 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include "Ash/precomp.h"
+#include "precomp.h"
 #include "CommonFunc.h"
 #include <fstream>
 

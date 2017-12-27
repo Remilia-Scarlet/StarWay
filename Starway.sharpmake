@@ -1,0 +1,37 @@
+using Sharpmake;
+
+namespace StarWay
+{
+    [Sharpmake.Generate]
+    public class StarWaySolution : Sharpmake.Solution
+    {
+        public StarWaySolution()
+        {
+            Name = "StarWay";
+
+            AddTargets(new Target(
+                    Platform.win32 | Platform.win64,
+                    DevEnv.vs2015 | DevEnv.vs2017,
+                    Optimization.Debug | Optimization.Release,
+					OutputType.Lib,
+					Blob.NoBlob | Blob.Blob
+            ));
+        }
+
+        [Configure()]
+        public void ConfigureAll(Configuration conf, Target target)
+        {
+            conf.SolutionFileName = "[solution.Name]_[target.DevEnv]_[target.Platform]";
+            conf.SolutionPath = @"[solution.SharpmakeCsPath]";
+            conf.AddProject<Ash.AshProject>(target);
+		    conf.AddProject<Graphic.GraphicProject>(target);
+			conf.AddProject<Math.MathProject>(target);
+        }
+
+        [Sharpmake.Main]
+        public static void SharpmakeMain(Sharpmake.Arguments arguments)
+        {
+            arguments.Generate<StarWaySolution>();
+        }
+    }
+}
