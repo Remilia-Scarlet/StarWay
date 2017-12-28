@@ -40,7 +40,9 @@ namespace WinLancher
 			conf.Options.Add(Options.Vc.General.WarningLevel.Level3);		
 			conf.Options.Add(Options.Vc.Compiler.RTTI.Enable);		
 			conf.Options.Add(Options.Vc.Linker.SubSystem.Application);	
-			
+								
+			conf.EventPostBuild.Add("xcopy /E /H /R /Y \"$(SolutionDir)resources\\*.*\" \"$(TargetDir)\"");
+				
 			conf.AddPrivateDependency<StarWay.StarWayProject>(target);
 				
             conf.PrecompHeader = "precomp.h";
