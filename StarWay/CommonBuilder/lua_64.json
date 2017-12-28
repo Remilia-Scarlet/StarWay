@@ -1,5 +1,5 @@
 {
-  "$(Platform)": "x64",
+  "$(Platform)": "win64",
   "$(GameRoot)": "..\\..",
   "$(SourcePath)": "$(GameRoot)\\StarWay\\Script",
   "$(SourceFilter)": "*.*",

@@ -204,6 +204,8 @@ bool Object::init(const std::string& objName)
 
 Object::Object()
 	:_enable(true)
+	,_children(nullptr)
+	,_components(nullptr)
 {
 	LUA_GENERATE_OBJ(TO_STRING(Object));
 }

@@ -1,0 +1,10 @@
+{
+  "$(GameRoot)": "..\\..",
+  "$(SourcePath)": "$(GameRoot)\\Engine\\Graphic\\Shader",
+  "$(SourceFilter)": "*_PS.hlsl",
+  "$(TimeStampFile)": "$(GameRoot)\\output\\_temp\\CommonCompiler\\compile_shader_ps.json",
+  "$(Dependency)": "$(GameRoot)\\Engine\\Graphic\\Shader\\common.h",
+  "$(Output)": "$(GameRoot)\\output\\win64\\Shader\\$(SubFolder)\\$(SourceName).cso",
+  "$(CompileExe)": "$(GameRoot)\\Tools\\fxc\\fxc.exe",
+  "$(CompileParam)": "/T ps_5_0 /E main /O3 /Zi /Fo \"$(Output)\" /nologo \"$(SourcePath)\\$(SubFolder)\\$(SourceFullName)\" "
+}

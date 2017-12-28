@@ -5,3 +5,5 @@ if "%1" EQU "" (
 )
 cd %EXEFOLDER%
 ..\..\Tools\CommonCompiler\build\CommonCompiler_32.exe /config ..\..\StarWay\CommonBuilder\lua_32.json
+..\..\Tools\CommonCompiler\build\CommonCompiler_32.exe /config ..\..\StarWay\CommonBuilder\shader_ps.json
+..\..\Tools\CommonCompiler\build\CommonCompiler_32.exe /config ..\..\StarWay\CommonBuilder\shader_vs.json
