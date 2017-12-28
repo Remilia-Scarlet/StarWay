@@ -19,7 +19,7 @@ namespace Graphic
             RootPath = @"[project.SharpmakeCsPath]\..";
             SourceRootPath = RootPath;
         }
-
+		
         [Configure()]
         public void ConfigureAll(Configuration conf, Target target)
         {
@@ -37,6 +37,12 @@ namespace Graphic
 			conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
 			conf.Options.Add(Options.Vc.Compiler.MinimalRebuild.Disable);
 			conf.Options.Add(Options.Vc.Compiler.FloatingPointModel.Precise);	
+			conf.Options.Add(Options.Vc.General.WarningLevel.Level3);
+			conf.Options.Add(Options.Vc.Compiler.RTTI.Enable);
+			
+			conf.LibraryFiles.Add("d3d11");
+			conf.LibraryFiles.Add("d3dcompiler.lib");
+			conf.LibraryFiles.Add("dxguid.lib");
 				
             conf.PrecompHeader = "precomp.h";
             conf.PrecompSource = "precomp.cpp";
@@ -55,6 +61,7 @@ namespace Graphic
 				conf.ExportDefines.Add("PLATFORM_WIN64");
 				conf.Defines.Add("PLATFORM_WIN64");
 			}
+			conf.ProjectFileName = "[project.Name]_[target.DevEnv]_win";
 		}
     }
 }

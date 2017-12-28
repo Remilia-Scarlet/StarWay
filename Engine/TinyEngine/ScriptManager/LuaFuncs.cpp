@@ -1,4 +1,4 @@
-#include "TinyEngine/precomp.h"
+#include "precomp.h"
 #include "LuaFuncs.h"
 #include "LuaManager.h"
 #include <functional>
@@ -75,7 +75,7 @@ int LuaFuns::LoadObj(lua_State* L)
 	std::vector<ObjectPtr> outObj;
 	reader.readObjFile(outObj);
 	lua_newtable(L);
-	for (int i = 1; i <= outObj.size(); ++i)
+	for (size_t i = 1; i <= outObj.size(); ++i)
 	{
 		LuaManager::instance()->pushVal(L, outObj[i - 1]);
 		lua_rawseti(L, -2, i);

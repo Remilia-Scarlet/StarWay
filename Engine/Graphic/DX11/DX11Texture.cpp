@@ -1,4 +1,4 @@
-#include "Graphic\precomp.h"
+#include "precomp.h"
 #include "DX11Texture.h"
 #include "DDSTextureLoader.h"
 #include "Graphic\Manager\GraphicMgr.h"

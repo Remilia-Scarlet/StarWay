@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "precomp.h"
 #include <stdarg.h>
 #include <windows.h>
 

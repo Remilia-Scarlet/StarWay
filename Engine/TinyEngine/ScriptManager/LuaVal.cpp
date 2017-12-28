@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "precomp.h"
 #include "LuaVal.h"
 #include "TinyEngine/Objects/Object.h"
 

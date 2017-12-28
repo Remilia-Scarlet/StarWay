@@ -1,4 +1,4 @@
-#include "TinyEngine/precomp.h"
+#include "precomp.h"
 #include "InputManager.h"
 #include "TinyEngine/Engine/Engine.h"
 

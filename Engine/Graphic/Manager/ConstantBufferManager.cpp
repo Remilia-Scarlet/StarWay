@@ -1,4 +1,4 @@
-#include "Graphic\precomp.h"
+#include "precomp.h"
 #include "ConstantBufferManager.h"
 
 ConstantBufferManager* ConstantBufferManager::s_instance = nullptr;

@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "precomp.h"
 #include "Object.h"
 #include "Graphic\Manager\GraphicMgr.h"
 #include "TinyEngine\Components\BaseComponent.h"

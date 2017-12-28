@@ -1,4 +1,4 @@
-#include "Graphic/precomp.h"
+#include "precomp.h"
 #include "InputLayoutDefine.h"
 #include <vector>
 #include "DefaultVertex.h"

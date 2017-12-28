@@ -1,4 +1,4 @@
-#include "TinyEngine/precomp.h"
+#include "precomp.h"
 #include "TinyEngine/Graphic/WavefrontObjReader.h"
 #include "Ash/FileSystem/File_Win.h"
 #include "TinyEngine/Objects/Object.h"

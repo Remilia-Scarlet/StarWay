@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "precomp.h"
 #include "ScriptComponent.h"
 #include "TinyEngine\ScriptManager\LuaManager.h"
 #include "TinyEngine\Objects\Object.h"

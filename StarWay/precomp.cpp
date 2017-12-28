@@ -1,1 +1,1 @@
-#include "StarWay\precomp.h"
+#include "precomp.h"

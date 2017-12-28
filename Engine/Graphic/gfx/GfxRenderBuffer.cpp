@@ -1,4 +1,4 @@
-#include "Graphic\precomp.h"
+#include "precomp.h"
 #include "GfxRenderBuffer.h"
 
 #if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11

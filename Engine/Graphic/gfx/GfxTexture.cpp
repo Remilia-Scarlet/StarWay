@@ -1,4 +1,4 @@
-#include "Graphic\precomp.h"
+#include "precomp.h"
 #include "GfxTexture.h"
 
 

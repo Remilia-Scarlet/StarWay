@@ -1,4 +1,4 @@
-#include "WinLancher/precomp.h"
+#include "precomp.h"
 #include "Math/matrix/Matrix.h"
 #include "Math/quaternion/Quaternion.h"
 #include <DirectXMath.h>
@@ -11,7 +11,7 @@
 #include "Ash/CommonFunc.h"
 #include "../Ash/FileSystem/File_Win.h"
 #include "../TinyEngine/ScriptManager/LuaManager.h"
-#include "ThirdParty/rapidjson/document.h"
+#include "TinyEngine/ThirdParty/rapidjson/document.h"
 #include "../TinyEngine/Graphic/WavefrontObjReader.h"
 #include "../TinyEngine/Components/TextureComponent.h"
 #include "../TinyEngine/Components/TransformComponent.h"

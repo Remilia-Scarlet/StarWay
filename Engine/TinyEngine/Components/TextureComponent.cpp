@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "precomp.h"
 #include "TextureComponent.h"
 #include <fstream>
 #include "Graphic\Manager\ShaderMgr.h"

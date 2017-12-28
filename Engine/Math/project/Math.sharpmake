@@ -37,9 +37,8 @@ namespace Math
 			conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
 			conf.Options.Add(Options.Vc.Compiler.MinimalRebuild.Disable);
 			conf.Options.Add(Options.Vc.Compiler.FloatingPointModel.Precise);	
-				
-            conf.PrecompHeader = "precomp.h";
-            conf.PrecompSource = "precomp.cpp";
+			conf.Options.Add(Options.Vc.General.WarningLevel.Level3);
+			conf.Options.Add(Options.Vc.Compiler.RTTI.Enable);
         }
 		
 		[Configure()]
@@ -55,6 +54,7 @@ namespace Math
 				conf.ExportDefines.Add("PLATFORM_WIN64");
 				conf.Defines.Add("PLATFORM_WIN64");
 			}
+			conf.ProjectFileName = "[project.Name]_[target.DevEnv]_win";
 		}
     }
 }

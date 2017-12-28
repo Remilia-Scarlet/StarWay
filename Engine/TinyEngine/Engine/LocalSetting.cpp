@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "precomp.h"
 #include "LocalSetting.h"
 
 LocalSetting* LocalSetting::instance()

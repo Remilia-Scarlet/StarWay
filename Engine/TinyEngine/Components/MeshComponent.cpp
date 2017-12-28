@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "precomp.h"
 #include "MeshComponent.h"
 #include "Graphic\Vertex\DefaultVertex.h"
 #include "Graphic\Vertex\InputLayoutDefine.h"
@@ -41,9 +41,9 @@ int MeshComponent::L_create(lua_State* L)
 		return LUA_PARAM_ERROR(MeshComponent::L_create);
 
 	std::vector<CommonVertex> vertexArr;
-	lua_Integer arrLen = luaL_len(L, 2);
-	vertexArr.resize(arrLen);
-	for (lua_Integer i = 1; i <= arrLen; ++i)
+	size_t arrLen = (size_t)luaL_len(L, 2);
+	vertexArr.resize((size_t)arrLen);
+	for (size_t i = 1; i <= arrLen; ++i)
 	{
 		CommonVertex& ver = vertexArr[i - 1];
 		int type = lua_geti(L, 2, i);//2:vertex array -1:one vertex
@@ -76,9 +76,9 @@ int MeshComponent::L_create(lua_State* L)
 	else if (lua_type(L,3) == LUA_TTABLE && lua_type(L,4) == LUA_TSTRING)
 	{
 		std::vector<int> ind;
-		lua_Integer indsLen = luaL_len(L, 3);
+		size_t indsLen = (size_t)luaL_len(L, 3);
 		ind.resize(indsLen);
-		for (lua_Integer i = 1; i <= indsLen; ++i)
+		for (size_t i = 1; i <= indsLen; ++i)
 		{
 			int type = lua_geti(L, 3, i);
 			TinyAssert(type == LUA_TNUMBER);

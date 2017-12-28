@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "precomp.h"
 #include "DirectionLightComponent.h"
 #include "TransformComponent.h"
 #include "Graphic\Manager\GraphicMgr.h"

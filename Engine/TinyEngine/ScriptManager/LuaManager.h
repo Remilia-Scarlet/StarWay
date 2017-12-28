@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ThirdParty/lua_5_3_3/lua.hpp"
+#include "TinyEngine/ThirdParty/lua_5_3_3/lua.hpp"
 #include "LuaVal.h"
 #include "LuaDefines.h"
 

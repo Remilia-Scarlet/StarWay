@@ -1,4 +1,4 @@
-#include "TinyEngine\precomp.h"
+#include "precomp.h"
 #include "LuaManager.h"
 #include "Ash/FileSystem/Path_Win.h"
 #include <functional>

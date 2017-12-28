@@ -1,13 +1,13 @@
 using Sharpmake;
 
-namespace Ash
+namespace StarWay
 {
     [Sharpmake.Generate]
-    public class AshProject : Project
+    public class StarWayProject : Project
     {
-        public AshProject()
+        public StarWayProject()
         {
-            Name = "Ash";
+            Name = "StarWay";
 
             AddTargets(new Target(
                     Platform.win32 | Platform.win64,
@@ -19,16 +19,15 @@ namespace Ash
             RootPath = @"[project.SharpmakeCsPath]\..";
             SourceRootPath = RootPath;
         }
-		
+
         [Configure()]
         public void ConfigureAll(Configuration conf, Target target)
         {
-			conf.ProjectFileName = "[project.Name]_[target.DevEnv]_[target.Platform]";
+            conf.ProjectFileName = "[project.Name]_[target.DevEnv]";
             conf.ProjectPath = @"[project.SharpmakeCsPath]";
-			conf.IntermediatePath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]\[target.Optimization]";
-			conf.TargetPath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\lib";
+			conf.IntermediatePath = @"[project.RootPath]\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]\[target.Optimization]";
+			conf.TargetPath = @"[project.RootPath]\..\output\_temp\[target.DevEnv]\lib";
 			conf.IncludePaths.Add(@"[project.RootPath]");
-			conf.IncludePaths.Add(@"[project.RootPath]\..");
 			
 			conf.TargetFileFullName = @"[project.Name]_[target.Platform]_[target.Optimization]";
 			conf.Output = Configuration.OutputType.Lib;
@@ -37,6 +36,11 @@ namespace Ash
 			conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
 			conf.Options.Add(Options.Vc.Compiler.MinimalRebuild.Disable);
 			conf.Options.Add(Options.Vc.Compiler.FloatingPointModel.Precise);	
+				
+			conf.AddPrivateDependency<Ash.AshProject>(target);
+		    conf.AddPrivateDependency<Graphic.GraphicProject>(target);
+			conf.AddPrivateDependency<Math.MathProject>(target);
+			conf.AddPrivateDependency<TinyEngine.TinyEngineProject>(target);
 			conf.Options.Add(Options.Vc.General.WarningLevel.Level3);
 			conf.Options.Add(Options.Vc.Compiler.RTTI.Enable);
 				
@@ -57,7 +61,6 @@ namespace Ash
 				conf.ExportDefines.Add("PLATFORM_WIN64");
 				conf.Defines.Add("PLATFORM_WIN64");
 			}
-			conf.ProjectFileName = "[project.Name]_[target.DevEnv]_win";
 		}
     }
 }

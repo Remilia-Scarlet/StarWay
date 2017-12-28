@@ -1,4 +1,4 @@
-#include "TinyEngine/precomp.h"
+#include "precomp.h"
 #include "Scene.h"
 #include "TinyEngine/Engine/Engine.h"
 #include "Graphic/Manager/LightManager.h"

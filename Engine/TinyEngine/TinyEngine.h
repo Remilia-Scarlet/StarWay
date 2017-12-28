@@ -1,6 +1,6 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
-#include "Engine/Settings.h"
+#include "Settings.h"
 #include "TinyEngine/Engine/EngineDefs.h"
 
 #include "precomp.h"

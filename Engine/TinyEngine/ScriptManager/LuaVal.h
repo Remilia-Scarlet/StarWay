@@ -50,7 +50,7 @@
 // LuaVal string is treated as basical type. You don't need to worry about shadow copy and deep copy.
 //////////////////////////////////////////////////////////////////////////
 
-#include "ThirdParty\lua_5_3_3\lua.hpp"
+#include "TinyEngine\ThirdParty\lua_5_3_3\lua.hpp"
 #include "Ash\RefCountPointer\RefCountPtr.h"
 #include "Ash\RefCountPointer\RefCountObj.h"
 #include <memory>
