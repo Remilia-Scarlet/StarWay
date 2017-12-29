@@ -1,0 +1,73 @@
+using Sharpmake;
+
+namespace CommonCompiler
+{
+	[Sharpmake.Generate]
+	public class LuacProject : Project
+    {
+        public LuacProject()
+        {
+            Name = "Luac";
+
+            AddTargets(new Target(
+                    Platform.win32 | Platform.win64,
+                    DevEnv.vs2015 | DevEnv.vs2017,
+                    Optimization.Debug | Optimization.Release
+            ));
+            RootPath = @"[project.SharpmakeCsPath]";
+            SourceRootPath = @"[project.RootPath]\..\..\..\Engine\TinyEngine\ThirdParty\lua_5_3_3";
+        }
+
+        [Configure()]
+        public void ConfigureAll(Configuration conf, Target target)
+        {
+            conf.ProjectFileName = "[project.Name]_[target.DevEnv]";
+            conf.ProjectPath = @"[project.SharpmakeCsPath]";
+			conf.IntermediatePath = @"[project.RootPath]\..\..\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]\[target.Optimization]";
+			conf.TargetPath = @"[project.RootPath]\..\build";
+			
+			conf.SourceFilesBuildExclude.Add(@"[project.RootPath]\..\..\..\Engine\TinyEngine\ThirdParty\lua_5_3_3\lua.c");
+			
+			conf.TargetFileFullName = @"[project.Name]_[target.Platform]";
+			conf.Output = Configuration.OutputType.Exe;
+			
+			conf.Options.Add(Options.Vc.General.TreatWarningsAsErrors.Enable);
+			conf.Options.Add(Options.Vc.Compiler.Exceptions.Enable);
+			conf.Options.Add(Options.Vc.Compiler.MinimalRebuild.Disable);
+			conf.Options.Add(Options.Vc.Compiler.FloatingPointModel.Precise);
+			conf.Options.Add(Options.Vc.General.WarningLevel.Level3);		
+			conf.Options.Add(Options.Vc.Compiler.RTTI.Enable);		
+			conf.Options.Add(Options.Vc.Linker.SubSystem.Console);	
+        }
+	}
+
+    [Sharpmake.Generate]
+    public class LuacSolution : Sharpmake.Solution
+    {
+        public LuacSolution()
+        {
+            Name = "Luac";
+
+            AddTargets(new Target(
+                    Platform.win32 | Platform.win64,
+                    DevEnv.vs2015 | DevEnv.vs2017,
+                    Optimization.Debug | Optimization.Release
+            ));
+        }
+
+        [Configure()]
+        public void ConfigureAll(Configuration conf, Target target)
+        {
+		    conf.SolutionFileName = "[solution.Name]_[target.DevEnv]";
+            conf.SolutionPath = @"[solution.SharpmakeCsPath]";
+
+			conf.AddProject<LuacProject>(target);
+        }
+		
+        [Sharpmake.Main]
+        public static void SharpmakeMain(Sharpmake.Arguments arguments)
+        {
+            arguments.Generate<LuacSolution>();
+        }
+    }
+}

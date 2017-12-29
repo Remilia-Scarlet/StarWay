@@ -8,6 +8,9 @@ ipch/*
 *.pdb
 *.iobj
 *.ipdb
+*.sln
+*.vcxproj
+*.vcxproj.filters
 
 /Tools/luac/src/.vs
 /Tools/CommonCompiler/src/.vs
