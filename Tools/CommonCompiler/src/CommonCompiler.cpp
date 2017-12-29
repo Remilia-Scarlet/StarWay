@@ -1,18 +1,18 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "CommonCompiler.h"
 #include <fstream>
-#include "Engine\ThirdParty\rapidjson\document.h"
-#include "Engine\ThirdParty\rapidjson\writer.h"
-#include "Engine\ThirdParty\rapidjson\fwd.h"
-#include "Engine\ThirdParty\rapidjson\stringbuffer.h"
-#include "Engine\ThirdParty\rapidjson\prettywriter.h"
+#include "Engine\TinyEngine\ThirdParty\rapidjson\document.h"
+#include "Engine\TinyEngine\ThirdParty\rapidjson\writer.h"
+#include "Engine\TinyEngine\ThirdParty\rapidjson\fwd.h"
+#include "Engine\TinyEngine\ThirdParty\rapidjson\stringbuffer.h"
+#include "Engine\TinyEngine\ThirdParty\rapidjson\prettywriter.h"
 #include "Engine\Ash\FileSystem\File_Win.h"
 #include "Engine\TinyEngine\Engine\EngineDefs.h"
 
 #include "Engine\Ash\CommonFunc.h"
 #include <list>
 #include <stack>
-#include "..\..\..\Engine\ThirdParty\rapidjson\error\en.h"
+#include "..\..\..\Engine\TinyEngine\ThirdParty\rapidjson\error\en.h"
 using namespace rapidjson;
 
 const char* SOURCE_PATH_NAME = "$(SourcePath)";

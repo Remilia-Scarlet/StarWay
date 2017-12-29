@@ -4,7 +4,7 @@
 #include <vector>
 #include "..\..\..\Engine\Ash\FileSystem\File_Win.h"
 #include <map>
-#include "..\..\..\Engine\ThirdParty\rapidjson\document.h"
+#include "..\..\..\Engine\TinyEngine\ThirdParty\rapidjson\document.h"
 
 class CommonCompiler
 {
