@@ -127,9 +127,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (AUTO_COMPILE_LUA)
 	{
 		if(TINY_BITWIDE_TARGET == TINY_BITWIDE_X64)
-			system("..\\..\\CompileLua_x64.bat %cd%");
+			system(R"(..\..\CompileLua_x64.bat)");
 		else
-			system("..\\..\\CompileLua_x32.bat %cd%");
+			system(R"(..\..\CompileLua_x32.bat)");
 	}
 
 	if (!Engine::createInstance())
