@@ -1,10 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <windows.h>
+#include <Windows.h>
 
 #include "CommonCompiler.h"
-#include "Engine\Ash\CommonFunc.h"
-#include <time.h>
+#include "Engine/Ash/CommonFunc.h"
+#include <ctime>
 
 void showHelp()
 {
@@ -14,6 +14,7 @@ void showHelp()
 	DebugString("\t\t/?\tShow this menu");
 	DebugString("\t\t/config\tGive the configFilePath. Config file is a json file.");
 	DebugString("\t\t/force\tForce recompile all files\n");
+	DebugString("\t\t/d\tSet symbols which can be used in config files\n");
 }
 
 int main(int argc, char* argv[])
@@ -21,7 +22,7 @@ int main(int argc, char* argv[])
 	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
 	new int(0x74736574);
 
-	const time_t t = time(NULL);
+	const time_t t = time(nullptr);
 	struct tm* current_time = localtime(&t);
 	DebugString("====================Common compiler start. %s", asctime(current_time));
 

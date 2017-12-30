@@ -28,6 +28,7 @@ protected:
 	bool callCmdAndWaitFinish(const WIN32_FIND_DATA& info, const std::string& cmd, const std::string& subFolder);
 	bool checkTimeStamp(const Path& srcPath, const WIN32_FIND_DATA& srcInfo, const Path& desPath);
 	bool writeTimeStamp(const Path& srcPath, const WIN32_FIND_DATA& srcInfo, const Path& desPath);
+	const std::string& resolveDefine(const std::string& name);
 
 	bool _forceRecompile;
 	std::string _configFilePath;
@@ -36,7 +37,12 @@ protected:
 	Path _cmdExe;
 	File _logFile;
 
-	std::map<std::string, std::string> _define;
+	struct Symbols
+	{
+		std::string _content;
+		bool _resolved = false;
+	};
+	std::map<std::string, Symbols> _define;
 	std::map<std::string, std::string> _runtimeDefine;
 };
 

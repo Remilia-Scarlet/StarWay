@@ -12,7 +12,10 @@
 #include "Engine\Ash\CommonFunc.h"
 #include <list>
 #include <stack>
+#include <cstdlib>
+#include <regex>
 #include "..\..\..\Engine\TinyEngine\ThirdParty\rapidjson\error\en.h"
+#include <iostream>
 using namespace rapidjson;
 
 const char* SOURCE_PATH_NAME = "$(SourcePath)";
@@ -23,10 +26,12 @@ const char* OUTPUT_NAME = "$(Output)";
 const char* COMPILE_EXE_NAME = "$(CompileExe)";
 const char* COMPILE_PARAM_NAME = "$(CompileParam)";
 
-const char* SOURCE_FILE_NAME = "$(SourceName)";
-const char* SOURCE_EXT_NAME = "$(SourceExt)";
-const char* SOURCE_FULL_NAME = "$(SourceFullName)";
-const char* SUB_FOLDER_NAME = "$(SubFolder)";
+const char* SOURCE_FILE_NAME = "#(SourceName)";
+const char* SOURCE_EXT_NAME = "#(SourceExt)";
+const char* SOURCE_FULL_NAME = "#(SourceFullName)";
+const char* SUB_FOLDER_NAME = "#(SubFolder)";
+
+const char* DEFINE_REGEX = "\\$\\([a-z|A-Z|_|0-9]+\\)";
 
 CommonCompiler::CommonCompiler()
 	:_forceRecompile(false)
@@ -77,6 +82,25 @@ bool CommonCompiler::parseArg(int argc, char* argv[])
 		{
 			_forceRecompile = true;
 		}
+		else if(strcmp(argv[i], "/d") == 0)
+		{
+			++i;
+			if(argc <= i)
+			{
+				DebugString("Paramter error when parsing [/d]");
+				return false;
+			}
+			std::string str = argv[i];
+			size_t pos = str.find('=');
+			if(pos == -1 || pos == 0 || pos + 1 >= str.length())
+			{
+				DebugString("Paramter error when parsing [/d]");
+				return false;
+			}
+			std::string name = std::string("$(") + str.substr(0, pos) + ")";
+			std::string value = str.substr(pos + 1);
+			_define[name] = { value,false };
+		}
 	}
 	return !_configFilePath.empty();
 }
@@ -102,59 +126,59 @@ bool CommonCompiler::readConfigFile()
 	for (auto it = json.MemberBegin(); it != json.MemberEnd(); ++it)
 	{
 		if (it->name.IsString() && it->value.IsString())
-			_define[it->name.GetString()] = it->value.GetString();
+			_define[it->name.GetString()] = { it->value.GetString(), false };
 	}
 	return true;
 }
 
+const std::string& CommonCompiler::resolveDefine(const std::string& name)
+{
+	auto it = _define.find(name);
+	if(it == _define.end())
+	{
+		const char* env = getenv(name.c_str());
+		it = _define.insert(it, { name,{ (env ? env : name),false} });
+	}
+	else if(it->second._resolved)
+	{
+		return it->second._content;
+	}
+
+	std::regex symbolRegex(DEFINE_REGEX);
+	std::smatch matchResult;
+
+	std::string str = it->second._content;
+	//find first symbol in define.
+	while (std::regex_search(str, matchResult, symbolRegex))
+	{
+		const std::string symbol = matchResult.str();
+		if (symbol != name)
+			replaceSubstr(it->second._content, symbol, resolveDefine(symbol));
+		str = matchResult.suffix();
+	}
+	it->second._resolved = true;
+	return  it->second._content;
+}
 
 bool CommonCompiler::changeDefine()
 {
-	int loopRemainTimes = 50;
-	while (--loopRemainTimes)
+	for (auto & define : _define)
 	{
-		bool loop = false;
-		for (auto it1 = _define.begin(); it1 != _define.end(); ++it1)
-		{
-			const std::string& key1 = it1->first;
-			std::string& val1 = it1->second;
-			for (auto it2 = _define.begin(); it2 != _define.end(); ++it2)
-			{
-				const std::string& key2 = it2->first;
-				std::string& val2 = it2->second;
-				if (val1.find(key2) != -1)
-				{
-					if (it2 == it1)//loop define
-					{
-						DebugString("Find loop define in config file");
-						return false;
-					}
-					loop = true;
-					replaceSubstr(val1, key2, val2);
-				}
-			}
-		}
-		if (!loop)
-			break;
-	}
-	if (loopRemainTimes == 0)
-	{
-		DebugString("Find loop define in config file");
-		return false;
+		resolveDefine(define.first);
 	}
 	return true;
 }
 
 bool CommonCompiler::checkPath()
 {
-	_sourcePath = _define[SOURCE_PATH_NAME];
+	_sourcePath = _define[SOURCE_PATH_NAME]._content;
 	if (!_sourcePath.isDirectory())
 	{
 		DebugString("Can't open source path:\n%s", _sourcePath.getAbsolutePath().c_str());
 		return false;
 	}
 
-	if (!_logFile.open(_define[TIME_STAMP_FILE_NAME]))
+	if (!_logFile.open(_define[TIME_STAMP_FILE_NAME]._content))
 	{
 		DebugString("Can't open time stamp file:\n%s", _logFile.getFilePath().getAbsolutePath().c_str());
 		return false;
@@ -166,7 +190,7 @@ bool CommonCompiler::checkPath()
 		_logDoc.SetObject();
 	flushLog();
 
-	_cmdExe = _define[COMPILE_EXE_NAME];
+	_cmdExe = _define[COMPILE_EXE_NAME]._content;
 	if (!_cmdExe.isFile())
 	{
 		DebugString("Can't find [%s]", _cmdExe.getAbsolutePath().c_str());
@@ -180,7 +204,7 @@ bool CommonCompiler::compile()
 {
 	std::stack<std::string> stack;
 	stack.push(".");
-	std::string filter = _define[SOURCE_FILTER_NAME];
+	std::string filter = _define[SOURCE_FILTER_NAME]._content;
 	bool ret = true;
 	while (!stack.empty())
 	{
@@ -221,7 +245,7 @@ bool CommonCompiler::compile()
 
 bool CommonCompiler::compileFile(const WIN32_FIND_DATA& infoSrc, const Path& path, const std::string& subFolder)
 {
-	Path outPath = fixRuntimeDefine(infoSrc, _define[OUTPUT_NAME], subFolder);
+	Path outPath = fixRuntimeDefine(infoSrc, _define[OUTPUT_NAME]._content, subFolder);
 	if (!outPath.getParentDirectory().createDirectory())
 	{
 		DebugString("Can't create output path:\n%s", outPath.getAbsolutePath().c_str());
@@ -233,7 +257,7 @@ bool CommonCompiler::compileFile(const WIN32_FIND_DATA& infoSrc, const Path& pat
 	if (!_forceRecompile && checkTimeStamp(key, infoSrc, outPath))
 		return true;
 	
-	std::string cmd = fixRuntimeDefine(infoSrc, _define[COMPILE_PARAM_NAME], subFolder);
+	std::string cmd = fixRuntimeDefine(infoSrc, _define[COMPILE_PARAM_NAME]._content, subFolder);
 	
 	if (!callCmdAndWaitFinish(infoSrc, cmd, subFolder))
 	{
@@ -365,22 +389,23 @@ bool CommonCompiler::writeTimeStamp(const Path& srcPath, const WIN32_FIND_DATA& 
 	if (memberIt != _logDoc.MemberEnd())
 	{
 		Value& arr = memberIt->value.SetArray();
-		arr.PushBack((unsigned int)srcInfo.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
-		arr.PushBack((unsigned int)srcInfo.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
-		arr.PushBack((unsigned int)desInfo.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
-		arr.PushBack((unsigned int)desInfo.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
+		arr.PushBack(static_cast<unsigned int>(srcInfo.ftLastWriteTime.dwLowDateTime), _logDoc.GetAllocator());
+		arr.PushBack(static_cast<unsigned int>(srcInfo.ftLastWriteTime.dwHighDateTime), _logDoc.GetAllocator());
+		arr.PushBack(static_cast<unsigned int>(desInfo.ftLastWriteTime.dwLowDateTime), _logDoc.GetAllocator());
+		arr.PushBack(static_cast<unsigned int>(desInfo.ftLastWriteTime.dwHighDateTime), _logDoc.GetAllocator());
 	}
 	else
 	{
 		Value arr(kArrayType);
-		arr.PushBack((unsigned int)srcInfo.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
-		arr.PushBack((unsigned int)srcInfo.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
-		arr.PushBack((unsigned int)desInfo.ftLastWriteTime.dwLowDateTime, _logDoc.GetAllocator());
-		arr.PushBack((unsigned int)desInfo.ftLastWriteTime.dwHighDateTime, _logDoc.GetAllocator());
-		_logDoc.AddMember(Value(srcPath.getRelativePath().c_str(), (SizeType)srcPath.getRelativePath().length(), _logDoc.GetAllocator()).Move(), arr.Move(), _logDoc.GetAllocator());
+		arr.PushBack(static_cast<unsigned int>(srcInfo.ftLastWriteTime.dwLowDateTime), _logDoc.GetAllocator());
+		arr.PushBack(static_cast<unsigned int>(srcInfo.ftLastWriteTime.dwHighDateTime), _logDoc.GetAllocator());
+		arr.PushBack(static_cast<unsigned int>(desInfo.ftLastWriteTime.dwLowDateTime), _logDoc.GetAllocator());
+		arr.PushBack(static_cast<unsigned int>(desInfo.ftLastWriteTime.dwHighDateTime), _logDoc.GetAllocator());
+		_logDoc.AddMember(Value(srcPath.getRelativePath().c_str(), static_cast<SizeType>(srcPath.getRelativePath().length()), _logDoc.GetAllocator()).Move(), arr.Move(), _logDoc.GetAllocator());
 	}
 	return flushLog();
 }
+
 
 bool CommonCompiler::flushLog()
 {
@@ -390,7 +415,7 @@ bool CommonCompiler::flushLog()
 	const char* fileData = buffer.GetString();
 	_logFile.open(_logFile.getFilePath());
 	_logFile.seek(0);
-	_logFile.write(fileData, (int)buffer.GetLength());
+	_logFile.write(fileData, static_cast<int>(buffer.GetLength()));
 	_logFile.setEndOfFile();
 	_logFile.close();
 	return true;
