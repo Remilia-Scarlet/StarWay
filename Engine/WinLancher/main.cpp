@@ -4,6 +4,7 @@
 #include <d3d11sdklayers.h>
 #include "TinyEngine/Engine/LocalSetting.h"
 #include "TinyEngine/Input/InputManager.h"
+#include "tools/renderdoc/RenderDoc.h"
 
 static const bool SHOW_WIN32_CONSOLE_AT_START = true;
 static const bool AUTO_COMPILE_LUA = true;
@@ -132,6 +133,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			system(R"(..\..\CompileLua_x32.bat)");
 	}
 
+	if(!RenderDoc::createInstance())
+	{
+		return 0;
+	}
+
 	if (!Engine::createInstance())
 	{
 		//(NULL,"Create Engine failed.", "Error", MB_OK);
@@ -179,7 +185,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		}
 		QueryPerformanceCounter(&stop_t);
 		frameTime = float(stop_t.QuadPart - start_t.QuadPart) / float(freq.QuadPart);
-		if (frameTime >= desiredFrameTime)
+		if (frameTime >= desiredFrameTime || 1)
 		{
 			start_t = stop_t;
 			++frame;
@@ -217,6 +223,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (d3dDebug != nullptr)			d3dDebug->Release();
 #endif // _DEBUG
 
+	RenderDoc::destroy();
 
 	FreeConsole();
 
