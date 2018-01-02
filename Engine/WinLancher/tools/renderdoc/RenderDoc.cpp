@@ -65,7 +65,7 @@ bool RenderDoc::init()
 
 void RenderDoc::clean()
 {
-	TINY_SAFE_DELETE(_renderDocApi);
+	//nothing to do
 }
 
 void RenderDoc::destroy()

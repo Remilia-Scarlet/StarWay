@@ -5,6 +5,7 @@
 #include "TinyEngine/Engine/LocalSetting.h"
 #include "TinyEngine/Input/InputManager.h"
 #include "tools/renderdoc/RenderDoc.h"
+#include "Ash/CommandLineCfg/CommandLineCfg.h"
 
 static const bool SHOW_WIN32_CONSOLE_AT_START = true;
 static const bool AUTO_COMPILE_LUA = true;
@@ -110,7 +111,6 @@ HWND InitWindow(HINSTANCE hInstance, int nCmdShow, int width, int height)
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
 
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
@@ -132,6 +132,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		else
 			system(R"(..\..\CompileLua_x32.bat)");
 	}
+
+	//TODO: Move w2c to somewhere
+	int len = WideCharToMultiByte(CP_ACP, 0, lpCmdLine, -1, NULL, 0, NULL, NULL);
+	char* cmdLine = new char[len];
+	WideCharToMultiByte(CP_ACP, 0, lpCmdLine, -1, cmdLine, len, NULL, NULL);
+
+	CommandLineCfg::createInstance(cmdLine);
+
+	delete[] cmdLine;
+
 
 	if(!RenderDoc::createInstance())
 	{
