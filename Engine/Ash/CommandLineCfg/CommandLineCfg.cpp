@@ -67,7 +67,7 @@ bool CommandLineCfg::init(const char* commandLine)
 std::vector<std::string> CommandLineCfg::spliteCommandLine(const char* commandLine)
 {
 	std::vector<std::string> ret;
-	std::regex nameRegex(R"((?:(/\w+) +)|(?:("\w+| +") +)|(?:((?!")\w+) +))");
+	std::regex nameRegex("([-/a-zA-Z0-9_]+)|(\"[^\"]+\")");
 	std::smatch matchResult;
 	std::string cmdLine(commandLine);
 	//find first symbol in define.
