@@ -1,9 +1,9 @@
 #pragma once
-#define _CRT_SECURE_NO_WARNINGS
 #include <string>
-#include <assert.h>
-#include <stdarg.h>
+#include <cassert>
+#include <cstdarg>
 #include <memory>
+
 #ifdef _DEBUG
 
 // Useage:

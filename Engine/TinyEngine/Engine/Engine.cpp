@@ -1,7 +1,6 @@
 #include "precomp.h"
 #include "Engine.h"
 #include "Graphic/Manager/GraphicMgr.h"
-#include "LocalSetting.h"
 #include "Graphic/gfx/GfxMesh.h"
 #include "TinyEngine/Components/MeshComponent.h"
 #include "TinyEngine/Components/TextureComponent.h"
@@ -16,8 +15,6 @@
 #include "Graphic/Manager/LightManager.h"
 #include "Graphic/Manager/DefaultMgr.h"
 
-const int SOLUTION_WIDTH = 1024;
-const int SOLUTION_HEIGHT = 768;
 const int DESIRED_FPS = 60;
 
 Engine::Engine()
@@ -35,13 +32,13 @@ Engine::~Engine()
 {
 }
 
-bool Engine::createInstance()
+bool Engine::createInstance(int solutionWidth, int solutionHeight, HWND hwnd)
 {
 	TinyAssert(s_instance == nullptr,"Memory leak! Call destroyInstance() first!");
 	if (s_instance)
 		return false;
 	s_instance = new Engine();
-	if(!s_instance || !s_instance->init())
+	if(!s_instance || !s_instance->init(solutionWidth, solutionHeight, hwnd))
 	{
 		TinyAssert(false, "create Engine failed");
 		TINY_SAFE_DELETE(s_instance);
@@ -56,23 +53,14 @@ Engine* Engine::instance()
 	return s_instance;
 }
 
-bool Engine::init()
+bool Engine::init(int solutionWidth, int solutionHeight, HWND hWnd)
 {
-	_solutionWidth = SOLUTION_WIDTH;
-	_solutionHeight = SOLUTION_HEIGHT;
-	do
-	{
-		return true;
-	} while (0);
-	return false;
-}
-
-bool Engine::createManagers()
-{
+	_solutionWidth = solutionWidth;
+	_solutionHeight = solutionHeight;
 	do
 	{
 		TINY_BREAK_IF(!TimerManager::createInstance());
-		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionWidth, _solutionHeight, LocalSetting::instance()->getWindowHWND()));
+		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionWidth, _solutionHeight, hWnd));
 		TINY_BREAK_IF(!ConstantBufferManager::createInstance());
 		TINY_BREAK_IF(!ShaderMgr::createInstance());
 		TINY_BREAK_IF(!LightManager::createInstance());
@@ -83,6 +71,7 @@ bool Engine::createManagers()
 	} while (0);
 	return false;
 }
+
 void Engine::cleanUp()
 {
 	_exit = true;

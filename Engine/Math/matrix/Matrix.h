@@ -1,6 +1,6 @@
 #pragma once
 #include "Math/vector/Vector.h"
-#include "Math/MathDef.h"
+
 template <class ValueType, int RowNum, int ColNum>
 class MatrixStorage
 {

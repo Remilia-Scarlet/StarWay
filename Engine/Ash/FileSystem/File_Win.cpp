@@ -1,5 +1,6 @@
 #include "precomp.h"
 #include "File_Win.h"
+#include "TinyAssert.h"
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 

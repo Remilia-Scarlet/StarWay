@@ -1,7 +1,8 @@
 #include "precomp.h"
 #include "CommandLineCfg.h"
 #include <regex>
-#include "TinyEngine/TinyEngine.h"
+#include "CommonFunc.h"
+#include "TinyAssert.h"
 
 std::map<std::string, CommandLineHelper > CommandLineHelper::s_commandLines;
 CommandLineCfg* CommandLineCfg::s_instance = nullptr;

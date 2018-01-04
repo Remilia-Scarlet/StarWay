@@ -1,13 +1,15 @@
 #pragma once
 #include "TinyEngine/Scene/Scene.h"
+#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#include <windows.h>
+#endif
 class Engine
 {
 public:
-	static bool createInstance();
+	static bool createInstance(int solutionWidth, int solutionHeight, HWND hwnd);
 	static void destroyInstance();
 	static Engine* instance();
 
-	bool createManagers();
 	void start();
 	void startScene(const ScenePtr& scene);
 	ScenePtr getCurrentScene();
@@ -28,7 +30,11 @@ public:
 protected:
 	Engine();
 	virtual ~Engine();
-	bool init();
+	bool init(int solutionWidth, int solutionHeight
+#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+		,HWND hWnd
+#endif
+	);
 
 	void drawScene();
 	void updateWorld(float dt);

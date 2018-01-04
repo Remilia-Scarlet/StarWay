@@ -4,6 +4,7 @@
 #include <functional>
 #include <algorithm>
 #include <vector>
+#include <locale>
 
 class CommandLineCfg;
 

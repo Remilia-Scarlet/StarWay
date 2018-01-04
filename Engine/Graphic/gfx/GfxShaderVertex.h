@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphic/GfxDefines.h"
 #include "Ash/RefCountPointer/RefCountObj.h"
+#include "TinyEngine/Engine/EngineDefs.h"
 TINY_DEFINE_PTR(GfxShaderVertex);
 
 class GfxShaderVertex : public RefCountObj

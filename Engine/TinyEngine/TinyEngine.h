@@ -1,6 +1,6 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
-#include "Settings.h"
+#include "Ash/Settings.h"
 #include "TinyEngine/Engine/EngineDefs.h"
 
 #include "precomp.h"
@@ -13,4 +13,3 @@
 #include "TinyEngine/Engine/Engine.h"
 #include "TinyEngine/Scene/Scene.h"
 #include "TinyEngine/Objects/Object.h"
-#include "TinyEngine/Engine/LocalSetting.h"

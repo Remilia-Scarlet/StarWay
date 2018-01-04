@@ -2,6 +2,8 @@
 #include <unordered_map>
 #include "LuaVector.h"
 #include "Vector.h"
+#include "Ash/CommonFunc.h"
+#include "TinyEngine/ScriptManager/LuaManager.h"
 
 bool LuaVector::createLuaPrototype()
 {

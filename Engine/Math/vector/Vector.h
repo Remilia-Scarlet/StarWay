@@ -1,10 +1,5 @@
 #pragma once
-#include <type_traits>
-#include <memory.h>
-#include <cmath>
-#include "Math/MathDef.h"
 #include "Math/quaternion/Quaternion.h"
-#include "TinyEngine/ScriptManager/LuaVal.h"
 #include "LuaVector.h"
 
 template <class ValueType, int Size>

@@ -1,10 +1,11 @@
 #include "precomp.h"
 #include "RefCountObj.h"
-#include <assert.h>
-#include "TinyEngine/ScriptManager/LuaManager.h"
+#include "TinyEngine/Objects/Object.h"
+
+ObjectID RefCountObj::s_nextId = INVALID_OBJECT_ID;
 
 RefCountObj::RefCountObj()
-	:_id(genericObjectId())
+	:_id(++s_nextId)
 {
 	_refInfo = new _RefInfo(this);
 }
@@ -15,9 +16,7 @@ RefCountObj::~RefCountObj()
 	{
 		if (_refInfo->_refCount || _refInfo->_weakCount)
 		{
-		
-			//don't delete RefCountObj when it is managed by RefCountPtr. Your code will crash soon
-			assert(false);
+			TinyAssert(false, "Don't delete RefCountObj when it is managed by RefCountPtr. Your code will crash soon");
 		}
 		delete _refInfo;
 	}

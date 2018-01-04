@@ -1,7 +1,6 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
-#include "Settings.h"
-#include "TinyEngine/Engine/EngineDefs.h"
+#include "Ash/Settings.h"
 #include "Ash/CommonFunc.h"
 #include "Ash/RefCountPointer/RefCountObj.h"
 #include "Ash/RefCountPointer/RefCountPtr.h"

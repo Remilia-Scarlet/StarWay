@@ -4,7 +4,6 @@
 #include "Graphic/gfx/GfxShaderPixel.h"
 #include "Graphic/Manager/ConstantBufferManager.h"
 #include "Graphic/Manager/ShaderMgr.h"
-#include "TinyEngine/Engine/LocalSetting.h"
 #include <functional>
 #include "DX11Wrapper.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
@@ -315,9 +314,6 @@ bool DX11GraphicMgr::init(int width, int height, HWND hWnd)
 		TINY_BREAK_IF(!initDevice(width, height, hWnd));
 		//init DepthStencil
 		TINY_BREAK_IF(!initDepthStencil(width, height));
-#ifdef _DEBUG
-		LocalSetting::instance()->_d3dDevice = _d3dDevice;
-#endif // _DEBUG
 
 		return true;
 	} while (0);

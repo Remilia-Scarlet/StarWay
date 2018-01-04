@@ -2,13 +2,15 @@
 #include <windows.h>
 #include "TinyEngine/TinyEngine.h"
 #include <d3d11sdklayers.h>
-#include "TinyEngine/Engine/LocalSetting.h"
 #include "TinyEngine/Input/InputManager.h"
 #include "tools/renderdoc/RenderDoc.h"
 #include "Ash/CommandLineCfg/CommandLineCfg.h"
 
 static const bool SHOW_WIN32_CONSOLE_AT_START = true;
 static const bool AUTO_COMPILE_LUA = true;
+
+static const int SOLUTION_WIDTH = 1024;
+static const int SOLUTION_HEIGHT = 768;
 
 void ShowHideWin32Console()
 {
@@ -150,24 +152,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		}
 	}
 
-	if (!Engine::createInstance())
-	{
-		//(NULL,"Create Engine failed.", "Error", MB_OK);
-		return 0;
-	}
-
-	HWND hwnd = InitWindow(hInstance, nCmdShow, Engine::instance()->getSolutionWidth(), Engine::instance()->getSolutionHeight());
+	HWND hwnd = InitWindow(hInstance, nCmdShow, SOLUTION_WIDTH, SOLUTION_HEIGHT);
 	if (!hwnd)
 	{
 		//(NULL, "Create Window failed.", "Error", MB_OK);
 		return 0;
 	}
 
-	//store platform value
-	LocalSetting::instance()->setWindowHWND(hwnd);
-
 	//start
-	if (!Engine::instance()->createManagers())
+	if (!Engine::createInstance(SOLUTION_WIDTH,SOLUTION_HEIGHT,hwnd))
 	{
 		//(NULL, "Init Engine failed.", "Error", MB_OK);
 		return 0;

@@ -3,7 +3,6 @@
 #include "RenderDoc.h"
 #include "Ash/FileSystem/Path_Win.h"
 #include "TinyEngine/Engine/EngineDefs.h"
-#include "TinyEngine/TinyEngine.h"
 
 
 static const char* RENDER_DOC_DLL_NAME = "renderdoc.dll";

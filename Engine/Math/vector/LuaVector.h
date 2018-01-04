@@ -1,5 +1,5 @@
 #pragma once
-#include "TinyEngine/ScriptManager/LuaManager.h"
+#include "TinyEngine/ThirdParty/lua_5_3_3/lua.hpp"
 
 template <class ValueType, int Size>
 class VectorStorage;

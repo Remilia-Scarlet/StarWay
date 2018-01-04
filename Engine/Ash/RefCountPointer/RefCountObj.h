@@ -1,5 +1,7 @@
 #pragma once
-#include "TinyEngine/Engine/EngineDefs.h"
+#include "Ash/CommonFunc.h"
+#include "Ash/TinyAssert.h"
+
 template <class T> class RefCountPtr;
 class RefCountObj;
 
@@ -38,6 +40,7 @@ protected:
 private:
 	_RefInfo* _refInfo;
 	ObjectID _id;
+	static ObjectID s_nextId;
 };
 
 

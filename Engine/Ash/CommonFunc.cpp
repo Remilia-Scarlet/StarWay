@@ -1,7 +1,8 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include "precomp.h"
 #include "CommonFunc.h"
 #include <fstream>
+#include <memory>
+#include "TinyAssert.h"
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 #include <windows.h>
