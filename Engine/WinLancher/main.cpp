@@ -142,10 +142,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 	delete[] cmdLine;
 
-
-	if(!RenderDoc::createInstance())
+	if (CommandLineCfg::instance()->getRenderdoc())
 	{
-		return 0;
+		if (!RenderDoc::createInstance())
+		{
+			return 0;
+		}
 	}
 
 	if (!Engine::createInstance())
@@ -233,7 +235,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (d3dDebug != nullptr)			d3dDebug->Release();
 #endif // _DEBUG
 
-	RenderDoc::destroy();
+	if (CommandLineCfg::instance()->getRenderdoc())
+	{
+		RenderDoc::destroy();
+	}
 
 	FreeConsole();
 
