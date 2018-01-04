@@ -30,6 +30,7 @@ class CommandLineCfg
 public:
 	static bool createInstance(const char* commandLine);
 	static CommandLineCfg* instance();
+	static void destroy();
 
 #define DEFINE_COMMANDLINE(COMMAND,TYPE,DEFAULT_VALUE,DESCREPTION,SETTING_FUNCTION) protected: TYPE _##COMMAND = (CommandLineHelper(#COMMAND,DESCREPTION,SETTING_FUNCTION),DEFAULT_VALUE); public: TYPE get##COMMAND(){return _##COMMAND;}
 #define DEFINE_COMMANDLINE_BOOL(COMMAND,DESCREPTION) DEFINE_COMMANDLINE(COMMAND,bool,false,DESCREPTION,[](CommandLineCfg* instance, const std::string&){ instance->_##COMMAND = true; return true; })

@@ -1,8 +1,8 @@
 #pragma once
 
 #define _USE_MATH_DEFINES   // Make math.h define M_PI
-#include <math.h>
-#include <float.h>
+#include <cmath>
+#include <cfloat>
 
 #ifndef M_PI
 	#define M_PI       3.14159265358979323846   // pi

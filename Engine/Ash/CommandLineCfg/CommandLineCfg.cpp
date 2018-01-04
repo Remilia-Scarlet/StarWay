@@ -25,6 +25,11 @@ CommandLineCfg* CommandLineCfg::instance()
 	return s_instance;
 }
 
+void CommandLineCfg::destroy()
+{
+	TINY_SAFE_DELETE(s_instance);
+}
+
 bool CommandLineCfg::init(CommandLineCfg* instance, const char* commandLine)
 {
 	std::vector<std::string> tokens = spliteCommandLine(commandLine);

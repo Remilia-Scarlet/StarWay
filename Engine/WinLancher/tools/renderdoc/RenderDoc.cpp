@@ -2,7 +2,6 @@
 #include <Windows.h>
 #include "RenderDoc.h"
 #include "Ash/FileSystem/Path_Win.h"
-#include "TinyEngine/Engine/TinyAssert.h"
 #include "TinyEngine/Engine/EngineDefs.h"
 #include "TinyEngine/TinyEngine.h"
 

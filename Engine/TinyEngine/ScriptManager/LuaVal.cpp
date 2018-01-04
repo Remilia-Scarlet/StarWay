@@ -1,6 +1,7 @@
 #include "precomp.h"
 #include "LuaVal.h"
 #include "TinyEngine/Objects/Object.h"
+#include "Math/MathDef.h"
 
 const LuaVal LuaVal::NIL;
 std::unordered_map<LuaVal, LuaVal, LuaVal::HashFunc, LuaVal::CmpFunc> LuaVal::s_getItWrongRet;
