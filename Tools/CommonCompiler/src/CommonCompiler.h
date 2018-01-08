@@ -39,6 +39,8 @@ protected:
 
 	struct Symbols
 	{
+		Symbols() = default;
+		Symbols(const std::string& content, bool resolved) : _content(content), _resolved(resolved) {}
 		std::string _content;
 		bool _resolved = false;
 	};

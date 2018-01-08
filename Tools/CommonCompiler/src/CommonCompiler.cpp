@@ -99,7 +99,7 @@ bool CommonCompiler::parseArg(int argc, char* argv[])
 			}
 			std::string name = std::string("$(") + str.substr(0, pos) + ")";
 			std::string value = str.substr(pos + 1);
-			_define[name] = { value,false };
+			_define[name] = Symbols{ value,false };
 		}
 	}
 	return !_configFilePath.empty();
