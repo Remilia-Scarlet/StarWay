@@ -27,26 +27,6 @@ TransformComponent::TransformComponent()
 }
 
 
-bool TransformComponent::createLuaPrototype()
-{
-	LUA_PROTOTYPE_PREPARE();
-
-	LUA_PROTOTYPE_REGIST_FUN(create);
-	LUA_PROTOTYPE_REGIST_FUN(setLocation);
-	LUA_PROTOTYPE_REGIST_FUN(getLocation);
-	LUA_PROTOTYPE_REGIST_FUN(setEulerRotation);
-	LUA_PROTOTYPE_REGIST_FUN(getEulerRotation);
-	LUA_PROTOTYPE_REGIST_FUN(faceToPoint);
-	LUA_PROTOTYPE_REGIST_FUN(getFrontDirection);
-	LUA_PROTOTYPE_REGIST_FUN(getUpDirection);
-	LUA_PROTOTYPE_REGIST_FUN(getRightDirection);
-	LUA_PROTOTYPE_REGIST_FUN(parentVectorToLocal);
-	LUA_PROTOTYPE_REGIST_FUN(parentPointToLocal);
-
-	LUA_PROTOTYPE_END(TransformComponent);
-	return true;
-}
-
 TransformComponent::~TransformComponent()
 {
 }
@@ -64,8 +44,6 @@ void TransformComponent::setLocation(const Vector3& position)
 	setLocation(position.X(), position.Y(), position.Z());
 }
 
-LUA_MEMBER_FUN_P1R0_IMPL(TransformComponent, setLocation, const Vector3&);
-
 void TransformComponent::setLocation(float deltaX, float deltaY, float deltaZ)
 {
 	_location.X() = deltaX;
@@ -78,8 +56,6 @@ const Vector3& TransformComponent::getLocation()
 {
 	return _location;
 }
-
-LUA_MEMBER_FUN_P0R1_IMPL(TransformComponent, getLocation);
 
 float TransformComponent::getLocationX()
 {
@@ -111,14 +87,10 @@ void TransformComponent::faceToPoint(float x, float y, float z)
 	faceToPoint({ x,y,z });
 }
 
-LUA_MEMBER_FUN_P1R0_IMPL(TransformComponent, faceToPoint, const Vector3&);
-
 void TransformComponent::setEulerRotation(float deltaX, float deltaY, float deltaZ)
 {
 	setRotation(Quaternion(deltaX, deltaY, deltaZ));
 }
-
-LUA_MEMBER_FUN_P1R0_IMPL(TransformComponent, setEulerRotation, const Vector3&);
 
 void TransformComponent::setRotation(const Quaternion& rotation)
 {
@@ -140,8 +112,6 @@ Vector3 TransformComponent::getEulerRotation()
 {
 	return getRotation().toEularAngle();
 }
-
-LUA_MEMBER_FUN_P0R1_IMPL(TransformComponent, getEulerRotation);
 
 void TransformComponent::setScale(float x, float y, float z)
 {
@@ -198,21 +168,15 @@ Vector3 TransformComponent::getUpDirection()
 	return getNodeToParentMatrix().getRow(1).subVecter<0,3>();
 }
 
-LUA_MEMBER_FUN_P0R1_IMPL(TransformComponent, getUpDirection);
-
 Vector3 TransformComponent::getFrontDirection()
 {
 	return getNodeToParentMatrix().getRow(2).subVecter<0, 3>();
 }
 
-LUA_MEMBER_FUN_P0R1_IMPL(TransformComponent, getFrontDirection);
-
 Vector3 TransformComponent::getRightDirection()
 {
 	return getNodeToParentMatrix().getRow(0).subVecter<0, 3>();
 }
-
-LUA_MEMBER_FUN_P0R1_IMPL(TransformComponent, getRightDirection);
 
 Vector3 TransformComponent::parentVectorToLocal(const Vector3& parentVector)
 {
@@ -221,16 +185,12 @@ Vector3 TransformComponent::parentVectorToLocal(const Vector3& parentVector)
 	return vecMatrix.getPartOfMatix<1, 3>(0, 0).getData();
 }
 
-LUA_MEMBER_FUN_P1R1_IMPL(TransformComponent, parentVectorToLocal, const Vector3&);
-
 Vector3 TransformComponent::parentPointToLocal(const Vector3& parentPoint)
 {
 	MatrixStorage<float, 1, 4> vecMatrix = { parentPoint.X(), parentPoint.Y(), parentPoint.Z(), 1 };
 	vecMatrix.dotInPlace(getParentToNodeMatrix());
 	return vecMatrix.getPartOfMatix<1, 3>(0, 0).getData();
 }
-
-LUA_MEMBER_FUN_P1R1_IMPL(TransformComponent, parentPointToLocal, const Vector3&);
 
 void TransformComponent::render()
 {

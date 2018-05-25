@@ -1,7 +1,6 @@
 #pragma once
 #include "VirtualButton.h"
 #include "Math/vector/Vector.h"
-#include "TinyEngine/ScriptManager/LuaManager.h"
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 	class InputManagerWin;
@@ -14,31 +13,24 @@
 class InputManager
 {
 public:
-	static bool createLuaPrototype();
-public:
 	static bool createInstance();
 	static PlatformInputManager* instance();
 	static void destroyInstance();
 
 	// return current status of a virtual btn
 	virtual ButtonStatus getVitualBtnStatus(VirtualButton btn);
-	LUA_SINGLETON_FUN_P1R0_DECL(InputManager,getVitualBtnStatus, VirtualButton);
 
 	// return last change status. ButtonStatus.isDown is last down/up status, ButtonStatus.timeStamp is the time when last changing happened, ButtonStatus.isChangedInThisFrame is always false.
 	virtual ButtonStatus getVitualBtnLastStatus(VirtualButton btn);
-	LUA_SINGLETON_FUN_P1R0_DECL(InputManager, getVitualBtnLastStatus, VirtualButton);
 
 	// get mouse position
 	virtual Vector2 getVirtualMousePos();
-	LUA_SINGLETON_FUN_P0R1_DECL(InputManager, getVirtualMousePos);
 
 	// get mouse btn status
 	virtual MouseBtnStatus getVirtualMouseStatus(VirtualMouseBtn btn);
-	LUA_SINGLETON_FUN_P1R0_DECL(InputManager, getVirtualMouseStatus, VirtualMouseBtn);
 
 	// return last click mouse status
 	virtual MouseBtnStatus getVirtualMouseLastStatus(VirtualMouseBtn btn);
-	LUA_SINGLETON_FUN_P1R0_DECL(InputManager, getVirtualMouseLastStatus, VirtualMouseBtn);
 
 	virtual void update(float dt);
 protected:

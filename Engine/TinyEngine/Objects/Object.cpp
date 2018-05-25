@@ -8,21 +8,6 @@
 #include "TinyEngine\Components\DirectionLightComponent.h"
 #include "TinyEngine\Components\PointLightComponet.h"
 
-
-bool Object::createLuaPrototype()
-{
-	LUA_PROTOTYPE_PREPARE();
-
-	LUA_PROTOTYPE_REGIST_FUN(create);
-	LUA_PROTOTYPE_REGIST_FUN(addComponent);
-	LUA_PROTOTYPE_REGIST_FUN(getComponent);
-	LUA_PROTOTYPE_REGIST_FUN(setEnable);
-	LUA_PROTOTYPE_REGIST_FUN(getEnable);
-
-	LUA_PROTOTYPE_END(Object);
-	return true;
-}
-
 ObjectPtr Object::create()
 {
 	Object* ret = new Object();
@@ -68,19 +53,6 @@ void Object::addComponent(const BaseComponentPtr& component)
 		TinyAssert(false,"Object::addComponent ptr is not valid");
 }
 
-int Object::L_addComponent(lua_State* L)
-{
-	ASSERT_PARAM_NUM(2);
-	Object* self = LuaManager::instance()->getVal<Object*>(L, 1);
-	BaseComponentPtr com = LuaManager::instance()->getVal<BaseComponentPtr>(L, 2);
-	if (!self)
-		return luaL_error(L, "addComponent self is nil");
-	if (!com.isValid())
-		return luaL_error(L, "addComponent component is nil");
-	self->addComponent(std::move(com));
-	return 0;
-}
-
 BaseComponentPtr Object::getComponent(ObjectID componentId)
 {
 	if (_components)
@@ -103,17 +75,6 @@ BaseComponentPtr Object::getComponent(const std::string& name)
 		}
 	}
 	return BaseComponentPtr();
-}
-
-int Object::L_getComponent(lua_State* L)
-{
-	Object* self = LuaManager::instance()->getVal<Object*>(L, 1);
-	const char* componentName = LuaManager::instance()->getVal<const char*>(L, 2);
-	if (!self || componentName[0] == 0)
-		return LUA_PARAM_ERROR(Object::L_getComponent);
-
-	LuaManager::instance()->pushVal(L, self->getComponent(componentName));
-	return 1;
 }
 
 void Object::update(float dt)
@@ -165,14 +126,10 @@ void Object::setEnable(bool enable)
 	_enable = enable;
 }
 
-LUA_MEMBER_FUN_P1R0_IMPL(Object, setEnable, bool);
-
 bool Object::getEnable()
 {
 	return _enable;
 }
-
-LUA_MEMBER_FUN_P0R1_IMPL(Object, getEnable);
 
 void Object::ensureChildMap()
 {
@@ -207,14 +164,12 @@ Object::Object()
 	,_children(nullptr)
 	,_components(nullptr)
 {
-	LUA_GENERATE_OBJ(TO_STRING(Object));
 }
 
 Object::~Object()
 {
 	TINY_SAFE_DELETE(_components);
 	TINY_SAFE_DELETE(_children);
-	LUA_REMOVE_OBJ();
 }
 
 void Object::setParent(ObjectPtr parent)

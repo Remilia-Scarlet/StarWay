@@ -15,7 +15,7 @@ public:
 	virtual void setOwner(const RefCountPtr<Object> & owner);
 	virtual WeakRefPtr<Object> getOwner() const;
 protected:
-	BaseComponent(const char* luaPrototypeName);
+	BaseComponent(const char* name);
 	WeakRefPtr<Object> _owner;
 	std::string _name;
 };

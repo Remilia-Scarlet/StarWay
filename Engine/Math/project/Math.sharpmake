@@ -39,6 +39,9 @@ namespace Math
 			conf.Options.Add(Options.Vc.Compiler.FloatingPointModel.Precise);	
 			conf.Options.Add(Options.Vc.General.WarningLevel.Level3);
 			conf.Options.Add(Options.Vc.Compiler.RTTI.Enable);
+			
+			conf.PrecompHeader = "precomp.h";
+            conf.PrecompSource = "precomp.cpp";
         }
 		
 		[Configure()]

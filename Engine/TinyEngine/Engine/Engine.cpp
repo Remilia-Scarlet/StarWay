@@ -9,7 +9,6 @@
 #include "Graphic/Manager/ShaderMgr.h"
 #include "TinyEngine/Other/TimerManager.h"
 #include "TinyEngine/Input/InputManager.h"
-#include "TinyEngine/ScriptManager/LuaManager.h"
 #include "TinyEngine/Graphic/GeometryGenerator.h"
 #include "TinyEngine/Components/CameraComponent.h"
 #include "Graphic/Manager/LightManager.h"
@@ -65,7 +64,6 @@ bool Engine::init(int solutionWidth, int solutionHeight, HWND hWnd)
 		TINY_BREAK_IF(!ShaderMgr::createInstance());
 		TINY_BREAK_IF(!LightManager::createInstance());
 		TINY_BREAK_IF(!InputManager::createInstance());
-		TINY_BREAK_IF(!LuaManager::createInstance());
 		TINY_BREAK_IF(!DefaultMgr::createInstance());
 		return true;
 	} while (0);
@@ -77,7 +75,6 @@ void Engine::cleanUp()
 	_exit = true;
 	_currentScene = nullptr;
 	DefaultMgr::destroyInstance();
-	LuaManager::destroyInstance();
 	TimerManager::destoryInstance();
 	GraphicMgr::destroyInstance();
 	ConstantBufferManager::destroyInstance();
@@ -119,7 +116,6 @@ bool Engine::isExiting() const
 
 void Engine::start()
 {
-	LuaManager::instance()->call("start");
 }
 
 void Engine::startScene(const ScenePtr& scene)

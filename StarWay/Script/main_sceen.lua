@@ -1,4 +1,0 @@
-function fsdafa()
-
-
-end

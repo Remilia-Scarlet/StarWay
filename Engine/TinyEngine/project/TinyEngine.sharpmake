@@ -30,9 +30,6 @@ namespace TinyEngine
 			conf.IncludePaths.Add(@"[project.RootPath]");
 			conf.IncludePaths.Add(@"[project.RootPath]\..");
 			
-			conf.SourceFilesBuildExclude.Add(@"[project.SourceRootPath]\ThirdParty\lua_5_3_3\lua.c");
-			conf.SourceFilesBuildExclude.Add(@"[project.SourceRootPath]\ThirdParty\lua_5_3_3\luac.c");
-			
 			conf.TargetFileFullName = @"[project.Name]_[target.Platform]_[target.Optimization]";
 			conf.Output = Configuration.OutputType.Lib;
 			

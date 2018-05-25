@@ -109,34 +109,6 @@ VectorStorage<ValueType, Size>::VectorStorage(const ValueType& x, const ValueTyp
 	_data[3] = w;
 }
 
-template<class ValueType, int Size>
-inline VectorStorage<ValueType, Size> VectorStorage<ValueType, Size>::createFromLua(lua_State * L, int index)
-{
-	int top = lua_gettop(L);
-	int type = lua_type(L, index);
-	if (type != LUA_TUSERDATA)
-	{
-		TinyAssert(false, "can't convert");
-		return VectorStorage<ValueType, Size>();
-	}
-	if (lua_rawlen(L, index) != sizeof(VectorStorage<ValueType, Size>))
-	{
-		TinyAssert(false, "can't convert");
-		return VectorStorage<ValueType, Size>();
-	}
-	TinyAssert(lua_gettop(L) == top);
-	return VectorStorage<ValueType, Size>((ValueType*)lua_touserdata(L, index));
-}
-
-template<class ValueType, int Size>
-template<class ValT, int ValSize>
-bool VectorStorage<ValueType, Size>::pushToLua(lua_State * L, const VectorStorage<ValT, ValSize>& val)
-{
-	void* data = LuaVector::allocAndPushUserData(sizeof(VectorStorage<ValT, ValSize>));
-	memcpy(data, val.getData(), sizeof(VectorStorage<ValT, ValSize>));
-	return true;
-}
-
 template <class ValueType, int Size>
 ValueType& VectorStorage<ValueType, Size>::operator()(int index)
 {
@@ -176,19 +148,6 @@ VectorStorage<ValueType, Size>& VectorStorage<ValueType, Size>::operator=(const 
 	reset(other);
 	return *this;
 }
-
-//template<class ValueType, int Size>
-//inline VectorStorage<ValueType, Size>::operator LuaVal() const
-//{
-//	static_assert(Size <= 4, "only Vector size <= 4 can convert");
-//	LuaVal ret;
-//	for (int i = 0; i < Size; ++i)
-//	{
-//		const char* name[4] = { "x","y","z","w" };
-//		ret.setField(name[i], _data[i]);
-//	}
-//	return ret;
-//}
 
 template <class ValueType, int Size>
 void VectorStorage<ValueType, Size>::reset()

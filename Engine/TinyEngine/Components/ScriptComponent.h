@@ -1,25 +1,22 @@
 #pragma once
 #include "BaseComponent.h"
-#include "TinyEngine/ScriptManager/LuaManager.h"
+#include <functional>
 
 TINY_DEFINE_PTR(ScriptComponent);
 class ScriptComponent : public BaseComponent
 {
 public:
-	static void createLuaPrototype();
-public:
-	static ScriptComponentPtr create(const std::string& luaFunctionTable);
-	LUA_CREATE_FUN_P1(ScriptComponent, const std::string&);
+	static ScriptComponentPtr create(const std::function<void()>& callback);
 
 	void setOwner(const RefCountPtr<Object> & owner) override;
 
 	virtual void update(float dt) override;
 protected:
-	virtual bool init(const std::string& luaFunctionTable);
+	virtual bool init(const std::function<void()>& callback);
 	ScriptComponent();
 	virtual ~ScriptComponent();
 
-	std::string _luaFunctionTable;
+	std::function<void()> _callback;
 	bool _inited;
 };
 

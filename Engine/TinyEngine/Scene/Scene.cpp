@@ -6,26 +6,12 @@
 #include "TinyEngine/Components/PointLightComponet.h"
 #include "Graphic/Manager/GraphicMgr.h"
 
-bool Scene::createLuaPrototype()
-{
-	LUA_PROTOTYPE_PREPARE();
-
-	LUA_PROTOTYPE_REGIST_FUN(create);
-	LUA_PROTOTYPE_REGIST_FUN(addObject);
-	LUA_PROTOTYPE_REGIST_FUN(removeObject);
-
-	LUA_PROTOTYPE_END(Scene);
-	return true;
-}
-
 Scene::Scene()
 {
-	LUA_GENERATE_OBJ(TO_STRING(Scene));
 }
 
 Scene::~Scene()
 {
-	LUA_REMOVE_OBJ();
 }
 
 ScenePtr Scene::create()
@@ -52,32 +38,12 @@ void Scene::addObject(ObjectPtr obj)
 
 }
 
-int Scene::L_addObject(lua_State* L)
-{
-	ScenePtr self = LuaManager::instance()->getVal<ScenePtr>(L, 1);
-	ObjectPtr para1 = LuaManager::instance()->getVal<ObjectPtr>(L, 2);
-	if (!self.isValid() || !para1.isValid())
-		return LUA_PARAM_ERROR(Scene::L_addObject);
-	self->addObject(para1);
-	return 0;
-}
-
 void Scene::removeObject(ObjectPtr obj)
 {
 	if (obj.isValid())
 	{
 		_objects.erase(obj->getObjectId());
 	}
-}
-
-int Scene::L_removeObject(lua_State* L)
-{
-	ScenePtr self = LuaManager::instance()->getVal<ScenePtr>(L, 1);
-	ObjectPtr para1 = LuaManager::instance()->getVal<ObjectPtr>(L, 2);
-	if (!self.isValid() || !para1.isValid())
-		return LUA_PARAM_ERROR(Scene::L_removeObject);
-	self->removeObject(para1);
-	return 0;
 }
 
 void Scene::update(float dt)

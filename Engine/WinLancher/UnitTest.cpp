@@ -5,12 +5,10 @@
 #include <functional>
 #include "TinyEngine/Other/Timer.h"
 #include "Math/shape/Rect.h"
-#include "TinyEngine/ScriptManager/LuaVal.h"
 #include "TinyEngine/Objects/Object.h"
 #include "Ash/FileSystem/Path_Win.h"
 #include "Ash/CommonFunc.h"
 #include "../Ash/FileSystem/File_Win.h"
-#include "../TinyEngine/ScriptManager/LuaManager.h"
 #include "TinyEngine/ThirdParty/rapidjson/document.h"
 #include "../TinyEngine/Graphic/WavefrontObjReader.h"
 #include "../TinyEngine/Components/TextureComponent.h"
@@ -476,145 +474,7 @@ void TestRect()
 		int a = 0;
 	}
 }
-void TestLuaVal()
-{
-	LuaVal val;
-	LuaVal vall(nullptr);
-	std::string str0 = vall.toString();
-	LuaVal valll(false);
-	std::string str1 = valll.toString();
-	LuaVal val0('a');
-	LuaVal val1((signed char)1);
-	LuaVal val2(unsigned char(1));
-	LuaVal val3((unsigned short)2);
-	LuaVal val4((wchar_t)2);
-	LuaVal val5((long)1);
-	LuaVal val6(unsigned int(44));
-	LuaVal val7(long long(33));
-	LuaVal val8((unsigned long long) 443);
-	std::string str2 = val8.toString();
-	LuaVal val9(1.3f);
-	LuaVal val10(1.4);
-	std::string str3 = val10.toString();
-	LuaVal val11("abc");
-	LuaVal val12("");
-	LuaVal val13(std::string("456"));
-	std::string str4 = val13.toString();
-	ObjectPtr obj = Object::create();
-	LuaVal val14(obj);
-	LuaVal val15(obj.get());
-	LuaVal val16(*obj.get());
-	std::string str5 = val16.toString();
-	LuaVal val17 = {1, _K(1.1) = "mmm", "abc", _K("1") = 234, _K(2) = 1, _K("x") = 123, _K("y") = 456, _K("tab") = {1, 2, 3}};
-	for (auto it = val17.begin(); it != val17.end();++it)
-	{
-		LuaVal key = it.key();
-		LuaVal val = it.val();
-		//	DebugString("%s,%s", key.toString().c_str(), val.toString().c_str());
-	}
-	const LuaVal valconst = val17;
-	for (auto it = valconst.begin(); it != valconst.end(); ++it)
-	{
-		//it->second = 1;
-	}
 
-
-	std::string str6 = val17.toString();
-	LuaVal val18 = val17;
-	val18.setField(2,999);
-	val18.setField(6, "def");
-	LuaVal val19 = val18.clone();
-	val19.setField("z", { 4,5,6 });
-	val14 = val19.getField("z");
-	LuaVal val20 = std::move(val19);
-	std::string str7 = val20.toString();
-
-	if (val20 != val18)
-	{
-		int a = 0;
-	}
-	if (val17 == val18)
-	{
-		int a = 0;
-	}
-	LuaVal val21 = 1;
-	LuaVal val22 = 1.00000001;
-	if (val21 == val22)
-	{
-		int a = 0;
-	}
-
-	LuaVal val23 = val21 + val22;
-	LuaVal val24 = val21 - val22;
-
-//	std::list<LuaVal> ret = LuaManager::instance()->call("add", 1, 2.0, "abc", 1.1f, 1.2);
-
-	LuaVal aaasd =  { 123, {1,1,1 } } ;
-	LuaVal aaasds = { _K(123) = { 1,1,1 } };
-	LuaVal asddf = { 1,2,3 };
-	LuaVal dfdss = { 1,2 };
-	LuaVal dfds = { _K(1)  = 2 };
-	LuaVal fdsa = { 1 };
-
-//	std::list<LuaVal> ret3 = LuaManager::instance()->call("Foo2", LuaVal{ _K("tab")  = 123 });
-//	std::list<LuaVal> ret2 = LuaManager::instance()->call("Foo", 123, "abc", 1.1, LuaVal{ "tab",{1,2,3} }, LuaVal{ "mm",999 });
-
-	LuaVal sdsadfsa = 1.1f;
-	auto sdf1 = sdsadfsa.convert<bool>();
-	auto sdf7 = sdsadfsa.convert<char>();
-	auto sdf2 = sdsadfsa.convert<int>();
-	auto sdf3 = sdsadfsa.convert<double>();
-//	auto sdf4 = sdsadfsa.convert<const RefCountPtr<RefCountObj>&>();
-//	auto sdf5 = sdsadfsa.convert<RefCountObj*>();
-//	auto sdf6 = sdsadfsa.convert<RefCountPtr<RefCountObj>>();
-
-	sdsadfsa = Object::create();
-	auto sdf11 = sdsadfsa.convert<bool>();
-//	auto sdf77 = sdsadfsa.convert<char>();
-//	auto sdf22 = sdsadfsa.convert<int>();
-//	auto sdf33 = sdsadfsa.convert<double>();
-	auto sdf44 = sdsadfsa.convert<const RefCountPtr<RefCountObj>&>();
-	auto sdf55 = sdsadfsa.convert<RefCountObj*>();
-	auto sdf66 = sdsadfsa.convert<RefCountPtr<RefCountObj>>();
-
-	LuaVal dasdas = LuaVal(true);
-
-	lua_State* L = LuaManager::instance()->getLuaMachine();
-	lua_newtable(L);
-	lua_pushstring(L, "abc");
-	LuaManager::instance()->pushVal(val17);
-	lua_settable(L, -3);
-
-	LuaManager::instance()->pushVal(aaasds);
-	LuaManager::instance()->pushVal(asddf);
-	lua_settable(L, -3);
-
-	LuaVal abc = LuaManager::instance()->getVal(L, -1);
-	
-	lua_pushstring(L, "looop");
-	LuaManager::instance()->pushVal(abc);
-	lua_settable(L, -3);
-
-	lua_pushstring(L, "LUAVALTAB");
-	lua_getglobal(L, LUAVAL_TABLE);
-	std::string luavaltab = LuaManager::instance()->toString(-1);
-	lua_settable(L, -3);
-	
-	LuaVal tab = LuaManager::instance()->getVal(L, -1);
-	std::string str = tab.toString();
-	std::string strdfs = LuaManager::instance()->toString(-1);
-
-	abc = nullptr;
-	lua_getglobal(L, LUAVAL_TABLE);
-	std::string luavaltab2 = LuaManager::instance()->toString(-1);
-	lua_pop(L, 1);
-
-	lua_pop(L, 1);
-
-	LuaManager::instance()->pushVal(std::string("asd"));
-	LuaManager::instance()->pushVal(std::string("asd"),123,"abc");
-	lua_pop(L, 4);
-}
 void TestFileSystem()
 {
 	Path path("D:\\dango\\document\\Visual Studio 2015\\Projects\\StarWay\\Engine\\TinyEngine");
@@ -671,7 +531,6 @@ void UnitTest()
 //	TestQuaternion();
 ////	TestTimer();
 //	TestRect();
-//	TestLuaVal();
 //	TestFileSystem();
 
 	//static bool yes = true;

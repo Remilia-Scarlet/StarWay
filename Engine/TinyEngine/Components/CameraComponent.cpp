@@ -22,24 +22,6 @@ CameraComponent::~CameraComponent()
 {
 }
 
-bool CameraComponent::createLuaPrototype()
-{
-	LUA_PROTOTYPE_PREPARE();
-
-	LUA_PROTOTYPE_REGIST_FUN(create);
-	LUA_PROTOTYPE_REGIST_FUN(setFiledOfView);
-	LUA_PROTOTYPE_REGIST_FUN(getFiledOfView);
-	LUA_PROTOTYPE_REGIST_FUN(setFarClipPlane);
-	LUA_PROTOTYPE_REGIST_FUN(getFarClipPlane);
-	LUA_PROTOTYPE_REGIST_FUN(setNearClipPlane);
-	LUA_PROTOTYPE_REGIST_FUN(getNearClipPlane);
-	LUA_PROTOTYPE_REGIST_FUN(setDrawRectOnScreen);
-	LUA_PROTOTYPE_REGIST_FUN(getRawRectOnScreen);
-
-	LUA_PROTOTYPE_END(CameraComponent);
-	return true;
-}
-
 CameraComponentPtr CameraComponent::create()
 {
 	CameraComponent* ret = new CameraComponent();
@@ -53,42 +35,30 @@ void CameraComponent::setFiledOfView(float angle)
 	_fieldOfView = angle;
 }
 
-LUA_MEMBER_FUN_P1R0_IMPL(CameraComponent, setFiledOfView, float);
-
 float CameraComponent::getFiledOfView() const
 {
 	return _fieldOfView;
 }
-
-LUA_MEMBER_FUN_P0R1_IMPL(CameraComponent, getFiledOfView);
 
 void CameraComponent::setFarClipPlane(float farZ)
 {
 	_farClipPlane = farZ;
 }
 
-LUA_MEMBER_FUN_P1R0_IMPL(CameraComponent, setFarClipPlane, float);
-
 float CameraComponent::getFarClipPlane() const
 {
 	return _farClipPlane;
 }
-
-LUA_MEMBER_FUN_P0R1_IMPL(CameraComponent, getFarClipPlane);
 
 void CameraComponent::setNearClipPlane(float nearZ)
 {
 	_nearClipPlane = nearZ;
 }
 
-LUA_MEMBER_FUN_P1R0_IMPL(CameraComponent, setNearClipPlane, float);
-
 float CameraComponent::getNearClipPlane() const
 {
 	return _nearClipPlane;
 }
-
-LUA_MEMBER_FUN_P0R1_IMPL(CameraComponent, getNearClipPlane);
 
 void CameraComponent::setDrawRectOnScreen(const Rect& rect)
 {
@@ -98,14 +68,10 @@ void CameraComponent::setDrawRectOnScreen(const Rect& rect)
 	_viewPort.Height = rect.H();
 }
 
-LUA_MEMBER_FUN_P1R0_IMPL(CameraComponent, setDrawRectOnScreen, const Rect&);
-
 Rect CameraComponent::getRawRectOnScreen() const
 {
 	return Rect(_viewPort.TopLeftX, _viewPort.TopLeftY, _viewPort.Width, _viewPort.Height);
 }
-
-LUA_MEMBER_FUN_P0R1_IMPL(CameraComponent, getRawRectOnScreen);
 
 void CameraComponent::render()
 {

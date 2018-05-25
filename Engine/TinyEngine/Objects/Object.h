@@ -6,7 +6,6 @@
 #include "Ash/RefCountPointer/RefCountPtr.h"
 #include <type_traits>
 #include <bitset>
-#include "TinyEngine/ScriptManager/LuaManager.h"
 
 TINY_DEFINE_PTR(Object);
 TINY_DEFINE_PTR(BaseComponent);
@@ -24,11 +23,8 @@ enum class ObjectFlag
 class Object : public RefCountObj
 {
 public:
-	static bool createLuaPrototype();
-public:
 	static ObjectPtr create(const std::string& objName);
 	static ObjectPtr create();
-	LUA_CREATE_FUN_P0(Object);
 
 	virtual void addChild(ObjectPtr child);
 	virtual void removeChild(ObjectPtr child);
@@ -36,14 +32,11 @@ public:
 	virtual ObjectWeakPtr getParent() { return _parent; }
 
 	virtual void addComponent(const BaseComponentPtr& component);
-	LUA_MEMBER_FUN_P1R0_DECL(Object, addComponent, const BaseComponentPtr&);
 
-//	static int L_addComponent(lua_State* L);
 	template<class T> RefCountPtr<T> getComponent();
 	BaseComponentPtr getComponent(ObjectID componentId);
 	template<class T> std::vector<RefCountPtr<T> > getComponents();
 	BaseComponentPtr getComponent(const std::string& name);
-	static int L_getComponent(lua_State* L);
 
 	virtual void update(float dt);
 	virtual void render();
@@ -53,10 +46,7 @@ public:
 	virtual int getFlags();
 
 	virtual void setEnable(bool enable);
-	LUA_MEMBER_FUN_P1R0_DECL(Object, setEnable, bool);
-
 	virtual bool getEnable();
-	LUA_MEMBER_FUN_P0R1_DECL(Object, getEnable);
 protected:
 	void ensureChildMap();
 	void ensureComponentMap();

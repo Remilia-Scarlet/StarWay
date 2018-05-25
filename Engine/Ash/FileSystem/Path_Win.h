@@ -45,7 +45,7 @@ public:
 	std::list<Path> getFileList() const;
 
 	// List all files under this directory and its sub directories with special filter.
-	// For example getFileList("*.lua") will return a list with all lua file under this folder and sub folders.
+	// For example getFileList("*.txt") will return a list with all txt file under this folder and sub folders.
 	// If this path is a file, it returns a empty list.
 	std::list<Path> getFileList(const std::string& filter) const;
 

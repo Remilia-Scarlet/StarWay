@@ -1,6 +1,5 @@
 #pragma once
 #include "Math/quaternion/Quaternion.h"
-#include "LuaVector.h"
 
 template <class ValueType, int Size>
 class VectorStorage
@@ -30,10 +29,6 @@ public:
 
 	// Only for Vector4
 	inline VectorStorage(const ValueType& x, const ValueType& y, const ValueType& z, const ValueType& w);
-
-	static VectorStorage createFromLua(lua_State* L, int index);
-	template<class ValT, int ValSize>
-	static bool pushToLua(lua_State* L, const VectorStorage<ValT, ValSize>& val);
 
 	inline ~VectorStorage() {}
 	// Get an elem

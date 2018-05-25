@@ -2,15 +2,12 @@
 #include "BaseComponent.h"
 #include "Graphic\gfx\GfxMesh.h"
 #include "Graphic\Manager\ShaderMgr.h"
-#include "TinyEngine\ScriptManager\LuaManager.h"
 #include "Math\vector\Vector.h"
 #include "Graphic\Manager\GraphicMgr.h"
 
 TINY_DEFINE_PTR(MeshComponent);
 class MeshComponent : public BaseComponent
 {
-public:
-	static bool createLuaPrototype();
 public:
 	virtual ~MeshComponent();
 public:
@@ -23,11 +20,7 @@ public:
 	template<class VertexType>
 	static MeshComponentPtr create(const std::vector<VertexType>& vertexs);
 
-	static int L_create(lua_State* L);
-
 	void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
-	static int L_setPrimitiveTopology(lua_State* L);
-
 	PrimitiveTopology getPrimitiveTopology() const;
 
 

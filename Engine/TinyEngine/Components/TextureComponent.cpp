@@ -28,28 +28,6 @@ TextureComponentPtr TextureComponent::create(const std::string & fileName)
 	return TextureComponentPtr(ret);
 }
 
-int TextureComponent::L_create(lua_State* L)
-{
-	int top = lua_gettop(L);
-	if (top < 1 || top > 3)
-		return LUA_PARAM_ERROR(TextureComponent::L_create);
-
-	if (top == 1)
-		LuaManager::instance()->pushVal(L,TextureComponent::create());
-	else if (top == 2)
-	{
-		const char* texName = LuaManager::instance()->getVal<const char*>(L, 2);
-		LuaManager::instance()->pushVal(L, TextureComponent::create(texName));
-	}
-	else if (top == 3)
-	{
-		const char* texName = LuaManager::instance()->getVal<const char*>(L, 2);
-		const char* shaderName = LuaManager::instance()->getVal<const char*>(L, 3);
-		LuaManager::instance()->pushVal(L, TextureComponent::create(texName, shaderName));
-	}
-	return 1;
-}
-
 void TextureComponent::setTexture(const GfxTexturePtr& texture)
 {
 	_gfxTexture = texture;
@@ -99,17 +77,12 @@ void TextureComponent::setWireFrame(bool wireFrame)
 	_gfxTexture->setWireFrame(wireFrame);
 }
 
-LUA_MEMBER_FUN_P1R0_IMPL(TextureComponent, setWireFrame, bool);
-
 bool TextureComponent::isWireFrame()
 {
 	if (_gfxTexture == nullptr)
 		return DefaultMgr::instance()->getDefaultTexture()->isWireFrame();
 	return _gfxTexture->isWireFrame();
 }
-
-LUA_MEMBER_FUN_P0R1_IMPL(TextureComponent, isWireFrame);
-
 
 bool TextureComponent::init(const std::string& fileName, const std::string& shadeName)
 {
@@ -146,19 +119,6 @@ bool TextureComponent::init(const std::string& fileName, const std::string& shad
 TextureComponent::TextureComponent()
 	:BaseComponent(TO_STRING(TextureComponent))
 {
-}
-
-
-bool TextureComponent::createLuaPrototype()
-{
-	LUA_PROTOTYPE_PREPARE();
-
-	LUA_PROTOTYPE_REGIST_FUN(create);
-	LUA_PROTOTYPE_REGIST_FUN(setWireFrame);
-	LUA_PROTOTYPE_REGIST_FUN(isWireFrame);
-
-	LUA_PROTOTYPE_END(TextureComponent);
-	return true;
 }
 
 TextureComponent::~TextureComponent()

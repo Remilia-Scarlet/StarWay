@@ -4,16 +4,6 @@
 #include "Graphic\Manager\GraphicMgr.h"
 #include "Graphic\Manager\ConstantBufferManager.h"
 
-bool DirectionLightComponent::createLuaPrototype()
-{
-	LUA_PROTOTYPE_PREPARE();
-
-	LUA_PROTOTYPE_REGIST_FUN(create);
-
-	LUA_PROTOTYPE_END(DirectionLightComponent);
-	return true;
-}
-
 DirectionLightComponentPtr DirectionLightComponent::create(const Vector4& ambient, const Vector4& diffuse, const Vector4& specular)
 {
 	DirectionLightComponent* ret = new DirectionLightComponent();
