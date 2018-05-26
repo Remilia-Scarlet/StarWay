@@ -7,7 +7,7 @@
 #include "Ash/CommandLineCfg/CommandLineCfg.h"
 
 static const bool SHOW_WIN32_CONSOLE_AT_START = true;
-static const bool AUTO_COMPILE_LUA = true;
+static const bool AUTO_COMPILE_SHADER = true;
 
 static const int SOLUTION_WIDTH = 1024;
 static const int SOLUTION_HEIGHT = 768;
@@ -127,12 +127,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (SHOW_WIN32_CONSOLE_AT_START)
 		ShowHideWin32Console();
 
-	if (AUTO_COMPILE_LUA)
+	if (AUTO_COMPILE_SHADER)
 	{
+		std::vector<char> cmd(MAX_PATH + 50);
+		GetModuleFileNameA(nullptr, cmd.data(), MAX_PATH);
+		(strrchr(cmd.data(), '\\'))[0] = 0;
+		cmd.insert(cmd.begin(), '\"');
 		if(TINY_BITWIDE_TARGET == TINY_BITWIDE_X64)
-			system(R"(..\..\CompileLua_x64.bat)");
+			strcat(cmd.data(), R"(\..\..\CompileShader_x64.bat")");
 		else
-			system(R"(..\..\CompileLua_x32.bat)");
+			strcat(cmd.data(), R"(\..\..\CompileShader_x32.bat")");
+		system(cmd.data());
 	}
 
 	//TODO: Move w2c to somewhere

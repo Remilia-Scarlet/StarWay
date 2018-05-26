@@ -2,7 +2,7 @@
   "$(GameRoot)": "..\\..",
   "$(SourcePath)": "$(GameRoot)\\Engine\\Graphic\\Shader",
   "$(SourceFilter)": "*_$(ShaderType).hlsl",
-  "$(TimeStampFile)": "$(GameRoot)\\output\\_temp\\CommonCompiler\\compile_shader_ps.json",
+  "$(TimeStampFile)": "$(GameRoot)\\output\\_temp\\CommonCompiler\\$(Platform)\\compile_shader_$(ShaderType).json",
   "$(Dependency)": "$(GameRoot)\\Engine\\Graphic\\Shader\\common.h",
   "$(Output)": "$(GameRoot)\\output\\$(Platform)\\Shader\\#(SubFolder)\\#(SourceName).cso",
   "$(CompileExe)": "$(GameRoot)\\Tools\\fxc\\fxc.exe",
