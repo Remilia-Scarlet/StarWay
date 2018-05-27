@@ -9,6 +9,9 @@ void DebugString(const char* format, ...);
 std::string FormatString(const char* format, ...);
 std::vector<std::string> split(const std::string& src, const std::string& separator);
 std::string& replaceSubstr(std::string& src, const std::string& searchKey, const std::string& targetStr);
+std::wstring charToWchar(const char* c);
+std::string wcharToChar(const wchar_t* wp);
+
 
 #define TINY_BREAK_IF(CENTENCE) if(CENTENCE)break
 #define TINY_SAFE_DELETE(PTR) do{if(PTR != nullptr){delete PTR;PTR = nullptr;}}while(0)

@@ -3,38 +3,26 @@
 #include <regex>
 #include "CommonFunc.h"
 #include "TinyAssert.h"
+#include <ppltasks.h>
 
-std::map<std::string, CommandLineHelper > CommandLineHelper::s_commandLines;
-CommandLineCfg* CommandLineCfg::s_instance = nullptr;
-
-bool CommandLineCfg::createInstance(const char* commandLine)
+bool CommandLineCfg::init(const char* commandLine)
 {
-	CommandLineCfg* instance = new CommandLineCfg();
-	if(!instance || !instance->init(instance, commandLine))
+	spliteCommandLine(commandLine);
+	return _initImp();
+}
+
+bool CommandLineCfg::init(int argc, char * argv[])
+{
+	for (int i = 0; i < argc; ++i)
 	{
-		TINY_SAFE_DELETE(instance);
-		TinyAssert(false, "CommandLineCfg init failed. Please check commandline, use /? to get all commanline");
-		return false;
+		_splitedCommandLine.push_back(argv[i]);
 	}
-	s_instance = instance;
-	return true;
+	return _initImp();
 }
 
-CommandLineCfg* CommandLineCfg::instance()
+bool CommandLineCfg::_initImp()
 {
-	TinyAssert(s_instance,"CommandLineCfg haven't been initialized");
-	return s_instance;
-}
-
-void CommandLineCfg::destroy()
-{
-	TINY_SAFE_DELETE(s_instance);
-}
-
-bool CommandLineCfg::init(CommandLineCfg* instance, const char* commandLine)
-{
-	std::vector<std::string> tokens = spliteCommandLine(commandLine);
-	for (auto tokenIt = tokens.begin(); tokenIt != tokens.end();)
+	for (auto tokenIt = _splitedCommandLine.begin(); tokenIt != _splitedCommandLine.end();)
 	{
 		std::string& symbol = *tokenIt;
 		std::transform(symbol.begin(), symbol.end(), symbol.begin(), tolower);
@@ -42,24 +30,24 @@ bool CommandLineCfg::init(CommandLineCfg* instance, const char* commandLine)
 		{
 			symbol = symbol.substr(1);
 		}
-		auto it = CommandLineHelper::s_commandLines.find(symbol);
+		auto it = _registedCommandLines.find(symbol);
 		++tokenIt;
-		if (it != CommandLineHelper::s_commandLines.end() && it->second._settingFun)
+		if (it != _registedCommandLines.end() && it->second._settingFun)
 		{
-			std::string value = (tokenIt != tokens.end() ? *tokenIt : "");
+			std::string value = (tokenIt != _splitedCommandLine.end() ? *tokenIt : "");
 			if (value[0] == '/')
 			{
 				value = "";
 			}
-			else if(value[0] == '\"')
+			else if (value[0] == '\"')
 			{
 				value = value.substr(1);
 			}
-			if(value.length() && value[value.length() - 1] == '\"')
+			if (value.length() && value[value.length() - 1] == '\"')
 			{
 				value = value.substr(0, value.length() - 1);
 			}
-			bool settingResult = it->second._settingFun(instance, value);
+			bool settingResult = it->second._settingFun(value);
 			if (!settingResult)
 			{
 				TinyAssert(false, "Commandline error: [%s]", symbol.c_str());
@@ -70,9 +58,9 @@ bool CommandLineCfg::init(CommandLineCfg* instance, const char* commandLine)
 	return true;
 }
 
-std::vector<std::string> CommandLineCfg::spliteCommandLine(const char* commandLine)
+void CommandLineCfg::spliteCommandLine(const char* commandLine)
 {
-	std::vector<std::string> ret;
+	_splitedCommandLine.clear();
 	std::regex nameRegex("([-/a-zA-Z0-9_]+)|(\"[^\"]+\")");
 	std::smatch matchResult;
 	std::string cmdLine(commandLine);
@@ -80,8 +68,7 @@ std::vector<std::string> CommandLineCfg::spliteCommandLine(const char* commandLi
 	while (std::regex_search(cmdLine, matchResult, nameRegex))
 	{
 		std::string str = matchResult.str();
-		ret.push_back(str);
+		_splitedCommandLine.push_back(str);
 		cmdLine = matchResult.suffix();
 	}
-	return ret;
 }

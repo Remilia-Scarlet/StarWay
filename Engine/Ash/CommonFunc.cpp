@@ -90,3 +90,35 @@ std::string& replaceSubstr(std::string& src, const std::string& searchKey, const
 	}
 	return src;
 }
+
+std::wstring charToWchar(const char * c)
+{
+#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+	std::wstring str;
+	int len = MultiByteToWideChar(CP_ACP, 0, c, (int)strlen(c), NULL, 0);
+	wchar_t*    m_wchar = new wchar_t[len + 1];
+	MultiByteToWideChar(CP_ACP, 0, c, (int)strlen(c), m_wchar, len);
+	m_wchar[len] = '\0';
+	str = m_wchar;
+	delete m_wchar;
+	return str;
+#else
+	#error Implement this
+#endif
+}
+
+std::string wcharToChar(const wchar_t * wp)
+{
+#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+	std::string str;
+	int len = WideCharToMultiByte(CP_ACP, 0, wp, (int)wcslen(wp), NULL, 0, NULL, NULL);
+	char    *m_char = new char[len + 1];
+	WideCharToMultiByte(CP_ACP, 0, wp, (int)wcslen(wp), m_char, len, NULL, NULL);
+	m_char[len] = '\0';
+	str = m_char;
+	delete m_char;
+	return str;
+#else
+	#error Implement this
+#endif
+}

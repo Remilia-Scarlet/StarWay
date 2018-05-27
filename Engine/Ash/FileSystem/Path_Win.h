@@ -49,6 +49,9 @@ public:
 	// If this path is a file, it returns a empty list.
 	std::list<Path> getFileList(const std::string& filter) const;
 
+	// Return the exe file path
+	std::string getExePath() const;
+
 	// Return the original path which you set to Path
 	const std::string& getOriginPath() const;
 
@@ -64,7 +67,14 @@ public:
 	// Create a folder at this path
 	bool createDirectory();
 
+	// Get the file name with extension. If the path is not file, it returns empty string
+	std::string getFileName() const;
 
+	// Get the file name without extension. If the path is not file, it returns empty string
+	std::string getFileNameWithoutExt() const;
+
+	// Get the extension of file name
+	std::string getFileExtension() const;
 protected:
 	std::string _path;
 

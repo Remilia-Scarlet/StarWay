@@ -1,13 +1,14 @@
 using Sharpmake;
+using System;
 
-namespace Graphic
+namespace CompileShader
 {
     [Sharpmake.Generate]
-    public class GraphicProject : Project
+    public class CompileShaderProject : Project
     {
-        public GraphicProject()
+        public CompileShaderProject()
         {
-            Name = "Graphic";
+            Name = "CompileShader";
 
             AddTargets(new Target(
                     Platform.win32 | Platform.win64,
@@ -18,11 +19,20 @@ namespace Graphic
             ));
             RootPath = @"[project.SharpmakeCsPath]\..";
             SourceRootPath = RootPath;
+			
+			SourceFilesExtensions.Add(".hlsl");
+			SourceFilesCompileExtensions.Add(".hlsl");
         }
 		
         [Configure()]
         public void ConfigureAll(Configuration conf, Target target)
         {
+			conf.CustomBuildForAllSources = new Configuration.FileCustomBuild();
+			conf.CustomBuildForAllSources.CommandLines.Add("..\\..\\..\\Tools\\ShaderCompiler\\build\\shadercompiler.exe /Source:\"%(FullPath)\" /Output:\"\\..\\..\\output\\$(Platform)\\%(Filename).cso\"");
+			//conf.CustomBuildForAllSources.Description = "Compiling shader";
+			//conf.CustomBuildForAllSources.Inputs.Add("%(FullPath)");
+			conf.CustomBuildForAllSources.Outputs.Add(@"\..\..\output\$(Platform)\%(Filename).cso");
+			
             conf.ProjectFileName = "[project.Name]_[target.DevEnv]_[target.Platform]";
             conf.ProjectPath = @"[project.SharpmakeCsPath]";
 			conf.IntermediatePath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]\[target.Optimization]";
@@ -46,8 +56,6 @@ namespace Graphic
 				
             conf.PrecompHeader = "precomp.h";
             conf.PrecompSource = "precomp.cpp";
-			
-			conf.AddPrivateDependency<CompileShader.CompileShaderProject>(target);
         }
 		
 		[Configure()]

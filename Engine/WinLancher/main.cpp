@@ -4,7 +4,7 @@
 #include <d3d11sdklayers.h>
 #include "TinyEngine/Input/InputManager.h"
 #include "tools/renderdoc/RenderDoc.h"
-#include "Ash/CommandLineCfg/CommandLineCfg.h"
+#include "StartWayCmdLineCfg/StartWayCmdLineCfg.h"
 
 static const bool SHOW_WIN32_CONSOLE_AT_START = true;
 static const bool AUTO_COMPILE_SHADER = true;
@@ -145,11 +145,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	char* cmdLine = new char[len];
 	WideCharToMultiByte(CP_ACP, 0, lpCmdLine, -1, cmdLine, len, NULL, NULL);
 
-	CommandLineCfg::createInstance(cmdLine);
+	StartWayCmdLineCfg::createInstance(cmdLine);
 
 	delete[] cmdLine;
 
-	if (CommandLineCfg::instance()->getRenderdoc())
+	if (StartWayCmdLineCfg::instance()->getRenderdoc())
 	{
 		if (!RenderDoc::createInstance())
 		{
@@ -233,13 +233,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (d3dDebug != nullptr)			d3dDebug->Release();
 #endif // _DEBUG
 
-	if (CommandLineCfg::instance()->getRenderdoc())
+	if (StartWayCmdLineCfg::instance()->getRenderdoc())
 	{
 		RenderDoc::destroy();
 	}
 
 	FreeConsole();
-	CommandLineCfg::destroy();
+	StartWayCmdLineCfg::destroy();
 
 	return (int)msg.wParam;
 }

@@ -1,5 +1,6 @@
 #include "precomp.h"
 #include "Path_Win.h"
+#include <algorithm>
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 
@@ -46,6 +47,47 @@ bool Path::createDirectory()
 	return false;
 }
 
+std::string Path::getFileName() const
+{
+	if (!isFile())
+		return "";
+
+	size_t pos = _path.find_last_of('\\');
+	if(pos != -1 && pos != _path.length() - 1)
+	{
+		return _path.substr(pos + 1);
+	}
+	return "";
+}
+
+std::string Path::getFileNameWithoutExt() const
+{
+	std::string fileName = getFileName();
+	if (fileName.empty())
+		return "";
+
+	size_t pos = fileName.find_last_of('.');
+	if(pos != -1 && pos != fileName.length() - 1)
+	{
+		return fileName.substr(0, pos);
+	}
+	return std::string();
+}
+
+std::string Path::getFileExtension() const
+{
+	std::string fileName = getFileName();
+	if (fileName.empty())
+		return "";
+
+	size_t pos = fileName.find_last_of('.');
+	if (pos != -1 && pos != fileName.length() - 1)
+	{
+		return fileName.substr(pos + 1);
+	}
+	return std::string();
+}
+
 Path::Path()
 	: _absolutePathDirty(true)
 	, _relativePathDirty(true)
@@ -60,7 +102,12 @@ Path::Path(const std::string& path)
 	, _relativePathDirty(true)
 	, _isDirectoryFileDirty(true)
 {
-
+	std::transform(_path.begin(), _path.end(), _path.begin(), [](char ch)
+	{
+		if (ch == '/')
+			ch = '\\';
+		return ch;
+	});
 }
 
 Path::Path(const char* path)
@@ -69,7 +116,12 @@ Path::Path(const char* path)
 	, _relativePathDirty(true)
 	, _isDirectoryFileDirty(true)
 {
-
+	std::transform(_path.begin(), _path.end(), _path.begin(), [](char ch)
+	{
+		if (ch == '/')
+			ch = '\\';
+		return ch;
+	});
 }
 
 Path::Path(const std::string& path,
@@ -173,6 +225,23 @@ std::list<Path> Path::getFileList(const std::string& filter) const
 	return list;
 }
 
+std::string Path::getExePath() const
+{
+	std::string ret;
+	const int arrSize = 500;
+	char* path = new char[arrSize];
+	char* driver = new char[50];
+	char* dir = new char[arrSize];
+	GetModuleFileNameA(NULL, path, arrSize);
+	_splitpath(path, driver, dir, nullptr, nullptr);
+	ret += driver;
+	ret += dir;
+	delete[] driver;
+	delete[] path;
+	delete[] dir;
+	return ret;
+}
+
 std::list<Path> Path::getFileList() const
 {
 	return getFileList("*.*");
@@ -195,7 +264,7 @@ const std::string& Path::getAbsolutePath() const
 		size_t offSet = strlen(GAME_PATH);
 		if (_path[offSet] == '\\' || _path[offSet] == '/')
 			++offSet;
-		_absolutePath = _path.substr(offSet);
+		_absolutePath = getExePath() + _path.substr(offSet);
 	}
 	char* path = new char[1024];
 	_fullpath(path, _absolutePath.c_str(), 1024);
