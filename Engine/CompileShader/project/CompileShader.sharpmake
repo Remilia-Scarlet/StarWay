@@ -24,13 +24,33 @@ namespace CompileShader
 			SourceFilesCompileExtensions.Add(".hlsl");
         }
 		
+		protected override void ExcludeOutputFiles()
+        {
+            base.ExcludeOutputFiles();
+            Project.Configuration.CustomFileBuildStep cus = new Project.Configuration.CustomFileBuildStep();
+			cus.KeyInput = @"..\Shader\DefaultShader_NoTex_PS.hlsl";
+			cus.Executable = @"asdsadsa";
+			cus.ExecutableArguments = "param1 param2";
+			
+			Project.Configuration.CustomFileBuildStep cus2 = new Project.Configuration.CustomFileBuildStep();
+			cus2.KeyInput = @"..\Shader\DefaultShader_PS.hlsl";
+			cus2.Executable = @"dddddd";
+
+			foreach (Sharpmake.Project.Configuration conf in this.Configurations)
+            {
+				conf.CustomFileBuildSteps.Add(cus);
+				conf.CustomFileBuildSteps.Add(cus2);
+			}
+        }
+		
         [Configure()]
         public void ConfigureAll(Configuration conf, Target target)
         {
+			
 			conf.CustomBuildForAllSources = new Configuration.FileCustomBuild();
 			conf.CustomBuildForAllSources.CommandLines.Add("..\\..\\..\\Tools\\ShaderCompiler\\build\\shadercompiler.exe /Source:\"%(FullPath)\" /Output:\"\\..\\..\\output\\$(Platform)\\%(Filename).cso\"");
-			//conf.CustomBuildForAllSources.Description = "Compiling shader";
-			//conf.CustomBuildForAllSources.Inputs.Add("%(FullPath)");
+			conf.CustomBuildForAllSources.Description = "Compiling shader";
+			conf.CustomBuildForAllSources.Inputs.Add("%(FullPath)");
 			conf.CustomBuildForAllSources.Outputs.Add(@"\..\..\output\$(Platform)\%(Filename).cso");
 			
             conf.ProjectFileName = "[project.Name]_[target.DevEnv]_[target.Platform]";
@@ -49,13 +69,6 @@ namespace CompileShader
 			conf.Options.Add(Options.Vc.Compiler.FloatingPointModel.Precise);	
 			conf.Options.Add(Options.Vc.General.WarningLevel.Level3);
 			conf.Options.Add(Options.Vc.Compiler.RTTI.Enable);
-			
-			conf.LibraryFiles.Add("d3d11");
-			conf.LibraryFiles.Add("d3dcompiler.lib");
-			conf.LibraryFiles.Add("dxguid.lib");
-				
-            conf.PrecompHeader = "precomp.h";
-            conf.PrecompSource = "precomp.cpp";
         }
 		
 		[Configure()]

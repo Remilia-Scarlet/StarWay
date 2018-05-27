@@ -38,6 +38,7 @@ namespace StarWay
 			conf.AddProject<TinyEngine.TinyEngineProject>(target);
 			conf.AddProject<StarWay.StarWayProject>(target);
 			conf.AddProject<WinLancher.WinLancherProject>(target);
+			conf.AddProject<CompileShader.CompileShaderProject>(target);
         }
 
 		[Configure()]
