@@ -130,18 +130,39 @@ namespace Sharpmake
 
         public void SetParameter(string name, object obj)
         {
-            if (IsCaseSensitive)
-                _parameters[name] = obj;
+            name = SetParameterImpl(name, obj, false);
+        }
+
+        private string SetParameterImpl(string name, object obj, bool scoped)
+        {
+            if (!IsCaseSensitive)
+                name = name.ToLowerInvariant();
+
+            RefCountedSymbol refCountedObject;
+            if (_parameters.TryGetValue(name, out refCountedObject))
+            {
+                if (scoped)
+                    refCountedObject.PushValue(obj);
+                else
+                    refCountedObject.Value = obj;
+            }
             else
-                _parameters[name.ToLower()] = obj;
+            {
+                _parameters.Add(name, new RefCountedSymbol(obj));
+            }
+
+            return name;
         }
 
         public void RemoveParameter(string name)
         {
-            if (IsCaseSensitive)
+            if (!IsCaseSensitive)
+                name = name.ToLowerInvariant();
+
+            RefCountedSymbol refCountedReference = _parameters[name];
+            refCountedReference.PopValue();
+            if (!refCountedReference.HasValue)
                 _parameters.Remove(name);
-            else
-                _parameters.Remove(name.ToLower());
         }
 
         public class ScopedParameter : IDisposable
@@ -152,7 +173,7 @@ namespace Sharpmake
             {
                 _resolver = resolver;
                 _name = name;
-                _resolver.SetParameter(_name, value);
+                _resolver.SetParameterImpl(_name, value, true);
             }
             public void Dispose()
             {
@@ -172,7 +193,7 @@ namespace Sharpmake
                 var names = new List<string>();
                 foreach(var assignment in assignments)
                 {
-                    _resolver.SetParameter(assignment.Identifier, assignment.Value);
+                    _resolver.SetParameterImpl(assignment.Identifier, assignment.Value, true);
                     names.Add(assignment.Identifier);
                 }
 
@@ -215,6 +236,10 @@ namespace Sharpmake
                 return str;
 
             StringBuilder builder = null;
+
+            // Support escape char for MemberPath
+            // [[MyString]] will convert to [MyString]
+            bool containsEscaped = false;
 
             while (true)
             {
@@ -266,7 +291,16 @@ namespace Sharpmake
                         }
                     }
 
-                    if (isValidMember)
+                    // A string is escaped if the _PathBeginStrings/_PathEndStrings char is doubled (ie [[ ]])
+                    // Also make sure that matchTypeIndex is a char, not a string
+                    bool isEscaped = _pathBeginStrings[matchTypeIndex].Length == 1 &&
+                                     memberStartIndex > 1 && endMatch < str.Length - 1 &&
+                                     str[memberStartIndex - 2] == str[memberStartIndex - 1] &&
+                                     str[endMatch] == str[endMatch + 1];
+
+                    containsEscaped |= isEscaped;
+
+                    if (isValidMember && !isEscaped)
                     {
                         string resolveResult = GetMemberStringValue(str.Substring(memberStartIndex, endMatch - memberStartIndex), fallbackValue == null) ?? fallbackValue?.ToString();
                         if (resolveResult == null)
@@ -289,7 +323,7 @@ namespace Sharpmake
                 }
 
                 if (nbrReplacements == 0 && currentSearchIndex == 0)
-                    return str;
+                    break;
 
                 builder.Append(str, currentSearchIndex, strLength - currentSearchIndex);
                 str = builder.ToString();
@@ -297,6 +331,25 @@ namespace Sharpmake
 
                 if (nbrReplacements == 0)
                     break;
+            }
+
+            if (!containsEscaped)
+                return str;
+
+            // Now that we have done all replace, convert all escaped char.
+            foreach (string beginStr in _pathBeginStrings)
+            {
+                if (beginStr.Length != 1)
+                    continue;
+                string escapedStr = beginStr + beginStr;
+                str = str.Replace(escapedStr, beginStr);
+            }
+
+            foreach (char endChar in _pathEndCharacters)
+            {
+                string endStr = string.Empty + endChar;
+                string escapedStr = endStr + endStr;
+                str = str.Replace(escapedStr, endStr);
             }
 
             return str;
@@ -310,9 +363,43 @@ namespace Sharpmake
             Resolved
         };
 
+        private class RefCountedSymbol
+        {
+            private readonly Stack<object> _scopedReferences = new Stack<object>();
+
+            public object Value
+            {
+                get
+                {
+                    return _scopedReferences.Peek();
+                }
+                set
+                {
+                    _scopedReferences.Pop();
+                    _scopedReferences.Push(value);
+                }
+            }
+            public bool HasValue => _scopedReferences.Count > 0;
+
+            public RefCountedSymbol(object symbolValue)
+            {
+                _scopedReferences.Push(symbolValue);
+            }
+
+            public void PushValue(object value)
+            {
+                _scopedReferences.Push(value);
+            }
+
+            public void PopValue()
+            {
+                _scopedReferences.Pop();
+            }
+        }
+
         private Dictionary<string, ResolveStatus> _resolveStatusFields = new Dictionary<string, ResolveStatus>();
         private List<string> _resolvingObjectPath = new List<string>();
-        private Dictionary<string, object> _parameters = new Dictionary<string, object>();
+        private Dictionary<string, RefCountedSymbol> _parameters = new Dictionary<string, RefCountedSymbol>();
         private HashSet<object> _resolvedObject = new HashSet<object>();
 
         public char[] _pathEndCharacters = { ']' };
@@ -398,16 +485,17 @@ namespace Sharpmake
             }
 
             string parameterName = names[0];
-            object parameter = null;
             // get the paramters...
             if (!IsCaseSensitive)
-                parameterName = parameterName.ToLower();
-            if (!_parameters.TryGetValue(parameterName, out parameter))
+                parameterName = parameterName.ToLowerInvariant();
+            RefCountedSymbol refCountedReference;
+            if (!_parameters.TryGetValue(parameterName, out refCountedReference))
             {
                 if (throwIfNotFound)
                     throw new Exception("Cannot resolve parameter " + names[0]);
                 return null;
             }
+            object parameter = refCountedReference.Value;
 
             string name = "";
             for (int i = 1; i < names.Length && parameter != null; ++i)
@@ -511,18 +599,15 @@ namespace Sharpmake
                             SetResolved(memberPath);
                         }
                     }
-                    else if (fieldInfo.FieldType.GetInterface(typeof(IList<string>).Name) != null)
+                    else if (fieldValue is IList<string>)
                     {
                         if (CanWriteFieldValue(fieldInfo))
                         {
                             SetResolving(memberPath);
                             IList<string> values = fieldValue as IList<string>;
 
-                            if (values != null)
-                            {
-                                for (int i = 0; i < values.Count; ++i)
-                                    values[i] = Resolve(values[i], fallbackValue);
-                            }
+                            for (int i = 0; i < values.Count; ++i)
+                                values[i] = Resolve(values[i], fallbackValue);
 
                             SetResolved(memberPath);
                         }
@@ -566,16 +651,14 @@ namespace Sharpmake
 
                             SetResolved(memberPath);
                         }
-                        else if (propertyInfo.PropertyType.GetInterface(typeof(IList<string>).Name) != null)
+                        else if (propertyValue is IList<string>)
                         {
                             SetResolving(memberPath);
                             IList<string> values = propertyValue as IList<string>;
 
-                            if (values != null)
-                            {
-                                for (int i = 0; i < values.Count; ++i)
-                                    values[i] = Resolve(values[i], fallbackValue);
-                            }
+                            for (int i = 0; i < values.Count; ++i)
+                                values[i] = Resolve(values[i], fallbackValue);
+
                             SetResolved(memberPath);
                         }
                         else if (propertyInfo.PropertyType.IsClass)

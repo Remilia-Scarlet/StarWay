@@ -11,25 +11,23 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-using System;
-using System.Xml.Linq;
-
-namespace SimpleNuGet.Impl
+namespace Sharpmake.Generators.VisualStudio
 {
-    internal static class XElementExtensions
+    internal partial class PackagesConfig
     {
-        public static string GetOptionalAttributeValue(this XElement element, string localName, string namespaceName = null)
+        public static class Template
         {
-            XAttribute attr;
-            if (String.IsNullOrEmpty(namespaceName))
-            {
-                attr = element.Attribute(localName);
-            }
-            else
-            {
-                attr = element.Attribute(XName.Get(localName, namespaceName));
-            }
-            return attr != null ? attr.Value : null;
+            public static string Begin =
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>";
+
+            public static string End =
+@"
+</packages>";
+
+            public static string DependenciesItem =
+@"
+  <package id=""[dependency.Name]"" version=""[dependency.Version]"" targetFramework=""[framework]"" />";
         }
     }
 }

@@ -24,7 +24,10 @@ namespace Sharpmake
             public override bool IsPcPlatform => true;
             public IDictionary<DevEnv, string> BinPath { get; set; } = new Dictionary<DevEnv, string>();
             public IDictionary<DevEnv, string> LinkerPath { get; set; } = new Dictionary<DevEnv, string>();
+            public IDictionary<DevEnv, string> LinkerExe { get; set; } = new Dictionary<DevEnv, string>();
+            public IDictionary<DevEnv, string> LibrarianExe { get; set; } = new Dictionary<DevEnv, string>();
             public IDictionary<DevEnv, string> ResCompiler { get; set; } = new Dictionary<DevEnv, string>();
+            public IDictionary<DevEnv, Strings> ExtraFiles { get; set; } = new Dictionary<DevEnv, Strings>();
             #endregion
 
             #region IPlatformVcxproj implementation
@@ -55,16 +58,6 @@ namespace Sharpmake
                 return defines;
             }
             public override bool HasUserAccountControlSupport => true;
-
-            public override IEnumerable<string> GetPlatformLibraryPaths(IGenerationContext context)
-            {
-                var dirs = new List<string>(base.GetPlatformLibraryPaths(context));
-                var dotnet = Util.IsDotNet(context.Configuration) ? context.Configuration.Target.GetFragment<DotNetFramework>() : default(DotNetFramework?);
-                string platformDirsStr = context.DevelopmentEnvironment.GetWindowsLibraryPath(context.Configuration.Platform, dotnet);
-                dirs.AddRange(EnumerateSemiColonSeparatedString(platformDirsStr));
-
-                return dirs;
-            }
 
             public override IEnumerable<string> GetPlatformLibraryFiles(IGenerationContext context)
             {

@@ -20,7 +20,7 @@ namespace Sharpmake
 {
     public static partial class Util
     {
-        public struct FakeFileEntry
+        public class FakeFileEntry
         {
             public string Path { get; set; }
             public int SizeInBytes { get; set; }
@@ -43,7 +43,49 @@ namespace Sharpmake
         public static string FakePathPrefix
         {
             get { return s_fakePathPrefix; }
-            set { s_fakePathPrefix = SimplifyPath(PathMakeStandard(value)); }
+            set { s_fakePathPrefix = SimplifyPath(value); }
+        }
+
+        public static FakeFileEntry GetFakeFile(string path)
+        {
+            if (CountFakeFiles() > 0)
+            {
+                string cleanPath = SimplifyPath(path).Replace(WindowsSeparator, UnixSeparator);
+                string[] fileFullPathParts = cleanPath.Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries);
+                FakeDirEntry dir;
+                string root;
+                if (UsesUnixSeparator)
+                    root = UnixSeparator + fileFullPathParts[0];
+                else
+                    root = fileFullPathParts[0] + WindowsSeparator;
+                if (s_fakeTree.TryGetValue(root, out dir))
+                {
+                    for (int i = 1; i < fileFullPathParts.Length - 1; ++i)
+                    {
+                        if (!dir.Dirs.TryGetValue(fileFullPathParts[i], out dir))
+                            return null;
+                    }
+
+                    FakeFileEntry file;
+                    if (dir.Files.TryGetValue(fileFullPathParts.Last(), out file))
+                        return file;
+                }
+            }
+
+            return null;
+        }
+
+        public static int GetFakeFileLength(string fileFullPath)
+        {
+            return GetFakeFile(fileFullPath)?.SizeInBytes ?? 0;
+        }
+
+        public static bool FileExists(string path)
+        {
+            if (CountFakeFiles() > 0)
+                return GetFakeFile(path) != null;
+
+            return File.Exists(path);
         }
 
         public static void AddNewFakeFile(string fileFullPath, int fileSize)
@@ -64,7 +106,7 @@ namespace Sharpmake
                     currentDir = currentDir.Dirs.GetValueOrAdd(fileFullPathParts[i], new FakeDirEntry(path));
                 }
                 path = Path.Combine(path, fileFullPathParts[fileFullPathParts.Length - 1]);
-                currentDir.Files.Add(fileFullPathParts[fileFullPathParts.Length - 1], new FakeFileEntry { Path = path, SizeInBytes = 0 });
+                currentDir.Files.Add(fileFullPathParts[fileFullPathParts.Length - 1], new FakeFileEntry { Path = path, SizeInBytes = fileSize });
                 ++s_fakeFilesCount;
             }
         }

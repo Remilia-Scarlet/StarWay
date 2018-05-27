@@ -73,11 +73,7 @@ namespace Sharpmake
 
         public static string PathMakeStandard(string path)
         {
-#if __MonoCS__
-            return PathMakeStandard(path, false);
-#else
-            return PathMakeStandard(path, true);
-#endif
+            return PathMakeStandard(path, !Util.IsRunningInMono());
         }
 
         /// <summary>
@@ -412,10 +408,10 @@ namespace Sharpmake
                         }
                         else
                         {
-#if __MonoCS__
-                            if(index == 0 && currentChar == Path.DirectorySeparatorChar && Path.IsPathRooted(path))
+                            if (Util.IsRunningInMono() &&
+                                index == 0 && currentChar == Path.DirectorySeparatorChar && Path.IsPathRooted(path))
                                 pathHelper.Append(currentChar);
-#endif // __MonoCS__
+
                             if (currentChar != Path.DirectorySeparatorChar || pathHelper.Length > 0)
                                 pathHelper.Append(currentChar);
                         }
@@ -548,12 +544,12 @@ namespace Sharpmake
 
         public static string PathGetAbsolute(string absolutePath, string relativePath)
         {
+            if (string.IsNullOrEmpty(relativePath))
+                return absolutePath;
+
             // Handle environment variables and string that contains more than 1 path
             if (relativePath.StartsWith("$", StringComparison.Ordinal) || relativePath.Count(x => x == ';') > 1)
                 return relativePath;
-
-            if (string.IsNullOrEmpty(relativePath))
-                return absolutePath;
 
             string cleanRelative = SimplifyPath(relativePath);
             if (Path.IsPathRooted(cleanRelative))
@@ -853,7 +849,7 @@ namespace Sharpmake
 
         public static void LogWrite(string msg, params object[] args)
         {
-            string message = string.Format(msg, args);
+            string message = args.Length > 0 ? string.Format(msg, args) : msg;
 
             Console.WriteLine(message);
             if (Debugger.IsAttached)
@@ -863,11 +859,13 @@ namespace Sharpmake
         public static List<string> FilesAlternatesAutoCleanupDBSuffixes = new List<string>(); // The alternates db suffixes using by other context
         public static string FilesAutoCleanupDBPath = string.Empty;
         public static string FilesAutoCleanupDBSuffix = string.Empty;   // Current auto-cleanup suffix for the database.
+        internal static bool s_forceFilesCleanup = false;
+        internal static string s_overrideFilesAutoCleanupDBPath;
         public static bool FilesAutoCleanupActive = false;
         public static TimeSpan FilesAutoCleanupDelay = TimeSpan.Zero;
         public static HashSet<string> FilesToBeExplicitlyRemovedFromDB = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
         public static HashSet<string> FilesAutoCleanupIgnoredEndings = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-        private static readonly string s_filesAutoCleanupDBPrefix = "sharpmakeautocleanupdb";
+        private const string s_filesAutoCleanupDBPrefix = "sharpmakeautocleanupdb";
         private enum DBVersion { Version = 2 };
 
         private static Dictionary<string, DateTime> ReadCleanupDatabase(string databaseFilename)
@@ -912,7 +910,10 @@ namespace Sharpmake
 
         private static string GetDatabaseFilename(string dbSuffix)
         {
-            string databaseFilename = Path.Combine(FilesAutoCleanupDBPath, string.Format(@"{0}{1}{2}", s_filesAutoCleanupDBPrefix, dbSuffix, ".bin"));
+            if (!string.IsNullOrWhiteSpace(s_overrideFilesAutoCleanupDBPath))
+                return s_overrideFilesAutoCleanupDBPath;
+
+            string databaseFilename = Path.Combine(FilesAutoCleanupDBPath, $"{s_filesAutoCleanupDBPrefix}{dbSuffix}.bin");
             return databaseFilename;
         }
 
@@ -941,11 +942,11 @@ namespace Sharpmake
         /// </example>
         public static void ExecuteFilesAutoCleanup()
         {
-            if (!FilesAutoCleanupActive)
+            if (!FilesAutoCleanupActive && !s_forceFilesCleanup)
                 return; // Auto cleanup not active. Nothing to do.
 
-            if (!Directory.Exists(FilesAutoCleanupDBPath))
-                throw new Exception(string.Format("Unable to find directory {0} used to store auto-cleanup database. Is proper path set?", FilesAutoCleanupDBPath));
+            if (string.IsNullOrWhiteSpace(s_overrideFilesAutoCleanupDBPath) && !Directory.Exists(FilesAutoCleanupDBPath))
+                throw new Exception($"Unable to find directory {FilesAutoCleanupDBPath} used to store auto-cleanup database. Is proper path set?");
 
             string databaseFilename = GetDatabaseFilename(FilesAutoCleanupDBSuffix);
             Dictionary<string, DateTime> dbFiles = ReadCleanupDatabase(databaseFilename);
@@ -968,6 +969,20 @@ namespace Sharpmake
                 DateTime now = DateTime.Now;
                 foreach (KeyValuePair<string, DateTime> filenameDate in dbFiles)
                 {
+                    if (s_forceFilesCleanup)
+                    {
+                        if (!File.Exists(filenameDate.Key))
+                            continue;
+ 
+                        LogWrite(@"Force deleting '{0}'", filenameDate.Key);
+                        if (!TryDeleteFile(filenameDate.Key, removeIfReadOnly:true))
+                        {
+                            // Failed to delete the file... Keep it for now... Maybe later we will be able to delete it!
+                            LogWrite(@"Failed to delete '{0}'", filenameDate.Key);
+                        }
+                        continue;
+                    }
+
                     if (newDbFiles.ContainsKey(filenameDate.Key))
                         continue;
 
@@ -1013,18 +1028,25 @@ namespace Sharpmake
                 }
             }
 
-            // Write database.            
-            using (Stream writeStream = new FileStream(databaseFilename, FileMode.Create, FileAccess.Write, FileShare.None))
-            using (BinaryWriter binWriter = new BinaryWriter(writeStream))
+            // Write database if needed
+            if (newDbFiles.Count > 0)
             {
-                // Write version number
-                int version = (int)DBVersion.Version;
-                binWriter.Write(version);
-                binWriter.Flush();
+                using (Stream writeStream = new FileStream(databaseFilename, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (BinaryWriter binWriter = new BinaryWriter(writeStream))
+                {
+                    // Write version number
+                    int version = (int)DBVersion.Version;
+                    binWriter.Write(version);
+                    binWriter.Flush();
 
-                // Write the list of files.
-                IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(writeStream, newDbFiles);
+                    // Write the list of files.
+                    IFormatter formatter = new BinaryFormatter();
+                    formatter.Serialize(writeStream, newDbFiles);
+                }
+            }
+            else
+            {
+                TryDeleteFile(databaseFilename);
             }
         }
 
@@ -1069,11 +1091,22 @@ namespace Sharpmake
             return null;
         }
 
-        public static bool TryDeleteFile(string filename)
+        public static bool TryDeleteFile(string filename, bool removeIfReadOnly = false)
         {
             try
             {
-                File.Delete(filename);
+                var fileInfo = new FileInfo(filename);
+                if (fileInfo.Exists)
+                {
+                    if (fileInfo.IsReadOnly)
+                    {
+                        if (!removeIfReadOnly)
+                            return false;
+                        fileInfo.IsReadOnly = false;
+                    }
+                    File.Delete(filename);
+                }
+
                 return true;
             }
             catch (Exception)
@@ -1082,7 +1115,7 @@ namespace Sharpmake
             }
         }
 
-        public static StackFrame GetStackFrameTopMostTypeOf(Type type)
+        public static StackFrame GetStackFrameTopMostTypeOf(Type type, bool allowEmptyFileName = true)
         {
             if (type.IsGenericType)
             {
@@ -1096,7 +1129,8 @@ namespace Sharpmake
             {
                 StackFrame stackFrame = stackTrace.GetFrame(i);
                 MethodBase method = stackFrame.GetMethod();
-                if (method.DeclaringType == type)
+
+                if (method.DeclaringType == type && (allowEmptyFileName || !string.IsNullOrEmpty(stackFrame.GetFileName())))
                     return stackFrame;
             }
             return null;
@@ -1104,7 +1138,12 @@ namespace Sharpmake
 
         public static bool GetStackSourceFileTopMostTypeOf(Type type, out string sourceFile)
         {
-            StackFrame projectStackframe = GetStackFrameTopMostTypeOf(type);
+            // If the sought StackFrame was found, don't return it if its associated file name is unknown.
+            // This could happen in Mono when Sharpmake is invoked with /generateDebugSolution. In that case,
+            // sharpmake_sharpmake's ctor would be looked up and found in the call stack, but the StackFrame would
+            // refer to a null file name. On Windows, however, sharpmake_sharpmake's ctor simply does not appear in
+            // the call stack (as though its call is implicit or omitted)...
+            StackFrame projectStackframe = GetStackFrameTopMostTypeOf(type, allowEmptyFileName: false);
             if (projectStackframe != null)
             {
                 sourceFile = projectStackframe.GetFileName();
@@ -1507,6 +1546,8 @@ namespace Sharpmake
                 extension = ".csproj";
             else if (conf.Project is PythonProject)
                 extension = ".pyproj";
+            else if (conf.Project is AndroidPackageProject)
+                extension = ".androidproj";
             else
             {
                 switch (conf.Target.GetFragment<DevEnv>())
@@ -1539,7 +1580,6 @@ namespace Sharpmake
 
         public static string GetAppxManifestFileName(Project.Configuration conf)
         {
-            Debug.Assert(conf.NeedsAppxManifestFile);
             return Path.GetFullPath(PathMakeStandard(conf.AppxManifestFilePath));
         }
 
@@ -1715,11 +1755,12 @@ namespace Sharpmake
         /// <returns></returns>
         public static string ReplaceHeadPath(this string fullInputPath, string inputHeadPath, string replacementHeadPath)
         {
-            if (!string.IsNullOrEmpty(inputHeadPath) &&
-                inputHeadPath[inputHeadPath.Length - 1] != Path.DirectorySeparatorChar)
-            {
-                inputHeadPath += Path.DirectorySeparatorChar;
-            }
+            // Normalize paths before comparing and combining them, to prevent false mismatch between '\\' and '/'.
+            fullInputPath = Util.PathMakeStandard(fullInputPath, false);
+            inputHeadPath = Util.PathMakeStandard(inputHeadPath, false);
+            replacementHeadPath = Util.PathMakeStandard(replacementHeadPath, false);
+
+            inputHeadPath = EnsureTrailingSeparator(inputHeadPath);
 
             if (!fullInputPath.StartsWith(inputHeadPath, StringComparison.OrdinalIgnoreCase))
             {
@@ -1819,5 +1860,9 @@ namespace Sharpmake
                 return result;
             }
         }
+
+        // http://www.mono-project.com/docs/faq/technical/#how-can-i-detect-if-am-running-in-mono
+        private static readonly bool s_monoRuntimeExists = (Type.GetType("Mono.Runtime") != null);
+        public static bool IsRunningInMono() => s_monoRuntimeExists;
     }
 }

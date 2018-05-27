@@ -24,6 +24,7 @@ namespace Sharpmake
     {
         [PlatformImplementation(Platform.win64,
             typeof(IPlatformDescriptor),
+            typeof(Project.Configuration.IConfigurationTasks),
             typeof(IFastBuildCompilerSettings),
             typeof(IWindowsFastBuildCompilerSettings),
             typeof(IPlatformBff),
@@ -53,14 +54,6 @@ namespace Sharpmake
                 string projectRootPath
             )
             {
-                var fastBuildCompilerSettings = PlatformRegistry.Get<IWindowsFastBuildCompilerSettings>(Platform.win64);
-                if (!fastBuildCompilerSettings.BinPath.ContainsKey(devEnv))
-                    fastBuildCompilerSettings.BinPath.Add(devEnv, devEnv.GetVisualStudioBinPath(Platform.win64));
-                if (!fastBuildCompilerSettings.LinkerPath.ContainsKey(devEnv))
-                    fastBuildCompilerSettings.LinkerPath.Add(devEnv, fastBuildCompilerSettings.BinPath[devEnv]);
-                if (!fastBuildCompilerSettings.ResCompiler.ContainsKey(devEnv))
-                    fastBuildCompilerSettings.ResCompiler.Add(devEnv, devEnv.GetWindowsResourceCompiler(Platform.win64));
-
                 CompilerSettings compilerSettings = GetMasterCompilerSettings(masterCompilerSettings, compilerName, rootPath, devEnv, projectRootPath, false);
                 compilerSettings.PlatformFlags |= Platform.win64;
                 SetConfiguration(compilerSettings.Configurations, string.Empty, projectRootPath, devEnv, false);
@@ -83,7 +76,12 @@ namespace Sharpmake
                 }
                 else
                 {
-                    string pathToCompiler = devEnv.GetVisualStudioBinPath(Platform.win64).ReplaceHeadPath(rootPath, "$RootPath$");
+                    string pathToCompiler = devEnv.GetVisualStudioBinPath(Platform.win64);
+                    if (pathToCompiler.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        string rootRelative = pathToCompiler.Substring(rootPath.Length).TrimStart(Util._pathSeparators);
+                        pathToCompiler = Path.Combine("$RootPath$", rootRelative);
+                    }
 
                     Strings extraFiles = new Strings();
 
@@ -168,7 +166,7 @@ namespace Sharpmake
 
                                 try
                                 {
-                                    foreach (string p in Directory.EnumerateFiles(systemDllPath, "api-ms-win-*.dll"))
+                                    foreach (string p in Util.DirectoryGetFiles(systemDllPath, "api-ms-win-*.dll"))
                                         extraFiles.Add(p);
                                 }
                                 catch { }
@@ -194,21 +192,46 @@ namespace Sharpmake
                 if (!configurations.ContainsKey(configName))
                 {
                     var fastBuildCompilerSettings = PlatformRegistry.Get<IWindowsFastBuildCompilerSettings>(Platform.win64);
-                    string binPath = fastBuildCompilerSettings.BinPath[devEnv];
-                    string linkerPath = fastBuildCompilerSettings.LinkerPath[devEnv];
-                    string resCompiler = fastBuildCompilerSettings.ResCompiler[devEnv];
-                    configurations.Add(configName,
+                    string binPath;
+                    if (!fastBuildCompilerSettings.BinPath.TryGetValue(devEnv, out binPath))
+                        binPath = devEnv.GetVisualStudioBinPath(Platform.win64);
+
+                    string linkerPath;
+                    if (!fastBuildCompilerSettings.LinkerPath.TryGetValue(devEnv, out linkerPath))
+                        linkerPath = binPath;
+
+                    string linkerExe;
+                    if (!fastBuildCompilerSettings.LinkerExe.TryGetValue(devEnv, out linkerExe))
+                        linkerExe = "link.exe";
+
+                    string librarianExe;
+                    if (!fastBuildCompilerSettings.LibrarianExe.TryGetValue(devEnv, out librarianExe))
+                        librarianExe = "lib.exe";
+
+                    string resCompiler;
+                    if (!fastBuildCompilerSettings.ResCompiler.TryGetValue(devEnv, out resCompiler))
+                        resCompiler = devEnv.GetWindowsResourceCompiler(Platform.win64);
+
+                    configurations.Add(
+                        configName,
                         new CompilerSettings.Configuration(
                             Platform.win64,
                             binPath: Util.GetCapitalizedPath(Util.PathGetAbsolute(projectRootPath, binPath)),
                             linkerPath: Util.GetCapitalizedPath(Util.PathGetAbsolute(projectRootPath, linkerPath)),
                             resourceCompiler: Util.GetCapitalizedPath(Util.PathGetAbsolute(projectRootPath, resCompiler)),
-                            librarian: @"$LinkerPath$\lib.exe",
-                            linker: @"$LinkerPath$\link.exe"
+                            librarian: Path.Combine(@"$LinkerPath$", librarianExe),
+                            linker: Path.Combine(@"$LinkerPath$", linkerExe)
                         )
                     );
 
-                    configurations.Add(".win64ConfigMasm", new CompilerSettings.Configuration(Platform.win64, compiler: @"$BinPath$\ml64.exe", usingOtherConfiguration: @".win64Config"));
+                    configurations.Add(
+                        ".win64ConfigMasm",
+                        new CompilerSettings.Configuration(
+                            Platform.win64,
+                            compiler: @"$BinPath$\ml64.exe",
+                            usingOtherConfiguration: @".win64Config"
+                        )
+                    );
                 }
             }
             #endregion

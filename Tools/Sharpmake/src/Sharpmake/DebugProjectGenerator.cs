@@ -62,13 +62,21 @@ namespace Sharpmake
             List<string> allsources = assembler.GetSourceFiles(MainSources);
 
             var references = new HashSet<string>();
+            if (assembler.UseDefaultReferences)
+            {
+                foreach (string defaultReference in Assembler.DefaultReferences)
+                    references.Add(Assembler.GetAssemblyDllPath(defaultReference));
+            }
+
             foreach (var assemblerRef in assembler.References)
                 references.Add(assemblerRef);
 
             // find all folders and create associated projects types
             foreach (var source in allsources)
             {
-                string dir = Path.GetDirectoryName(source)?.ToLower();
+                string dir = Path.GetDirectoryName(source);
+                if (!string.IsNullOrEmpty(dir))
+                    dir = Util.PathMakeStandard(dir);
 
                 var existing = DebugProjects.FirstOrDefault(dp => dir.Contains(dp.Value.ProjectFolder));
                 if (existing.Equals(default(KeyValuePair<Type, ProjectContent>)))
@@ -121,7 +129,7 @@ namespace Sharpmake
         private static string s_sharpmakeGeneratorDllPath;
         private static string s_sharpmakeApplicationExePath;
         private static bool s_useLocalSharpmake = false;
-        private static readonly Regex s_assemblyVersionRegex = new Regex(@"(.*) \((.*)\)", RegexOptions.Compiled);
+        private static readonly Regex s_assemblyVersionRegex = new Regex(@"([^\s]+)(?:\s*\((.+)\))?", RegexOptions.Compiled);
 
         /// <summary>
         /// Add references to Sharpmake to given configuration.
@@ -141,7 +149,9 @@ namespace Sharpmake
 
                 s_sharpmakePackageVersion = match.Groups[1].Value;
                 string assemblyProductVariation = match.Groups[2].Value;
-                s_sharpmakePackageName = $"{assemblyProductName}-{assemblyProductVariation}";
+                s_sharpmakePackageName = $"{assemblyProductName}";
+                if (!string.IsNullOrWhiteSpace(assemblyProductVariation))
+                    s_sharpmakePackageName += $"-{assemblyProductVariation}";
 
                 if (assemblyProductVariation == "LocalBuild")
                 {
@@ -153,7 +163,16 @@ namespace Sharpmake
                 }
 
                 s_sharpmakeApplicationExePath = Process.GetCurrentProcess().MainModule.FileName;
+
+                if (Util.IsRunningInMono())
+                {
+                    // When running within Mono, s_sharpmakeApplicationExePath will at this point wrongly refer to the
+                    // mono (or mono-sgen) executable. Fix it so that it points to Sharpmake.Application.exe.
+                    s_sharpmakeApplicationExePath = $"{AppDomain.CurrentDomain.BaseDirectory}{AppDomain.CurrentDomain.FriendlyName}";
+                }
             }
+
+            conf.ReferencesByPath.Add(Assembler.DefaultReferences);
 
             if (s_useLocalSharpmake)
             {
@@ -172,7 +191,8 @@ namespace Sharpmake
         {
             conf.CsprojUserFile = new Project.Configuration.CsprojUserFileSettings();
             conf.CsprojUserFile.StartAction = Project.Configuration.CsprojUserFileSettings.StartActionSetting.Program;
-            conf.CsprojUserFile.StartArguments = $@"/sources(@""{string.Join(";", MainSources)}"")";
+            string quote = Util.IsRunningInMono() ? @"\""" : @""""; // When running in Mono, we must escape "
+            conf.CsprojUserFile.StartArguments = $@"/sources(@{quote}{string.Join(";", MainSources)}{quote})";
             conf.CsprojUserFile.StartProgram = s_sharpmakeApplicationExePath;
         }
     }

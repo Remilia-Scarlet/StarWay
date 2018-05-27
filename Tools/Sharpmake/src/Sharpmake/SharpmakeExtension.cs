@@ -11,24 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-using System.Collections.Generic;
-using SimpleNuGet;
 
-namespace SimpleNuGet
+using System;
+
+namespace Sharpmake
 {
     /// <summary>
-    /// Dependency between packages
+    /// Marks a .NET assembly as a host of Sharpmake extension types (platform implementations for Sharpmake generators, builder...).
     /// </summary>
-    public interface INuGetDependency
-    {
-        /// <summary>
-        /// The package ID of the dependency.
-        /// </summary>
-        string Name { get; }
-
-        /// <summary>
-        /// The range of versions acceptable as a dependency. See Dependency versions for exact syntax.
-        /// </summary>
-        VersionRange VersionRange { get; }
-    }
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public class SharpmakeExtensionAttribute : Attribute { }
 }

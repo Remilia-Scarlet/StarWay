@@ -54,6 +54,11 @@ namespace Sharpmake.Generators.VisualStudio
     <ProjectTypeGuids>[projectTypeGuids]</ProjectTypeGuids>
     <PublishUrl>[options.PublishUrl]</PublishUrl>
     <InstallUrl>[options.InstallUrl]</InstallUrl>
+    <ManifestKeyFile>[options.ManifestKeyFile]</ManifestKeyFile>
+    <ManifestCertificateThumbprint>[options.ManifestCertificateThumbprint]</ManifestCertificateThumbprint>
+    <GenerateManifests>[options.GenerateManifests]</GenerateManifests>
+    <SignManifests>[options.SignManifests]</SignManifests>
+    <UseVSHostingProcess>[options.UseVSHostingProcess]</UseVSHostingProcess>
     <ProductName>[options.ProductName]</ProductName>
     <PublisherName>[options.PublisherName]</PublisherName>
     <WebPage>[options.WebPage]</WebPage>
@@ -120,6 +125,13 @@ namespace Sharpmake.Generators.VisualStudio
 ";
                 public static string ImportProjectItem =
 @"  <Import Project=""[importProject]"" Condition=""[importCondition]""/>
+";
+
+                public static string VsixConfiguration =
+@"  <PropertyGroup>
+    <VSToolsPath Condition=""'$(VSToolsPath)' == ''"">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <UseCodebase>true</UseCodebase>
+  </PropertyGroup>
 ";
 
                 public static string ProjectConfigurationsPreBuildEvent =
@@ -420,6 +432,9 @@ namespace Sharpmake.Generators.VisualStudio
 ";
                 public static string Private =
 @"      <Private>[private]</Private>
+";
+                public static string EmbedInteropTypes =
+@"      <EmbedInteropTypes>[embedInteropTypes]</EmbedInteropTypes>
 ";
                 public static string ReferenceOutputAssembly =
 @"      <ReferenceOutputAssembly>[ReferenceOutputAssembly]</ReferenceOutputAssembly>

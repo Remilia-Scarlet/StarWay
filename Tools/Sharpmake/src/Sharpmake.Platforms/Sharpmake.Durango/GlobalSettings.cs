@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using System;
 using System.IO;
 
 namespace Sharpmake
@@ -115,10 +116,39 @@ namespace Sharpmake
             }
 
             /// <summary>
-            /// XdkEditionRootVS2015
-            /// Allows overwriting the MSBuild files used. If unset, default points to "C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Platforms\Durango\"
+            /// EnableLegacyXdkHeaders to use VS2015 include and libraries on VS2017.
             /// </summary>
-            public static string XdkEditionRootVS2015 { get; set; } = null;
+            internal const int _feb2018XdkEditionTarget = 180200;
+            private static bool? s_enableLegacyXdkHeaders = null;
+            public static bool EnableLegacyXdkHeaders
+            {
+                get
+                {
+                    if (s_enableLegacyXdkHeaders == null)
+                    {
+                        int xdkEdition;
+                        s_enableLegacyXdkHeaders = Util.TryParseXdkEditionTarget(XdkEditionTarget, out xdkEdition) && xdkEdition < _feb2018XdkEditionTarget;
+                    }
+
+                    return s_enableLegacyXdkHeaders.Value;
+                }
+
+                set
+                {
+                    int xdkEdition;
+                    if(!Util.TryParseXdkEditionTarget(XdkEditionTarget, out xdkEdition) || xdkEdition < _feb2018XdkEditionTarget)
+                        throw new NotSupportedException(nameof(EnableLegacyXdkHeaders) + $" is not yet supported with '{xdkEdition}'");
+
+                    s_enableLegacyXdkHeaders = value;
+                }
+            }
+
+            [Obsolete("Please use MSBuildGlobalSettings.GetCppPlatformFolder(DevEnv.vs2015, Platform.durango) and MSBuildGlobalSettings.SetCppPlatformFolder(DevEnv.vs2015, Platform.durango, value) instead")]
+            public static string XdkEditionRootVS2015
+            {
+                get { return MSBuildGlobalSettings.GetCppPlatformFolder(DevEnv.vs2015, Platform.durango); }
+                set { MSBuildGlobalSettings.SetCppPlatformFolder(DevEnv.vs2015, Platform.durango, value); }
+            }
         }
     }
 }

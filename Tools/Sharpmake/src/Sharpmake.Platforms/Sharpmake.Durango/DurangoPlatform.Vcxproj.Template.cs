@@ -26,6 +26,8 @@ namespace Sharpmake
     <TargetPlatformIdentifier>[targetPlatformIdentifier]</TargetPlatformIdentifier>
     <TargetPlatformSdkPath>[targetPlatformSdkPath]</TargetPlatformSdkPath>
     <XdkEditionRootVS2015>[xdkEditionRootVS2015]</XdkEditionRootVS2015>
+    <XdkEditionRootVS2017>[xdkEditionRootVS2017]</XdkEditionRootVS2017>
+    <EnableLegacyXdkHeaders>[enableLegacyXdkHeaders]</EnableLegacyXdkHeaders>
     <GameOSFilePath>[gameOSFilePath]</GameOSFilePath>
     <SDKReferenceDirectoryRoot>[sdkReferenceDirectoryRoot]</SDKReferenceDirectoryRoot>
 ";
@@ -36,7 +38,7 @@ namespace Sharpmake
       <CompileAsWinRT>[options.CompileAsWinRT]</CompileAsWinRT>
       <WarningLevel>[options.WarningLevel]</WarningLevel>
       <Optimization>[options.Optimization]</Optimization>
-      <PreprocessorDefinitions>[options.PreprocessorDefinitions];$(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>[options.PreprocessorDefinitions];%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>[options.AdditionalIncludeDirectories]</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(Console_SdkPackagesRoot);$(Console_SdkWindowsMetadataPath);%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <DebugInformationFormat>[options.DebugInformationFormat]</DebugInformationFormat>

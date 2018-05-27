@@ -15,9 +15,9 @@ namespace Sharpmake.Generators.VisualStudio
 {
     public partial class Vcxproj
     {
-        internal static partial class Template
+        public static partial class Template
         {
-            internal static class Project
+            public static class Project
             {
                 public static string ProjectBegin =
                 @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -59,21 +59,28 @@ namespace Sharpmake.Generators.VisualStudio
     [vc11TargetsPath]
 ";
 
-                public static string ProjectDescriptionEnd =
-@"  </PropertyGroup>
-  <Import Project=""$(VCTargetsPath)\Microsoft.Cpp.Default.props"" />
+                public static string ProjectDescriptionStartPlatformConditional =
+    @"  <PropertyGroup Label=""Globals"" Condition=""'$(Platform)'=='[platformName]'"">
 ";
 
-                public static string CustomPropertiesStart =
+                public static string ProjectDescriptionEnd =
+@"  </PropertyGroup>
+";
+
+                public static string ImportCppDefaultProps = 
+@"  <Import Project=""$(VCTargetsPath)\Microsoft.Cpp.Default.props"" />
+";
+
+                public static string PropertyGroupStart =
                 @"  <PropertyGroup>
+";
+
+                public static string PropertyGroupEnd =
+                @"  </PropertyGroup>
 ";
 
                 public static string CustomProperty =
                 @"    <[custompropertyname]>[custompropertyvalue]</[custompropertyname]>
-";
-
-                public static string CustomPropertiesEnd =
-                @"  </PropertyGroup>
 ";
 
                 public static string ProjectEnd =

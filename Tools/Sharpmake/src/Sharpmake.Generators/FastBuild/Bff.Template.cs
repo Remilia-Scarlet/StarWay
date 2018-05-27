@@ -135,6 +135,7 @@ Compiler( '[fastbuildCompilerName]' )
                             + ' [cmdLineOptions.HeapCommitSize]'
                             + ' [cmdLineOptions.StackReserveSize]'
                             + ' [cmdLineOptions.StackCommitSize]'
+                            + ' [cmdLineOptions.AllowIsolation]'
                             + ' [cmdLineOptions.LargeAddressAware]'
                             // Optimization
                             // ---------------------------
@@ -211,7 +212,8 @@ Compiler( '[fastbuildCompilerName]' )
                 public static string CompilerOptionsCommon = @"
     .CompilerInputUnity       = '[fastBuildUnityName]'
     .CompilerOutputPath       = '$Intermediate$'
-    .CompilerInputPath        = '[fastBuildInputPath]'
+    .CompilerInputPath        = [fastBuildInputPath]
+    .CompilerInputPattern     = [fastBuildCompilerInputPattern]
     .CompilerInputExcludedFiles = [fastBuildInputExcludedFiles]
     .CompilerInputFiles       = [fastBuildSourceFiles]
 
@@ -241,8 +243,7 @@ Compiler( '[fastbuildCompilerName]' )
 ";
 
                 public static string LibrarianAdditionalInputs = @"
-    .LibrarianAdditionalInputs = { [fastBuildLibrarianAdditionalInputs]
-                                 }
+    .LibrarianAdditionalInputs = [fastBuildLibrarianAdditionalInputs]
 ";
 
                 public static string LibrarianOptions = @"
@@ -312,6 +313,7 @@ Compiler( '[fastbuildCompilerName]' )
             + ' [cmdLineOptions.ForceConformanceInForLoopScope]'
             + ' [cmdLineOptions.RuntimeTypeInfo]'
             + ' [cmdLineOptions.OpenMP]'
+            + ' [cmdLineOptions.LanguageStandard]'
             // Output Files options
             // ---------------------------
             + ' [cmdLineOptions.CompilerProgramDatabaseFile]'
@@ -393,8 +395,7 @@ Library( '[fastBuildOutputFileShortName]_[fastBuildOutputType]' )
 //=================================================================================================================
 Alias( '[fastBuildOutputFileShortName]' )
 {
-    .Targets = { [fastBuildTargetSubTargets]
-               }
+    .Targets = [fastBuildTargetSubTargets]
 }
 
 ";
@@ -484,7 +485,7 @@ Exec( '[fastBuildPreBuildName]' )
                 public static string UnitySection = @"
 Unity( '[unityFile.UnityName]' )
 {
-    .UnityInputPath                     = '[unityFile.UnityInputPath]'
+    .UnityInputPath                     = [unityFile.UnityInputPath]
     .UnityInputExcludePath              = [unityFile.UnityInputExcludePath]
     .UnityInputExcludePattern           = '[unityFile.UnityInputExcludePattern]'
     .UnityInputPattern                  = '[unityFile.UnityInputPattern]'
@@ -520,6 +521,14 @@ Alias( 'All-Configs' )
     .Targets =
     [fastBuildConfigs]
 }
+";
+
+                public static string IncludeMasterBff = @"
+//=================================================================================================================
+// Entry BFF for [solutionFileName]
+//=================================================================================================================
+#once
+#include ""[masterBffFilePath]""
 ";
             }
         }

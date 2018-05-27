@@ -8,11 +8,15 @@
 import os.path
 import sys
 
+if os.name != "nt":
+    import select
+
 class Test:
     def __init__(self, directory, script_name, project_root = ""):
         self.directory = directory
         self.assembly = directory + ".dll" # same name as the directory for now
         self.script_name = script_name
+        self.use_mono = os.name == "posix"
         if project_root == "":
             self.project_root = directory
         else:
@@ -35,16 +39,22 @@ class Test:
             remaproot = "/remaproot(@\"{}\")".format(self.project_root)
             test = "/test(@\"Regression\")"
             verbose = "/verbose"
-            args = "\"{} {} {} {} {} {}\"".format(
+
+            args = [
                 sources if as_source else assemblies,
                 referencedir,
                 outputdir,
                 remaproot,
                 test,
                 verbose
-            )
+            ]
 
-            cmd_line = "{} {}".format(sharpmake_path, args)
+            if self.use_mono:
+                args_string = "\" \"".join([arg.replace('"','\\"') for arg in args])
+                cmd_line = "mono --debug {} \"{}\"".format(sharpmake_path, args_string)
+            else:
+                cmd_line = "{} \"{}\"".format(sharpmake_path, " ".join(args))
+
             return os.system(cmd_line)
 
         except:
@@ -60,11 +70,12 @@ tests = [
     Test("HelloWorld", "HelloWorld.sharpmake.cs"),
     Test("CSharpVsix", "CSharpVsix.sharpmake.cs"),
     Test("PackageReferences", "PackageReferences.sharpmake.cs"),
+    Test("QTFileCustomBuild", "QTFileCustomBuild.sharpmake.cs"),
     Test("SharpmakeGen", "SharpmakeGen.sharpmake.cs", "..")
 ]
 
 def find_target_path(directory, target):
-    optim_tokens = ["Debug", "Release"]
+    optim_tokens = ["debug", "release"]
     for optim_token in optim_tokens:
         path = os.path.abspath(os.path.join(directory, "bin", optim_token, target))
         if os.path.isfile(path):
@@ -78,16 +89,40 @@ def write_line(str):
 
 # Those are not cross-platform!
 def red_bg():
-    os.system("color 4F")
+    if os.name == "nt":
+        os.system("color 4F")
 
 def green_bg():
-    os.system("color 2F")
+    if os.name == "nt":
+        os.system("color 2F")
 
 def pause(timeout=None):
     if timeout is None:
-        os.system("pause")
+        input("Press any key to continue . . .")
     else:
-        os.system("timeout /t 5")
+        timeoutSeconds = int(timeout) if int(timeout) > 0 else 5
+        if os.name == "nt":
+            os.system("timeout /t " + str(timeoutSeconds))
+        else:
+            stop_waiting = False
+            for s in range(0, timeout):
+                if stop_waiting:
+                    break
+
+                display = "Waiting for " + str(timeoutSeconds - s) + " seconds, press a key to continue ..."
+                sys.stdout.write("\r" + display)
+                sys.stdout.flush()
+
+                poll_frequency = 100 # ms
+                for ms in range(0, int(1000/poll_frequency)):
+                    i,o,e = select.select([sys.stdin],[],[],poll_frequency/1000)
+                    for s in i:
+                        if s == sys.stdin:
+                            sys.stdin.readline()
+                            stop_waiting = True
+                            break
+                    if stop_waiting:
+                        break
 
 def launch_tests():
     entry_path = os.getcwd()
@@ -120,4 +155,5 @@ def launch_tests():
     finally:
         os.chdir(entry_path)
 
-launch_tests()
+exit_code = launch_tests()
+sys.exit(exit_code)
