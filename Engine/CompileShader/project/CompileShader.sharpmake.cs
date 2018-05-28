@@ -55,12 +55,12 @@ namespace CompileShader
 			foreach (String name in hlslFiles)
 			{
                 Project.Configuration.CustomFileBuildStep cus = new Project.Configuration.CustomFileBuildStep();
-                cus.Description = "Compilling shader";
-                cus.Output = @"[project.SharpmakeCsPath]\..\..\..\output\$(Platform)\%(Filename).cso";
-                cus.AdditionalInputs.Add(@"[project.SharpmakeCsPath]\..\shader\common.h");
+                cus.Description = "Compilling shader %(Filename)%(Extension)";
+                cus.Output = @"..\..\..\output\$(Platform)\%(Filename).cso";
+                cus.AdditionalInputs.Add(@"..\shader\common.h");
                 cus.KeyInput = name;
-				cus.Executable = @"[project.SharpmakeCsPath]\..\..\..\Tools\ShaderCompiler\build\shadercompiler.exe";
-				cus.ExecutableArguments = "/Source:\"%(FullPath)\" /Output:\"[project.SharpmakeCsPath]\\..\\..\\..\\output\\[target.Platform]\\%(Filename).cso\"";
+				cus.Executable = @"..\..\..\Tools\ShaderCompiler\build\shadercompiler.exe";
+				cus.ExecutableArguments = "/Source:\"%(FullPath)\" /Output:\"" + cus.Output + "\"";
 				foreach (Sharpmake.Project.Configuration conf in this.Configurations)
 				{
 					conf.CustomFileBuildSteps.Add(cus);

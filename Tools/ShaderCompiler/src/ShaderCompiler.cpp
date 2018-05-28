@@ -37,9 +37,9 @@ int ShaderCompiler::run(const std::string& cmdLine)
 	Path sourcePath(_cmdLine.getSource());
 	std::string fileName = sourcePath.getFileName();
 	std::string shaderType;
-	if (fileName.find("_PS") != -1)
+	if (fileName.find("_ps") != -1)
 		shaderType = "ps";
-	else if (fileName.find("_VS") != -1)
+	else if (fileName.find("_vs") != -1)
 		shaderType = "vs";
 	
 	Path fxcPath("game:fxc.exe");
@@ -47,6 +47,8 @@ int ShaderCompiler::run(const std::string& cmdLine)
 
 	std::string param = std::string("\"") + cmd + std::string("\" /T ") + shaderType + "_5_0 /E main /O3 /Zi /Fo \"" + _cmdLine.getOutput() + "\" /nologo \"" + _cmdLine.getSource() + "\" ";
 
+	Path output(_cmdLine.getOutput());
+	output.getParentDirectory().createDirectory();
 
 	STARTUPINFO si;
 	memset(&si, 0, sizeof(STARTUPINFO));
