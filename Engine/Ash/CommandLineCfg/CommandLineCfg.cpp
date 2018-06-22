@@ -14,7 +14,7 @@ bool CommandLineCfg::init(const char* commandLine)
 
 bool CommandLineCfg::_initImp()
 {
-	for (auto tokenIt = _splitedCommandLine.begin(); tokenIt != _splitedCommandLine.end();)
+	for (auto tokenIt = _splitedCommandLine.begin(); tokenIt != _splitedCommandLine.end();++tokenIt)
 	{
 		const std::string& symbol = tokenIt->first;
 		const std::string& value = tokenIt->second;
@@ -84,8 +84,11 @@ bool CommandLineCfg::spliteCommandLine(const char* commandLine)
 		case CmdValue:
 			if(curChr == '"')
 			{
-				if(*(commandLine + 1) == '"')
+				if (*(commandLine + 1) == '"')
+				{
 					curValue.push_back('"');
+					commandLine++;
+				}
 				else
 					isInQueto = !isInQueto;
 			}
