@@ -1,22 +1,14 @@
 #include "precomp.h"
 #include "CommandLineCfg.h"
-#include <regex>
 #include "CommonFunc.h"
 #include "TinyAssert.h"
-#include <ppltasks.h>
+#include <cctype>
 
 bool CommandLineCfg::init(const char* commandLine)
 {
-	spliteCommandLine(commandLine);
-	return _initImp();
-}
-
-bool CommandLineCfg::init(int argc, char * argv[])
-{
-	for (int i = 0; i < argc; ++i)
-	{
-		_splitedCommandLine.push_back(argv[i]);
-	}
+	bool result = spliteCommandLine(commandLine);
+	if (!result)
+		return false;
 	return _initImp();
 }
 
@@ -24,29 +16,12 @@ bool CommandLineCfg::_initImp()
 {
 	for (auto tokenIt = _splitedCommandLine.begin(); tokenIt != _splitedCommandLine.end();)
 	{
-		std::string& symbol = *tokenIt;
-		std::transform(symbol.begin(), symbol.end(), symbol.begin(), tolower);
-		if (symbol[0] == '/')
-		{
-			symbol = symbol.substr(1);
-		}
+		const std::string& symbol = tokenIt->first;
+		const std::string& value = tokenIt->second;
+		
 		auto it = _registedCommandLines.find(symbol);
-		++tokenIt;
 		if (it != _registedCommandLines.end() && it->second._settingFun)
 		{
-			std::string value = (tokenIt != _splitedCommandLine.end() ? *tokenIt : "");
-			if (value[0] == '/')
-			{
-				value = "";
-			}
-			else if (value[0] == '\"')
-			{
-				value = value.substr(1);
-			}
-			if (value.length() && value[value.length() - 1] == '\"')
-			{
-				value = value.substr(0, value.length() - 1);
-			}
 			bool settingResult = it->second._settingFun(value);
 			if (!settingResult)
 			{
@@ -58,17 +33,90 @@ bool CommandLineCfg::_initImp()
 	return true;
 }
 
-void CommandLineCfg::spliteCommandLine(const char* commandLine)
+bool CommandLineCfg::spliteCommandLine(const char* commandLine)
 {
 	_splitedCommandLine.clear();
-	std::regex nameRegex("([-/a-zA-Z0-9_]+)|(\"[^\"]+\")");
-	std::smatch matchResult;
-	std::string cmdLine(commandLine);
-	//find first symbol in define.
-	while (std::regex_search(cmdLine, matchResult, nameRegex))
+	TinyAssert(commandLine);
+	enum State
 	{
-		std::string str = matchResult.str();
-		_splitedCommandLine.push_back(str);
-		cmdLine = matchResult.suffix();
-	}
+		Start,
+		CmdName,
+		CmdValue
+	};
+	State stateMachine = Start;
+	char curChr = 0;
+	std::string curName;
+	std::string curValue;
+	bool isInQueto = false;
+	do
+	{
+		curChr = *commandLine;
+		switch (stateMachine)
+		{
+		case Start:
+			if (curChr == '/')
+			{
+				stateMachine = CmdName;
+				curName.clear();
+			}
+			break;
+		case CmdName:
+			if (isValidNameChar(curChr))
+			{
+				curName.push_back(std::tolower(curChr));
+			}
+			else if (curChr == ':')
+			{
+				stateMachine = CmdValue;
+				curValue.clear();
+				isInQueto = false;
+			}
+			else if ((curChr == 0 || curChr == ' ') && !curName.empty())
+			{
+				_splitedCommandLine[curName] = "";
+			}
+			else
+			{
+				TinyAssert(false, "Parsing command line failed");
+				return false;
+			}
+			break;
+		case CmdValue:
+			if(curChr == '"')
+			{
+				if(*(commandLine + 1) == '"')
+					curValue.push_back('"');
+				else
+					isInQueto = !isInQueto;
+			}
+			else if(curChr == 0)
+			{
+				TinyAssert(!isInQueto);
+				if (isInQueto)
+					return false;
+				_splitedCommandLine[curName] = curValue;
+				stateMachine = Start;
+			}
+			else if(curChr == ' ' && !isInQueto)
+			{
+				_splitedCommandLine[curName] = curValue;
+				stateMachine = Start;
+			}
+			else
+			{
+				curValue.push_back(curChr);
+			}
+			break;
+		}
+		++commandLine;
+	} while (curChr != 0);
+	return true;
+}
+
+bool CommandLineCfg::isValidNameChar(char chr) const
+{
+	return (chr >= 'a' && chr <= 'z')
+		|| (chr >= 'A' && chr <= 'Z')
+		|| (chr >= '0' && chr <= '9')
+		|| chr == '_';
 }

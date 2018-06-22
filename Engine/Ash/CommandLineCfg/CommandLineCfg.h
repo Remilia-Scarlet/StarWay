@@ -52,11 +52,11 @@ class CommandLineCfg
 	friend class CommandLineHelper;
 public:
 	bool init(const char* commandLine);
-	bool init(int argc, char* argv[]);
-	const std::vector<std::string>& getSplitedCommandLine() { return _splitedCommandLine; }
+	const std::map<std::string,std::string>& getSplitedCommandLine() const { return _splitedCommandLine; }
 protected:
 	bool _initImp();
-	void spliteCommandLine(const char* commandLine);
-	std::vector<std::string> _splitedCommandLine;
+	bool spliteCommandLine(const char* commandLine);
+	bool isValidNameChar(char chr) const;
+	std::map<std::string,std::string> _splitedCommandLine;
 	std::map<std::string, CommandLineHelper> _registedCommandLines;
 };
