@@ -3,6 +3,7 @@
 #include "CommonFunc.h"
 #include "TinyAssert.h"
 #include <cctype>
+#include "CommonStateMachine/StateMachine.h"
 
 bool CommandLineCfg::init(const char* commandLine)
 {
@@ -37,89 +38,112 @@ bool CommandLineCfg::spliteCommandLine(const char* commandLine)
 {
 	_splitedCommandLine.clear();
 	TinyAssert(commandLine);
-	enum State
-	{
-		Start,
-		CmdName,
-		CmdValue
-	};
-	State stateMachine = Start;
-	char curChr = 0;
-	std::string curName;
-	std::string curValue;
-	bool isInQueto = false;
-	do
-	{
-		curChr = *commandLine;
-		switch (stateMachine)
-		{
-		case Start:
-			if (curChr == '/')
-			{
-				stateMachine = CmdName;
-				curName.clear();
-			}
-			break;
-		case CmdName:
-			if (isValidNameChar(curChr))
-			{
-				curName.push_back(std::tolower(curChr));
-			}
-			else if (curChr == ':')
-			{
-				stateMachine = CmdValue;
-				curValue.clear();
-				isInQueto = false;
-			}
-			else if ((curChr == 0 || curChr == ' ') && !curName.empty())
-			{
-				_splitedCommandLine[curName] = "";
-			}
-			else
-			{
-				TinyAssert(false, "Parsing command line failed");
-				return false;
-			}
-			break;
-		case CmdValue:
-			if(curChr == '"')
-			{
-				if (*(commandLine + 1) == '"')
-				{
-					curValue.push_back('"');
-					commandLine++;
-				}
-				else
-					isInQueto = !isInQueto;
-			}
-			else if(curChr == 0)
-			{
-				TinyAssert(!isInQueto);
-				if (isInQueto)
-					return false;
-				_splitedCommandLine[curName] = curValue;
-				stateMachine = Start;
-			}
-			else if(curChr == ' ' && !isInQueto)
-			{
-				_splitedCommandLine[curName] = curValue;
-				stateMachine = Start;
-			}
-			else
-			{
-				curValue.push_back(curChr);
-			}
-			break;
-		}
-		++commandLine;
-	} while (curChr != 0);
-	return true;
-}
+	StateMachine<char> sm;
+	State<char>& start = sm.createState("start");
+	State<char>& name = sm.createState("name");
+	State<char>& value = sm.createState("value");
 
-bool CommandLineCfg::isValidNameChar(char chr) const
-{
-	return (chr >= 'a' && chr <= 'z')
-		|| (chr >= 'A' && chr <= 'Z')
-		|| (chr >= '0' && chr <= '9')
-		|| chr == '_';
+	start.DefineChangeTo(name, [](char chr){return chr == '/'; });
+
+	class NameUserData : public StateUserData
+	{
+	public:
+		std::string _name;
+	};
+	name.setUserData(std::make_shared<NameUserData>());
+	name.onEnter([&name](State<char>&){
+		name.getUserData<NameUserData>()._name.clear();
+	});
+	name.DefineChangeTo(value, [](char chr) {return chr == ':'; });
+	name.DefineChangeTo(start
+		,[](char chr) {return chr == ' ' || chr == 0; }
+		, [this,&name](char chr){
+			std::string& curName = name.getUserData<NameUserData>()._name;
+			if(!curName.empty())
+				_splitedCommandLine[curName] = "";
+		});
+	name.DefineHandleFun([&name](char chr){
+		std::string& curName = name.getUserData<NameUserData>()._name;
+		if ((chr >= 'a' && chr <= 'z')
+			|| (chr >= 'A' && chr <= 'Z')
+			|| (chr >= '0' && chr <= '9')
+			|| chr == '_')
+		{
+			curName.push_back(std::tolower(chr));
+		}
+		else
+		{
+			TinyAssert(false, "Parsing command line failed");
+		}
+	});
+	struct ValueStateUserData : public StateUserData
+	{
+		std::string curValue;
+		bool isInQueto = false;
+		bool lastIsQueto = false;
+	};
+	value.setUserData(std::make_shared<ValueStateUserData>());
+	value.onEnter([&value](State<char>&)
+	{
+		value.getUserData<ValueStateUserData>().curValue.clear();
+		value.getUserData<ValueStateUserData>().isInQueto = false;
+		value.getUserData<ValueStateUserData>().lastIsQueto = false;
+	});
+	value.DefineChangeTo(start, [&value](char chr){
+		bool& isInQueto = value.getUserData<ValueStateUserData>().isInQueto;
+		bool& lastIsQueto = value.getUserData<ValueStateUserData>().lastIsQueto;
+		if(chr == 0)
+		{
+			TinyAssert(!isInQueto);
+			return true;
+		}
+		else if((chr == ' ' && !isInQueto)
+			|| (chr == ' ' && isInQueto && lastIsQueto))
+		{
+			return true;
+		}
+		return false;
+	}
+	,[&name,&value,this](char chr){
+		std::string& curName = name.getUserData<NameUserData>()._name;
+		std::string& curValue = value.getUserData<ValueStateUserData>().curValue;
+		_splitedCommandLine[curName] = curValue;
+	});
+	value.DefineHandleFun([&value](char chr)
+	{
+		std::string& curValue = value.getUserData<ValueStateUserData>().curValue;
+		bool& isInQueto = value.getUserData<ValueStateUserData>().isInQueto;
+		bool& lastIsQueto = value.getUserData<ValueStateUserData>().lastIsQueto;
+		if (chr == '"')
+		{
+			if (lastIsQueto)
+			{
+				curValue.push_back('"');
+				lastIsQueto = false;
+			}
+			else
+				lastIsQueto = true;
+		}
+		else
+		{
+			if(lastIsQueto)
+			{
+				isInQueto = !isInQueto;
+				lastIsQueto = false;
+			}
+			curValue.push_back(chr);
+		}
+	});
+
+	sm.run(start, [&commandLine]() -> std::optional<char>{
+		if(commandLine == nullptr)
+			return std::nullopt;
+		char chr = *commandLine;
+		if (chr == 0)
+			commandLine = nullptr;
+		else
+			++commandLine;
+		return std::optional<char>{chr};
+	});
+	return true;
 }

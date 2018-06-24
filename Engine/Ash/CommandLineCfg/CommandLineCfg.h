@@ -56,7 +56,6 @@ public:
 protected:
 	bool _initImp();
 	bool spliteCommandLine(const char* commandLine);
-	bool isValidNameChar(char chr) const;
 	std::map<std::string,std::string> _splitedCommandLine;
 	std::map<std::string, CommandLineHelper> _registedCommandLines;
 };
