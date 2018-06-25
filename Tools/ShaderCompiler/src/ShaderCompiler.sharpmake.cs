@@ -1,6 +1,6 @@
 using Sharpmake;
 
-[module: Sharpmake.Include("..\\..\\..\\Engine\\Ash\\project\\Ash.sharpmake")]
+[module: Sharpmake.Include("..\\..\\..\\Engine\\Ash\\project\\Ash.sharpmake.cs")]
 
 namespace ShaderCompiler
 {
@@ -13,7 +13,7 @@ namespace ShaderCompiler
 
             AddTargets(new Target(
                     Platform.win64,
-                    DevEnv.vs2015 | DevEnv.vs2017,
+                    DevEnv.vs2017,
                     Optimization.Debug | Optimization.Release
             ));
             RootPath = @"[project.SharpmakeCsPath]";
@@ -40,7 +40,13 @@ namespace ShaderCompiler
 			conf.Options.Add(Options.Vc.General.WarningLevel.Level3);		
 			conf.Options.Add(Options.Vc.Compiler.RTTI.Enable);		
 			conf.Options.Add(Options.Vc.Linker.SubSystem.Console);	
+			conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP17);
+			
+			conf.Defines.Add("_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING");
 
+			conf.PrecompHeader = "precomp.h";
+            conf.PrecompSource = "precomp.cpp";
+			
 			conf.AddPrivateDependency<Ash.AshProject>(target);
         }
 	}
@@ -54,7 +60,7 @@ namespace ShaderCompiler
 
             AddTargets(new Target(
                     Platform.win64,
-                    DevEnv.vs2015 | DevEnv.vs2017,
+                    DevEnv.vs2017,
                     Optimization.Debug | Optimization.Release
             ));
         }

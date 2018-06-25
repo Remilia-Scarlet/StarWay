@@ -75,6 +75,9 @@ public:
 
 	// Get the extension of file name
 	std::string getFileExtension() const;
+
+	// For container std::map
+	bool operator<(const Path& another) const;
 protected:
 	std::string _path;
 

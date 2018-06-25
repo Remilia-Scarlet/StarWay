@@ -53,6 +53,7 @@ class CommandLineCfg
 public:
 	bool init(const char* commandLine);
 	const std::map<std::string,std::string>& getSplitedCommandLine() const { return _splitedCommandLine; }
+	std::string generateHelpString() const;
 protected:
 	bool _initImp();
 	bool spliteCommandLine(const char* commandLine);

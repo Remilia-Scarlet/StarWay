@@ -13,6 +13,17 @@ bool CommandLineCfg::init(const char* commandLine)
 	return _initImp();
 }
 
+std::string CommandLineCfg::generateHelpString() const
+{
+	std::string ret;
+	for (const auto& pa : _registedCommandLines)
+	{
+		ret += pa.second._description;
+		ret += "\n";
+	}
+	return ret;
+}
+
 bool CommandLineCfg::_initImp()
 {
 	for (auto tokenIt = _splitedCommandLine.begin(); tokenIt != _splitedCommandLine.end();++tokenIt)

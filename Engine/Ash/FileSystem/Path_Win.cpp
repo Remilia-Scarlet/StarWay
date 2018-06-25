@@ -88,6 +88,11 @@ std::string Path::getFileExtension() const
 	return std::string();
 }
 
+bool Path::operator<(const Path& another) const
+{
+	return _path < another._path;
+}
+
 Path::Path()
 	: _absolutePathDirty(true)
 	, _relativePathDirty(true)
