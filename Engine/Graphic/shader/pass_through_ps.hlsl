@@ -6,8 +6,8 @@ DECLEAR_SHADER:pass_through_no_tex SHADER_TYPE:ps ENTRY:main_ps DEFINE:SAMPLE_TE
 
 cbuffer CommonInfo : register(b0)
 {
-	float3 g_cameraPos : register(c0);
-	Material g_material : register(c1);
+	float3 g_CameraPos : register(c0); //PARAM:CameraPos
+	Material g_Material : register(c1);//PARAM:Material
 }
 
 #ifdef SAMPLE_TEX
@@ -24,6 +24,6 @@ float4 main_ps(PS_INPUT input, float4 pos : SV_POSITION) : SV_Target
 #else
 	float4 color = float4(0, 0, 0, 0);
 #endif
-	color = CalcLight(input, g_cameraPos, g_material, color);
+	color = CalcLight(input, g_CameraPos, g_Material, color);
 	return color;
 }

@@ -5,8 +5,8 @@
 cbuffer CommonInfo : register(b0)
 {
 	matrix g_viewMatrix : register(c0); //PARAM:ViewMatrix
-	matrix g_projectionMatrix : register(c43); //PARAM:ProjectionMatrix
-	matrix g_worldMatrix : register(c876); //PARAM:WorldMatrix
+	matrix g_projectionMatrix : register(c4); //PARAM:ProjectionMatrix
+	matrix g_worldMatrix : register(c8); //PARAM:WorldMatrix
 }
 
 PS_INPUT main_vs(VS_INPUT input)
