@@ -3,6 +3,7 @@
 #include <fstream>
 #include "Graphic\Manager\ShaderMgr.h"
 #include "Graphic\Manager\DefaultMgr.h"
+#include "Ash/FileSystem/File_Win.h"
 
 TextureComponentPtr TextureComponent::create( const std::string& fileName, const std::string& shadeName)
 {
@@ -68,6 +69,16 @@ const GfxMaterialPtr& TextureComponent::getMaterial()
 	return _gfxMaterial;
 }
 
+void TextureComponent::setShader(GfxShaderPixelPtr psShader)
+{
+	_psShader = psShader;
+}
+
+const GfxShaderPixelPtr& TextureComponent::getShader()
+{
+	return _psShader;
+}
+
 void TextureComponent::setWireFrame(bool wireFrame)
 {
 	if (_gfxTexture == nullptr || _gfxTexture == DefaultMgr::instance()->getDefaultTexture())
@@ -90,16 +101,10 @@ bool TextureComponent::init(const std::string& fileName, const std::string& shad
 	{
 		if (!fileName.empty())
 		{
-			std::ifstream file(fileName, std::ios::binary);
-			TINY_BREAK_IF(!file);
-			file.seekg(0, std::ios::end);
-			size_t size = (size_t)file.tellg();
-			file.seekg(0, std::ios::beg);
-			char* buffer = new char[size];
-			file.read(buffer, size);
-			file.close();
-			_gfxTexture = GfxTexture::create((uint8_t*)buffer, (int)size, fileName.c_str());
-			delete[] buffer;
+			File picFile;
+			picFile.open(fileName, File::AccessMode::READ, File::CreateMode::OPEN_EXIST);
+			std::vector<char> data = picFile.readAll();
+			_gfxTexture = GfxTexture::create(reinterpret_cast<uint8_t*>(data.data()), int(data.size()), fileName.c_str());
 			TINY_BREAK_IF(!_gfxTexture.isValid());
 		}
 		else

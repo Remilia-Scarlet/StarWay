@@ -6,7 +6,7 @@
 
 
 static const char* RENDER_DOC_DLL_NAME = "renderdoc.dll";
-static const char* CAPTURE_FOLDER = "renderdoc_captures";
+static const char* CAPTURE_FOLDER = "game:renderdoc_captures";
 static const char* CAPTURE_NAME = "capture_";
 
 RenderDoc* RenderDoc::instance()
@@ -45,13 +45,13 @@ bool RenderDoc::init()
 		_renderDocApi->SetCaptureOptionU32(eRENDERDOC_Option_CaptureCallstacks, 1);
 		_renderDocApi->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1);
 		_renderDocApi->SetCaptureOptionU32(eRENDERDOC_Option_DebugOutputMute, 0);
-
-		_renderDocApi->SetLogFilePathTemplate((std::string(CAPTURE_FOLDER) + "\\" + CAPTURE_NAME).c_str());
+		
 		Path capturePath(CAPTURE_FOLDER);
-		if(capturePath.isDirectory() == false)
+		if(!capturePath.isDirectory())
 		{
 			capturePath.createDirectory();
 		}
+		_renderDocApi->SetLogFilePathTemplate((capturePath.getRelativePath() + "\\" + CAPTURE_NAME).c_str());
 
 		RENDERDOC_InputButton prtScrKey = eRENDERDOC_Key_PrtScrn;
 		_renderDocApi->SetCaptureKeys(&prtScrKey, 1);

@@ -91,7 +91,7 @@ void WavefrontMtlReader::handleMAP_KD()
 	if (it == _textures.end())
 	{
 		File file;
-		bool result = file.open(name);
+		bool result = file.open("game:" + name, File::AccessMode::READ, File::CreateMode::OPEN_EXIST);
 		if (!result)
 			return;
 		std::vector<char> data = file.readAll();

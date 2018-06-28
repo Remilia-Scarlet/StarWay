@@ -22,6 +22,9 @@ public:
 	void setMaterial(const GfxMaterialPtr& material);
 	const GfxMaterialPtr& getMaterial();
 
+	void setShader(GfxShaderPixelPtr psShader);
+	const GfxShaderPixelPtr& getShader();
+
 	void setWireFrame(bool wireFrame);
 	bool isWireFrame();
 

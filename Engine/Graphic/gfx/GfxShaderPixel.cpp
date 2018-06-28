@@ -5,6 +5,7 @@
 #include "Graphic\Manager\ConstantBufferManager.h"
 #include <fstream>
 #include "Graphic\DX11\DX11Wrapper.h"
+#include "Ash/FileSystem/File_Win.h"
 
 GfxShaderPixelPtr GfxShaderPixel::create(const std::string& shaderFileName)
 {
@@ -37,19 +38,13 @@ GfxShaderPixel::~GfxShaderPixel()
 
 bool GfxShaderPixel::createPSShaderFromFile(const std::string& filename)
 {
-	const std::string fixedFileName = std::string("Shader/") + filename;
-	std::ifstream shaderFile(fixedFileName, std::ios::binary);
-	if (shaderFile)
+	File shaderFile;
+	shaderFile.open(filename, File::AccessMode::READ, File::CreateMode::OPEN_EXIST);
+	if (shaderFile.isOpened())
 	{
-		shaderFile.seekg(0, std::ios::end);
-		size_t size = (size_t)shaderFile.tellg();
-		shaderFile.seekg(0, std::ios::beg);
-		char* blob = new char[size];
-		shaderFile.read(blob, size);
-		shaderFile.close();
+		std::vector<char> data = shaderFile.readAll();
 		CompiledPSShader* psShader;
-		HRESULT hr = GraphicMgr::instance()->getD3D11Device()->CreatePixelShader(blob, size, NULL, &psShader);
-		delete[] blob;
+		HRESULT hr = GraphicMgr::instance()->getD3D11Device()->CreatePixelShader(data.data(), data.size(), NULL, &psShader);
 		TinyAssert(!FAILED(hr));
 		if (FAILED(hr))
 			return false;
@@ -57,7 +52,7 @@ bool GfxShaderPixel::createPSShaderFromFile(const std::string& filename)
 		SET_DEBUG_NAME(_compiledPSShader, FormatString("PixelShader_%s", filename.c_str()).c_str());
 		return true;
 	}
-	DebugString("Can't open %s for compiling shader", fixedFileName.c_str());
+	DebugString("Can't open %s for compiling shader", shaderFile.getFilePath().getAbsolutePath().c_str());
 	return false;
 	
 }

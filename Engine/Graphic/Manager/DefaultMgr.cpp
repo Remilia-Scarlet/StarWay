@@ -62,11 +62,11 @@ bool DefaultMgr::init()
 		TINY_BREAK_IF(!_defaultTexture.isValid());
 		_defaultMaterial = GfxMaterial::create({ 0.3f, 0.3f, 0.3f, 1.f }, { 0.64f, 0.64f, 0.64f, 1.0f }, { 0.5f, 0.5f, 0.5f, 96.078f }, { 0.f,0.f,0.f,0.f });
 		TINY_BREAK_IF(!_defaultMaterial.isValid());
-		_defaultPSWithTex = ShaderMgr::instance()->getPSShader("DefaultShader_PS.cso");
+		_defaultPSWithTex = ShaderMgr::instance()->getPSShader("game:shaders/pass_through.ps.cso");
 		TINY_BREAK_IF(!_defaultPSWithTex.isValid());
-		_defaultPSWithNoTex = ShaderMgr::instance()->getPSShader("DefaultShader_NoTex_PS.cso");
+		_defaultPSWithNoTex = ShaderMgr::instance()->getPSShader("game:shaders/pass_through_no_tex.ps.cso");
 		TINY_BREAK_IF(!_defaultPSWithNoTex.isValid());
-		_defaultVS = ShaderMgr::instance()->getVSShader("DefaultShader_VS.cso");
+		_defaultVS = ShaderMgr::instance()->getVSShader("game:shaders/pass_through.vs.cso");
 		TINY_BREAK_IF(!_defaultVS.isValid());
 		return true;
 	} while (0);

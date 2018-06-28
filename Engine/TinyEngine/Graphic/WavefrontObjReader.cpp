@@ -134,7 +134,7 @@ void WavefrontObjReader::finishedObj()
 
 void WavefrontObjReader::readMaterialFile(const std::string& filename)
 {
-	WavefrontMtlReader matReader(filename);
+	WavefrontMtlReader matReader(std::string("game:") + filename);
 	std::map<std::string,TextureComponentPtr> outMtl;
 	matReader.readMtlFile(outMtl);
 	_materials = std::move(outMtl);

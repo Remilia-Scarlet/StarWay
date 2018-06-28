@@ -5,6 +5,7 @@
 #include "Graphic\Manager\ConstantBufferManager.h"
 #include <fstream>
 #include "Graphic\DX11\DX11Wrapper.h"
+#include "Ash/FileSystem/File_Win.h"
 
 GfxShaderVertexPtr GfxShaderVertex::create(const std::string& shaderFileName)
 {
@@ -37,19 +38,13 @@ GfxShaderVertex::~GfxShaderVertex()
 
 bool GfxShaderVertex::createVSShaderFromFile(const std::string& filename)
 {
-	const std::string fixedFileName = std::string("Shader/") + filename;
-	std::ifstream shaderFile(fixedFileName, std::ios::binary);
-	if (shaderFile)
+	File shaderFile;
+	shaderFile.open(filename, File::AccessMode::READ, File::CreateMode::OPEN_EXIST);
+	if (shaderFile.isOpened())
 	{
-		shaderFile.seekg(0, std::ios::end);
-		int size = (int)shaderFile.tellg();
-		shaderFile.seekg(0, std::ios::beg);
-		char* blob = new char[size];
-		shaderFile.read(blob, size);
-		shaderFile.close();
+		std::vector<char> data = shaderFile.readAll();
 		CompiledVSShader* vsShader;
-		HRESULT hr = GraphicMgr::instance()->getD3D11Device()->CreateVertexShader(blob, (size_t)size, NULL, &vsShader);
-		delete[] blob;
+		HRESULT hr = GraphicMgr::instance()->getD3D11Device()->CreateVertexShader(data.data(), data.size(), NULL, &vsShader);
 		TinyAssert(!FAILED(hr));
 		if (FAILED(hr))
 			return false;
@@ -57,7 +52,7 @@ bool GfxShaderVertex::createVSShaderFromFile(const std::string& filename)
 		SET_DEBUG_NAME(_compiledVSShader, FormatString("VertexShader_%s", filename.c_str()).c_str());
 		return true;
 	}
-	DebugString("Can't open %s for compiling shader", fixedFileName.c_str());
+	DebugString("Can't open %s for compiling shader", shaderFile.getFilePath().getAbsolutePath().c_str());
 	return false;
 }
 

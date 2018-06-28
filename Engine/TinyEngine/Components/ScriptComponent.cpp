@@ -2,10 +2,10 @@
 #include "ScriptComponent.h"
 #include "TinyEngine\Objects\Object.h"
 
-ScriptComponentPtr ScriptComponent::create(const std::function<void()>& callback)
+ScriptComponentPtr ScriptComponent::create(std::shared_ptr<Script> script)
 {
 	ScriptComponent* ret = new ScriptComponent();
-	if (ret && ret->init(callback))
+	if (ret && ret->init(script))
 		return ScriptComponentPtr(ret);
 	TINY_SAFE_DELETE(ret);
 	return ScriptComponentPtr();
@@ -14,18 +14,26 @@ ScriptComponentPtr ScriptComponent::create(const std::function<void()>& callback
 void ScriptComponent::setOwner(const RefCountPtr<Object> & owner)
 {
 	BaseComponent::setOwner(owner);
+	_script->_owner = owner;
 }
 
 void ScriptComponent::update(float dt)
 {
 	BaseComponent::update(dt);
+	if (!_inited)
+	{
+		_script->init();
+		_inited = true;
+	}
+	_script->update(dt);
 }
 
-bool ScriptComponent::init(const std::function<void()>& callback)
+bool ScriptComponent::init(std::shared_ptr<Script>& script)
 {
 	do 
 	{
-		_callback = callback;
+		TINY_BREAK_IF(!script);
+		_script = std::move(script);
 		return true;
 	} while (false);
 	return false;

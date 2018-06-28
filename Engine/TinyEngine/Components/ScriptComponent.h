@@ -2,21 +2,30 @@
 #include "BaseComponent.h"
 #include <functional>
 
+class Script
+{
+public:
+	virtual ~Script() = default;
+	virtual void init(){};
+	virtual void update(float dt){};
+	WeakRefPtr<Object> _owner;
+};
+
 TINY_DEFINE_PTR(ScriptComponent);
 class ScriptComponent : public BaseComponent
 {
 public:
-	static ScriptComponentPtr create(const std::function<void()>& callback);
+	static ScriptComponentPtr create(std::shared_ptr<Script> script);
 
 	void setOwner(const RefCountPtr<Object> & owner) override;
 
 	virtual void update(float dt) override;
 protected:
-	virtual bool init(const std::function<void()>& callback);
+	virtual bool init(std::shared_ptr<Script>& script);
 	ScriptComponent();
 	virtual ~ScriptComponent();
 
-	std::function<void()> _callback;
+	std::shared_ptr<Script> _script;
 	bool _inited;
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "VirtualButton.h"
 #include "Math/vector/Vector.h"
+#include <unordered_map>
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 	class InputManagerWin;

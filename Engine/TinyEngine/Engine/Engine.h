@@ -1,7 +1,7 @@
 #pragma once
 #include "TinyEngine/Scene/Scene.h"
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
-#include <windows.h>
+#include <Windows.h>
 #endif
 class Engine
 {

@@ -1,13 +1,13 @@
 #include "precomp.h"
-#include <windows.h>
-#include "TinyEngine/TinyEngine.h"
+#include <Windows.h>
 #include <d3d11sdklayers.h>
 #include "TinyEngine/Input/InputManager.h"
 #include "tools/renderdoc/RenderDoc.h"
 #include "StartWayCmdLineCfg/StartWayCmdLineCfg.h"
+#include "StarWay/Game/StarWayGame.h"
+#include <crtdbg.h>
 
 static const bool SHOW_WIN32_CONSOLE_AT_START = true;
-static const bool AUTO_COMPILE_SHADER = true;
 
 static const int SOLUTION_WIDTH = 1024;
 static const int SOLUTION_HEIGHT = 768;
@@ -127,25 +127,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (SHOW_WIN32_CONSOLE_AT_START)
 		ShowHideWin32Console();
 
-	if (AUTO_COMPILE_SHADER)
-	{
-		std::vector<char> cmd(MAX_PATH + 50);
-		GetModuleFileNameA(nullptr, cmd.data(), MAX_PATH);
-		(strrchr(cmd.data(), '\\'))[0] = 0;
-		cmd.insert(cmd.begin(), '\"');
-		if(TINY_BITWIDE_TARGET == TINY_BITWIDE_X64)
-			strcat(cmd.data(), R"(\..\..\CompileShader_x64.bat")");
-		else
-			strcat(cmd.data(), R"(\..\..\CompileShader_x32.bat")");
-		system(cmd.data());
-	}
-
 	//TODO: Move w2c to somewhere
 	int len = WideCharToMultiByte(CP_ACP, 0, lpCmdLine, -1, NULL, 0, NULL, NULL);
 	char* cmdLine = new char[len];
 	WideCharToMultiByte(CP_ACP, 0, lpCmdLine, -1, cmdLine, len, NULL, NULL);
 
-	StartWayCmdLineCfg::createInstance(cmdLine);
+	StarWayGame theGame;
+	if(!theGame.preInit(cmdLine))
+	{
+		return 0;
+	}
 
 	delete[] cmdLine;
 
@@ -165,14 +156,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	}
 
 	//start
-	if (!Engine::createInstance(SOLUTION_WIDTH,SOLUTION_HEIGHT,hwnd))
+	if (!theGame.init(SOLUTION_WIDTH,SOLUTION_HEIGHT,hwnd))
 	{
 		//(NULL, "Init Engine failed.", "Error", MB_OK);
 		return 0;
 	}
 
-	//start
-	Engine::instance()->start();
+	theGame.start();
 
 	// Main message loop
 	LARGE_INTEGER freq;
@@ -187,7 +177,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	QueryPerformanceCounter(&start_t);
 	while (WM_QUIT != msg.message)
 	{
-		desiredFrameTime = 1.0f / Engine::instance()->getDesiredFPS();
+		desiredFrameTime = 1.0f / theGame.getDesiredFPS();
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
@@ -199,7 +189,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		{
 			start_t = stop_t;
 			++frame;
-			Engine::instance()->mainLoop(frameTime);
+			theGame.mainLoop(frameTime);
 			QueryPerformanceCounter(&stop_t);
 			frameTime = float(stop_t.QuadPart - start_t.QuadPart) / float(freq.QuadPart);
 			average += frameTime;
@@ -217,11 +207,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		}
 	}
 
-	DebugString("Average frame time:%f", average/frame);
+	//DebugString("Average frame time:%f", average/frame);
 
-	Engine::instance()->cleanUp();
+	theGame.cleanUp();
 
-	Engine::destroyInstance();
+	theGame.destroy();
 
 #if 0
 	ID3D11Debug *d3dDebug;
@@ -233,13 +223,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (d3dDebug != nullptr)			d3dDebug->Release();
 #endif // _DEBUG
 
-	if (StartWayCmdLineCfg::instance()->getRenderdoc())
-	{
-		RenderDoc::destroy();
-	}
+	RenderDoc::destroy();
 
 	FreeConsole();
-	StartWayCmdLineCfg::destroy();
 
 	return (int)msg.wParam;
 }
