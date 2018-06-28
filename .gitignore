@@ -16,3 +16,5 @@ ipch/*
 /Tools/CommonCompiler/build/log.txt
 *.ipch
 *.db
+*.user
+/Engine/WinLancher/project/winlancher_vs2017_win_runtimedependencies.txt

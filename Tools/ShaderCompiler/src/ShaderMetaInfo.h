@@ -20,7 +20,7 @@ struct ShaderDeclear
 	
 	Path calculateOutputFileName(const Path& outputDirectory) const 
 	{
-		return outputDirectory.getRelativePath() + "\\shaders\\" + _name + (_shaderType == ShaderType::VS ? ".vs" : ".ps") + ".cso";
+		return outputDirectory.getRelativePath() + "\\" + _name + (_shaderType == ShaderType::VS ? ".vs" : ".ps") + ".cso";
 	}
 };
 

@@ -22,8 +22,8 @@ static const char JSON_NAME_OUTPUT_FILES[] = "output_files";
 
 static const char CONFIG_JSON[] = "game:config.json";
 
-static const char COMPILE_RECORD[] = "_compile_record.json";
-static const char DEPENDENCE_CACHE_NAME[] = "_dependence.json";
+static const char COMPILE_RECORD[] = "_shader_compile_record.tmp";
+static const char DEPENDENCE_CACHE_NAME[] = "_shader_dependence.tmp";
 
 using namespace rapidjson;
 

@@ -9,7 +9,6 @@
 #include "Ash/FileSystem/Path_Win.h"
 #include "Ash/CommonFunc.h"
 #include "../Ash/FileSystem/File_Win.h"
-#include "TinyEngine/ThirdParty/rapidjson/document.h"
 #include "../TinyEngine/Graphic/WavefrontObjReader.h"
 #include "../TinyEngine/Components/TextureComponent.h"
 #include "../TinyEngine/Components/TransformComponent.h"

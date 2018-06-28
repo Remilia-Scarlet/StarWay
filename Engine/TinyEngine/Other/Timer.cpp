@@ -19,7 +19,7 @@ Timer::Timer()
 
 Timer::~Timer()
 {
-	if (_info.unique())
+	if (_info.use_count() == 1)
 	{
 		if (_info->_onDestruct)
 			_info->_onDestruct(this);
