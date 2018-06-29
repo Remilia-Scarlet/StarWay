@@ -28,6 +28,7 @@ namespace StarWay
         [Configure()]
         public void ConfigureAll(Configuration conf, Target target)
         {
+			conf.Name = "[target.Blob] [target.Optimization]";
 		    conf.SolutionFileName = "[solution.Name]_[target.DevEnv]_[target.Platform]";
             conf.SolutionPath = @"[solution.SharpmakeCsPath]";
 

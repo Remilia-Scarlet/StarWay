@@ -11,6 +11,8 @@ namespace StarWay
         public StarWayProject()
         {
             Name = "StarWay";
+			
+			BlobPath = @"[project.RootPath]\..\output\_temp\_blob\";
         }
 
         public override void ConfigureAll(Configuration conf, Target target)

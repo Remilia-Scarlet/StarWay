@@ -18,19 +18,24 @@ namespace Common
             ));
             RootPath = @"[project.SharpmakeCsPath]\..";
             SourceRootPath = RootPath;
+			
+			BlobPath = @"[project.RootPath]\..\..\output\_temp\_blob\";
         }
 		
         [Configure()]
         public virtual void ConfigureAll(Configuration conf, Target target)
         {			
-            conf.ProjectFileName = "[project.Name]_[target.DevEnv]_[target.Platform]";
+			string platformStr = (target.Platform == Platform.win32 | target.Platform == Platform.win64 ? "win" : "[target.Platform]");
+            conf.ProjectFileName = "[project.Name]_[target.DevEnv]_" + platformStr + "_[target.Blob]";
             conf.ProjectPath = @"[project.SharpmakeCsPath]";
-			conf.IntermediatePath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]\[target.Optimization]";
+			conf.IntermediatePath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]_[target.Blob]\[target.Optimization]";
 			conf.TargetPath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\lib";
 			conf.IncludePaths.Add(@"[project.RootPath]");
 			conf.IncludePaths.Add(@"[project.RootPath]\..");
 			
-			conf.TargetFileFullName = @"[project.Name]_[target.Platform]_[target.Optimization]";
+			conf.Name = "[target.Blob] [target.Optimization]";
+			
+			conf.TargetFileFullName = @"[project.Name]_[target.Platform]_[target.Optimization]_[target.Blob]";
 			conf.Output = Configuration.OutputType.Lib;
 			
 			conf.Options.Add(Options.Vc.General.TreatWarningsAsErrors.Enable);
@@ -46,7 +51,7 @@ namespace Common
             conf.PrecompSource = "precomp.cpp";
         }
 		
-		[Configure()]
+		[Configure(Platform.win32 | Platform.win64)]
         public virtual void ConfigureWindows(Configuration conf, Target target)
 		{			
 			if(target.Platform == Platform.win32)
@@ -59,7 +64,21 @@ namespace Common
 				conf.ExportDefines.Add("PLATFORM_WIN64");
 				conf.Defines.Add("PLATFORM_WIN64");
 			}
-			conf.ProjectFileName = "[project.Name]_[target.DevEnv]_win";
+		}
+		
+		[Configure(Blob.Blob)]
+		public virtual void BlobBlob(Configuration conf, Target target)
+		{
+			conf.IsBlobbed = true;
+			conf.ProjectName += ".Blob";
+			conf.IncludeBlobbedSourceFiles = false;
+			conf.SolutionFolder = "Blob";
+		}
+		
+		[Configure(Blob.NoBlob)]
+		public virtual void BlobNoBlob(Configuration conf, Target target)
+		{
+			conf.IsBlobbed = false;
 		}
     }
 }
