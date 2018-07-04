@@ -1,6 +1,6 @@
 #include "precomp.h"
 #include "TinyEngine/Graphic/WavefrontParser.h"
-#include "Ash/FileSystem/File_Win.h"
+#include "Ash/FileSystem/fs_include.h"
 
 WavefrontParser::WavefrontParser(const std::string& fileName)
 	: _fileName(fileName)

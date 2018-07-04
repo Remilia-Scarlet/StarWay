@@ -18,7 +18,7 @@ namespace StarWay
         public override void ConfigureAll(Configuration conf, Target target)
         {
 			base.ConfigureAll(conf,target);
-			conf.IntermediatePath = @"[project.RootPath]\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]\[target.Optimization]";
+			conf.IntermediatePath = @"[project.RootPath]\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]_[target.Blob]\[target.Optimization]";
 			conf.TargetPath = @"[project.RootPath]\..\output\_temp\[target.DevEnv]\lib";			
 
 			conf.AddPrivateDependency<Ash.AshProject>(target);

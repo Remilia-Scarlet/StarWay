@@ -122,3 +122,27 @@ std::string wcharToChar(const wchar_t * wp)
 	#error Implement this
 #endif
 }
+
+std::string toLower(std::string str)
+{
+	for(size_t i = 0; i < str.length() ; ++i)
+	{
+		if(str[i] >= 'A' && str[i] <= 'Z')
+		{
+			str[i] += 'a' - 'A';
+		}
+	}
+	return str;
+}
+
+std::string toUpper(std::string str)
+{
+	for (size_t i = 0; i < str.length(); ++i)
+	{
+		if (str[i] >= 'a' && str[i] <= 'z')
+		{
+			str[i] -= 'a' - 'A';
+		}
+	}
+	return str;
+}

@@ -1,10 +1,10 @@
 #pragma once
 #include <string>
-#include "../../../Engine/Ash/FileSystem/Path_Win.h"
+#include "Engine/Ash/FileSystem/fs_include.h"
 #include <vector>
-#include "../../../Engine/Ash/FileSystem/File_Win.h"
+#include "Engine/Ash/FileSystem/fs_include.h"
 #include <map>
-#include "../../../Engine/TinyEngine/ThirdParty/rapidjson/document.h"
+#include "Engine/TinyEngine/ThirdParty/rapidjson/document.h"
 #include "Ash/CommandLineCfg/CommandLineCfg.h"
 #include <atomic>
 #include <set>

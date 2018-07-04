@@ -1,7 +1,7 @@
 #pragma once
 #include <string>  
 #include <vector>
-#include "FileSystem/Path_Win.h"
+#include "FileSystem/fs_include.h"
 #include "TinyAssert.h"
 class Path;
 
@@ -20,7 +20,10 @@ struct ShaderDeclear
 	
 	Path calculateOutputFileName(const Path& outputDirectory) const 
 	{
-		return outputDirectory.getRelativePath() + "\\" + _name + (_shaderType == ShaderType::VS ? ".vs" : ".ps") + ".cso";
+		return outputDirectory.getRelativePath() 
+		+ (outputDirectory.getRelativePath().back() != '\\' ? "\\" : "")
+		+ _name
+		+ (_shaderType == ShaderType::VS ? ".vs" : ".ps") + ".cso";
 	}
 };
 

@@ -4,7 +4,7 @@
 #include <TinyEngine/ThirdParty/rapidjson/stringbuffer.h>
 #include <TinyEngine/ThirdParty/rapidjson/prettywriter.h>
 #include <TinyEngine/Engine/EngineDefs.h>
-#include "FileSystem/File_Win.h"
+#include "FileSystem/fs_include.h"
 #include <fstream>
 #include <iostream>
 #include "CommonStateMachine/StateMachine.h"
@@ -355,7 +355,7 @@ bool ShaderMetaMgr::readDependenceAndMetaInFile(const Path& file, MetaInfoMapIte
 		if (std::regex_search(line, mr, include))
 		{
 			TinyAssert(mr.size() == 2);
-			Path path = file.getParentDirectory().getRelativePath() + "\\" + mr[1].str();
+			Path path = file.getParentDirectory().getRelativePath() + mr[1].str();
 			info->_dependdInfo._dependences.emplace_back(path);
 		}
 	}

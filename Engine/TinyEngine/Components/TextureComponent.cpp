@@ -3,7 +3,7 @@
 #include <fstream>
 #include "Graphic\Manager\ShaderMgr.h"
 #include "Graphic\Manager\DefaultMgr.h"
-#include "Ash/FileSystem/File_Win.h"
+#include "Ash/FileSystem/fs_include.h"
 
 TextureComponentPtr TextureComponent::create( const std::string& fileName, const std::string& shadeName)
 {

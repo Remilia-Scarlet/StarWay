@@ -1,9 +1,8 @@
 #include "precomp.h"
-#include "File_Win.h"
-#include "TinyAssert.h"
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
-
+#include "../fs_include.h"
+#include "TinyAssert.h"
 #include <windows.h>
 
 File::File() 

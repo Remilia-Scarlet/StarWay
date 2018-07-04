@@ -5,7 +5,7 @@
 #include "Graphic\Manager\ConstantBufferManager.h"
 #include <fstream>
 #include "Graphic\DX11\DX11Wrapper.h"
-#include "Ash/FileSystem/File_Win.h"
+#include "Ash/FileSystem/fs_include.h"
 
 GfxShaderPixelPtr GfxShaderPixel::create(const std::string& shaderFileName)
 {

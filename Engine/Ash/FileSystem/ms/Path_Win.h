@@ -1,8 +1,12 @@
 #pragma once
-#include <list>
+
+#if !defined(FS_INCLUDE)
+#error Don't include this file directly. Include "fs_include.h" instead.
+#endif
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 
+#include <list>
 #include <windows.h>
 
 static const char* GAME_PATH = "game:";
@@ -16,21 +20,6 @@ public:
 	// Init with given path
 	Path(const std::string& path);
 	Path(const char* path);
-
-	// Init a Path with given status. Be careful you must provide the exactly right status. DON'T use this constructor unless you understand what you are doing.
-	Path(
-		const std::string& path,
-
-		const std::string& absolutePath,
-		bool absolutePathDirty,
-
-		const std::string& relativePath,
-		bool relativePathDirty,
-
-		bool isDirectory,
-		bool isFile,
-		bool isDirectoryFileDirty
-		);
 
 	// Check if path is directoy
 	bool isDirectory() const;
@@ -50,7 +39,7 @@ public:
 	std::list<Path> getFileList(const std::string& filter) const;
 
 	// Return the exe file path
-	std::string getExePath() const;
+	Path getRootPath() const;
 
 	// Return the original path which you set to Path
 	const std::string& getOriginPath() const;
@@ -79,6 +68,21 @@ public:
 	// For container std::map
 	bool operator<(const Path& another) const;
 protected:
+	// Init a Path with given status. Be careful you must provide the exactly right status. DON'T use this constructor unless you understand what you are doing.
+	Path(
+		const std::string& path,
+
+		const std::string& absolutePath,
+		bool absolutePathDirty,
+
+		const std::string& relativePath,
+		bool relativePathDirty,
+
+		bool isDirectory,
+		bool isFile,
+		bool isDirectoryFileDirty
+	);
+
 	std::string _path;
 
 	mutable std::string _absolutePath;

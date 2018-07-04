@@ -1,9 +1,12 @@
 #pragma once
-#include "Path_Win.h"
-#include <vector>
+#if !defined(FS_INCLUDE)
+#error Don't include this file directly. Include "fs_include.h" instead.
+#endif
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
 
+#include "Path_Win.h"
+#include <vector>
 #include <windows.h>
 
 class File

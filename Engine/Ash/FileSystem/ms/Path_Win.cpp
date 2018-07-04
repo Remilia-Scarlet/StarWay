@@ -1,12 +1,12 @@
 #include "precomp.h"
-#include "Path_Win.h"
-#include <algorithm>
 
 #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
-
+#include "../fs_include.h"
+#include <algorithm>
 #include <windows.h>
 #include <stack>
 #include "Ash/CommonFunc.h"
+#include "TinyAssert.h"
 
 void Path::_getIsDirectory(DWORD att) const
 {
@@ -49,11 +49,10 @@ bool Path::createDirectory()
 
 std::string Path::getFileName() const
 {
-	if (!isFile())
-		return "";
-
 	size_t pos = _path.find_last_of('\\');
-	if(pos != -1 && pos != _path.length() - 1)
+	if (pos == _path.length())
+		pos = _path.find_last_of('\\', pos - 1);
+	if(pos != -1 && pos != 0 && pos != _path.length() - 1)
 	{
 		return _path.substr(pos + 1);
 	}
@@ -183,7 +182,7 @@ std::list<Path> Path::getFileList(const std::string& filter) const
 		if (!current.isDirectory())
 			continue;
 
-		std::string path = current.getAbsolutePath() + "\\" + filter;
+		std::string path = current.getAbsolutePath() + filter;
 		WIN32_FIND_DATA findFileData;
 		HANDLE hFind = ::FindFirstFile(path.c_str(), &findFileData);
 		if (INVALID_HANDLE_VALUE == hFind)
@@ -192,7 +191,7 @@ std::list<Path> Path::getFileList(const std::string& filter) const
 		{
 			if (strcmp(findFileData.cFileName, ".") != 0 && strcmp(findFileData.cFileName, "..") != 0)
 			{
-				std::string currentPath = current.getAbsolutePath() + "\\" + findFileData.cFileName;
+				std::string currentPath = current.getAbsolutePath() + findFileData.cFileName;
 				if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
 					stack.push(
@@ -230,7 +229,7 @@ std::list<Path> Path::getFileList(const std::string& filter) const
 	return list;
 }
 
-std::string Path::getExePath() const
+Path Path::getRootPath() const
 {
 	std::string ret;
 	const int arrSize = 500;
@@ -241,10 +240,12 @@ std::string Path::getExePath() const
 	_splitpath(path, driver, dir, nullptr, nullptr);
 	ret += driver;
 	ret += dir;
+	_fullpath(path, ret.c_str(), arrSize);
+	ret = path;
 	delete[] driver;
 	delete[] path;
 	delete[] dir;
-	return ret;
+	return Path(ret, ret, false, "", true, true, false, false);
 }
 
 std::list<Path> Path::getFileList() const
@@ -269,14 +270,12 @@ const std::string& Path::getAbsolutePath() const
 		size_t offSet = strlen(GAME_PATH);
 		if (_path[offSet] == '\\' || _path[offSet] == '/')
 			++offSet;
-		_absolutePath = getExePath() + _path.substr(offSet);
+		_absolutePath = getRootPath().getAbsolutePath() + _path.substr(offSet);
 	}
 	char* path = new char[1024];
 	_fullpath(path, _absolutePath.c_str(), 1024);
 	_absolutePath = path;
 	delete[] path;
-	if (_absolutePath.length() > 1 && _absolutePath[_absolutePath.length() - 1] == '\\')
-		_absolutePath.erase(_absolutePath.length() - 1, 1);
 	return _absolutePath;
 }
 
@@ -300,7 +299,7 @@ const std::string& Path::getRelativePath() const
 	std::vector<std::string> path2 = split(getAbsolutePath(),"\\");
 	int i = 0;
 
-	while (i < (int)min(path1.size(), path2.size()) && path1[i] == path2[i])
+	while (i < (int)min(path1.size(), path2.size()) && toLower(path1[i]) == toLower(path2[i]))
 		++i;
 
 	int j = i;
@@ -309,24 +308,28 @@ const std::string& Path::getRelativePath() const
 
 	for (; i < (int)path2.size(); ++i)
 	{
+		if(_relativePath.back() != '\\')
+			_relativePath += "\\";
 		_relativePath += path2[i];
-		_relativePath += "\\";
+	}
+	if(getAbsolutePath().back() == '\\' && _relativePath.back() != '\\')
+	{
+		_relativePath += '\\';
 	}
 
 	if (_relativePath.length() == 0)
-		_relativePath = ".";
-	else if (_relativePath[_relativePath.length() - 1] == '\\')
-		_relativePath.erase(_relativePath.length() - 1, 1);
-
+		_relativePath = ".\\";
 	return _relativePath;
 }
 
 Path Path::getParentDirectory() const
 {
-	size_t pos = getAbsolutePath().find_last_of('\\');;
+	size_t pos = getAbsolutePath().find_last_of('\\');
+	if (pos + 1u == getAbsolutePath().length())
+		pos = getAbsolutePath().find_last_of('\\', pos - 1);
 	if (pos != -1 && pos != 0)
 	{
-		std::string path = _absolutePath.substr(0, pos);
+		std::string path = _absolutePath.substr(0, pos + 1);
 		return Path(
 			path,
 			path,

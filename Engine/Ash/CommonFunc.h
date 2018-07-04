@@ -11,6 +11,8 @@ std::vector<std::string> split(const std::string& src, const std::string& separa
 std::string& replaceSubstr(std::string& src, const std::string& searchKey, const std::string& targetStr);
 std::wstring charToWchar(const char* c);
 std::string wcharToChar(const wchar_t* wp);
+std::string toLower(std::string str);
+std::string toUpper(std::string str);
 
 
 #define TINY_BREAK_IF(CENTENCE) if(CENTENCE)break
