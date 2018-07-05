@@ -188,7 +188,7 @@ TEST(Ash, PathTest)
 		EXPECT_FALSE(path2.isFile());
 		EXPECT_TRUE(path2.isValid());
 		auto list2 = path2.getFileList();
-		EXPECT_GE(list2.size(), 0);
+		EXPECT_GE(list2.size(), 0u);
 		auto re  = path2.getRelativePath();
 		EXPECT_EQ(re, "..\\..\\..\\output\\_temp\\unittest\\");
 		auto ab = path2.getAbsolutePath();

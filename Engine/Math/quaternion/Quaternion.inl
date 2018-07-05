@@ -417,8 +417,8 @@ QuaternionStorage<ValueType>& QuaternionStorage<ValueType>::productInPlace(const
 template <class ValueType>
 bool QuaternionStorage<ValueType>::equal(const QuaternionStorage<ValueType>& other) const
 {
-	return isEqual(a.X(), b.X())
-		&& isEqual(a.Y(), b.Y())
-		&& isEqual(a.Z(), b.Z())
-		&& isEqual(a.W(), b.W());
+	return isEqual(X(), other.X())
+		&& isEqual(Y(), other.Y())
+		&& isEqual(Z(), other.Z())
+		&& isEqual(W(), other.W());
 }

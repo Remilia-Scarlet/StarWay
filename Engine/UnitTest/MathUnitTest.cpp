@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "Math/MathDef.h"
 #include "Math/matrix/Matrix.h"
-#include <DirectXMath.h>
+//#include <DirectXMath.h>
 
 TEST(Math, FloatEpsionTest)
 {
@@ -299,58 +299,56 @@ TEST(Math, VectorTest)
 
 TEST(Math, QuaternionTest)
 {
-	float theta = degToRad(90.0f);
-	DirectX::XMMATRIX dxma = DirectX::XMMatrixRotationY(theta);
-	DirectX::XMVECTOR v = { 0,1,0,0 };
-	DirectX::XMVECTOR qua = DirectX::XMQuaternionRotationAxis(v, theta);
-	DirectX::XMVECTOR qua2 = DirectX::XMQuaternionRotationMatrix(dxma);
-	DirectX::XMMATRIX dxma2 = DirectX::XMMatrixRotationQuaternion(qua);
-	DirectX::XMVECTOR vvv = { 1,1,1,0 };
-	DirectX::XMVECTOR fadsafdsfdas = DirectX::XMVector3Rotate(vvv, qua);
+	//DirectX::XMMATRIX dxma1 = DirectX::XMMatrixRotationZ(degToRad(30.0f));
+	//DirectX::XMVECTOR qua1 = DirectX::XMQuaternionRotationMatrix(dxma1); //qua1 == {0,0,0.258819044,0.965925872}
+	Quaternion rotate1(Vector3{ 0,0,30 });
+	Quaternion copyQua = rotate1;
+	EXPECT_FLOAT_EQ(copyQua.X(), 0);
+	EXPECT_FLOAT_EQ(copyQua.Y(), 0);
+	EXPECT_FLOAT_EQ(copyQua.Z(), 0.258819044f);
+	EXPECT_FLOAT_EQ(copyQua.W(), 0.965925872f);
 
-	DirectX::XMVECTOR vv = { 1,1,1,0 };
-	DirectX::XMVECTOR quaaa = DirectX::XMQuaternionRotationRollPitchYaw(degToRad(45.f), 0, degToRad(90.f));
-	DirectX::XMVECTOR fadsfdas = DirectX::XMVector3Rotate(vv, quaaa);
+	//DirectX::XMVECTOR v = { 0,1,0,0 };
+	//DirectX::XMVECTOR qua2 = DirectX::XMQuaternionRotationAxis(v, degToRad(45.0f)); //qua2 == {0, 0.382683426, 0, 0.923879504}
+	//DirectX::XMMATRIX dxma2 = DirectX::XMMatrixRotationQuaternion(qua2);
+	Quaternion rotate2(Vector3{ 0,1,0 }, 45);
+	EXPECT_EQ(rotate2, (Quaternion{ 0.923879504f, 0, 0.382683426f, 0 }));
 
-	Quaternion qqqq;
+	//DirectX::XMVECTOR qua3 = DirectX::XMQuaternionRotationRollPitchYaw(degToRad(60.f), 0, 0);//qua3 == {0.5, 0, 0, 0.866025388}
+	//DirectX::XMMATRIX dxma3 = DirectX::XMMatrixRotationQuaternion(qua2);
+	Quaternion rotate3(60.f, 0, 0);
+	EXPECT_TRUE(rotate3.equal(Quaternion{ 0.866025388f,0.5, 0, 0 }));
 
-	Vector3 v111 = { 1,1,1 };
-	Quaternion rotate(Vector3{ 0,0,90 });
-	Quaternion rotate2(Vector3{ 0,0,1 }, 90);
-	Quaternion rotate3(90, 0, 0);
-	Quaternion rotate4(Vector3{ 1,0,0 }, 90);
-	Quaternion rotate5(0, 90, 0);
-	Quaternion rotate6(Vector3{ 0,1,0 }, 90);
-	auto r111 = v111.rotate(rotate);
-	auto r222 = v111.rotate(rotate3);
-	auto r333 = v111.rotate(rotate5);
-	auto eu = rotate2.toEularAngle();
-	float deta = 90 - eu.Z();
-	if (isEqual(eu.Z(), 90.0f))
-	{
-		int a = 0;
-	}
-	auto eu2 = rotate4.toEularAngle();
-	if (isEqual(eu2.X(), 90.0f))
-	{
-		int a = 0;
-	}
-	auto eu3 = rotate6.toEularAngle();
-	if (isEqual(eu3.Y(), 90.0f))
-	{
-		int a = 0;
-	}
+	//DirectX::XMVECTOR qua4 = DirectX::XMQuaternionRotationRollPitchYaw(degToRad(45.f), degToRad(60.f), degToRad(90.f));
+	Quaternion rotate4(45.f, 60.f, 90.f);
 
+	//DirectX::XMVECTOR vvv = { 1,1,1,0 };
+	Vector3 vecmy = { 1,1,1 };
 
-	Quaternion from_to(v111, r111);
-	auto sdfsa = v111.rotate(from_to);
+	//vvv = DirectX::XMVector3Rotate(vvv, qua1); //vvv == {0.366025478, 1.36602557, 1, 0}
+	vecmy = vecmy.rotate(rotate1);
+	EXPECT_EQ(vecmy, (Vector3{ 0.366025478f, 1.36602557f, 1.f }));
 
-	Quaternion from_to2(Vector3{ 1,0,0 }, Vector3{ 1,0,0 });
-	Quaternion from_to3(Vector3{ 1,0,0 }, Vector3{ -1,0,0 });
-	sdfsa = v111.rotate(from_to3);
+	//vvv = DirectX::XMVector3Rotate(vvv, qua2);// vvv == {0.965925932, 1.36602545, 0.448287755}
+	vecmy.rotateInPlace(rotate2);
+	EXPECT_EQ(vecmy, (Vector3{ 0.965925932f, 1.36602545f, 0.448287755f }));
 
+	//vvv = DirectX::XMVector3Rotate(vvv, qua3); // vvv == {0.965925932,0.294784129, 1.40715659 }
+	vecmy.rotateInPlace(rotate3);
+	EXPECT_EQ(vecmy, (Vector3{ 0.965925932f,0.294784129f, 1.40715659f }));
 
+	//vvv = DirectX::XMVector3Rotate(vvv, qua4); //1.30581796, -0.311997145, 1.09430182
+	vecmy.rotateInPlace(rotate4);
+	EXPECT_EQ(vecmy, (Vector3{ 1.30581796f, -0.311997145f, 1.09430182f }));
 
+	Vector3 eu = rotate4.toEularAngle();
+	EXPECT_EQ(eu, (Vector3{ 45.f, 60.f, 90.f }));
+
+	Quaternion from_to(vecmy, Vector3{ 1,1,1 });
+	vecmy.rotateInPlace(from_to);
+	EXPECT_EQ(vecmy, (Vector3{ 1.f,1.f,1.f }));
+
+	float theta = degToRad(30.f);
 	Matrix4 ma = {
 		cos(theta),0,-sin(theta),0,
 		0,1,0,0,
@@ -358,56 +356,17 @@ TEST(Math, QuaternionTest)
 		0,0,0,1
 	};
 	Quaternion from_matrix(ma);
-	sdfsa = v111.rotate(from_matrix);
-	auto mmma = from_matrix.toRotationMatrix();
-	if (mmma == ma)
-	{
-		int a = 0;
-	}
-	ma = {
-		1,0,0,0,
-		0,cos(theta),sin(theta),0,
-		0,-sin(theta),cos(theta),0,
-		0,0,0,1
-	};
-	from_matrix = ma;
-	sdfsa = v111.rotate(from_matrix);
-	mmma = from_matrix.toRotationMatrix();
-	if (mmma == ma)
-	{
-		int a = 0;
-	}
-	ma = {
-		cos(theta),sin(theta),0,0,
-		-sin(theta),cos(theta),0,0,
-		0,0,1,0,
-		0,0,0,1
-	};
-	from_matrix = ma;
-	sdfsa = v111.rotate(from_matrix);
-	mmma = from_matrix.toRotationMatrix();
-	if (mmma == ma)
-	{
-		int a = 0;
-	}
+	vecmy = vecmy.rotate(from_matrix);
+	EXPECT_EQ(vecmy, (Vector3{ 1.36602533f, 1.f,0.366025388f }));
 
-	auto fdsaf = from_matrix.toAxisAngle();
+	Matrix4 mmma = from_matrix.toRotationMatrix();
+	EXPECT_EQ(mmma, ma);
+	
+	auto axisAngle = from_matrix.toAxisAngle();
+	EXPECT_EQ(axisAngle.first, (Vector3{ 0.f,1.f,0.f }));
+	//EXPECT_TRUE(isEqual(axisAngle.second, 30.f)); //shit!
 
 	auto coon = from_matrix.conjugate();
-	coon.conjugateInPlace();
-
-	Quaternion vq = { 0,v111.X(),v111.Y(),v111.Z() };
-	auto fsadfgg = from_matrix * vq * from_matrix.conjugate();
-	auto fdsag = from_matrix;
-	fdsag.productInPlace(vq);
-	fdsag.productInPlace(from_matrix.conjugate());
-
-	Quaternion roooo(45, 0, 90);
-	v111 = { 1,1,1 };
-	auto erqre = v111.rotate(roooo);
-}
-
-TEST(Math, RectTest)
-{
-	
+	vecmy.rotateInPlace(coon);
+	EXPECT_EQ(vecmy, (Vector3{ 1.f,1.f,1.f }));
 }
