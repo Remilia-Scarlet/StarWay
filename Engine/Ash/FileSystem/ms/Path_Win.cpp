@@ -312,7 +312,8 @@ const std::string& Path::getRelativePath() const
 			_relativePath += "\\";
 		_relativePath += path2[i];
 	}
-	if(getAbsolutePath().back() == '\\' && _relativePath.back() != '\\')
+	if(getAbsolutePath().back() == '\\'
+		&& (!_relativePath.empty() && _relativePath.back() != '\\'))
 	{
 		_relativePath += '\\';
 	}
