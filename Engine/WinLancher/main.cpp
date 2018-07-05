@@ -193,10 +193,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			QueryPerformanceCounter(&stop_t);
 			frameTime = float(stop_t.QuadPart - start_t.QuadPart) / float(freq.QuadPart);
 			average += frameTime;
-#if _DEBUG
-			extern void UnitTest();
-			UnitTest();
-#endif
 		}
 		else
 		{

@@ -20,7 +20,7 @@ namespace UnitTest
 			conf.TargetPath = @"[project.RootPath]\..\..\output\_temp\UnitTest\";
 			conf.Output = Configuration.OutputType.Exe;
 			conf.Options.Add(Options.Vc.Linker.SubSystem.Console);	
-
+			
 			conf.PrecompHeader = "";
             conf.PrecompSource = "";
 			
@@ -28,6 +28,7 @@ namespace UnitTest
 			conf.LibraryFiles.Add("gtest" + debugSuffix + ".lib");
 			conf.LibraryFiles.Add("gtest_main" + debugSuffix + ".lib");
 			conf.LibraryPaths.Add(@"[project.RootPath]\..\..\Tools\GoogleTest\build\[target.Platform]");
+			conf.IncludePaths.Add(@"[project.RootPath]\..\..\Tools\GoogleTest\src\googletest\include");
 
 			
 			conf.AddPrivateDependency<StarWay.StarWayProject>(target);

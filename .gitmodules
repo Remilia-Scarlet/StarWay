@@ -2,3 +2,6 @@
 	path = Tools/Sharpmake/src
 	url = https://github.com/ubisoftinc/Sharpmake.git
 	branch = dev
+[submodule "Tools/GoogleTest/src"]
+	path = Tools/GoogleTest/src
+	url = https://github.com/google/googletest

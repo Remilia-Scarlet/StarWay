@@ -308,7 +308,7 @@ const std::string& Path::getRelativePath() const
 
 	for (; i < (int)path2.size(); ++i)
 	{
-		if(_relativePath.back() != '\\')
+		if(!_relativePath.empty() && _relativePath.back() != '\\')
 			_relativePath += "\\";
 		_relativePath += path2[i];
 	}
