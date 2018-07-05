@@ -6,6 +6,7 @@ using Sharpmake;
 [module: Sharpmake.Include("Engine\\TinyEngine\\project\\TinyEngine.sharpmake.cs")]
 [module: Sharpmake.Include("StarWay\\project\\StarWay.sharpmake.cs")]
 [module: Sharpmake.Include("Engine\\WinLancher\\project\\WinLancher.sharpmake.cs")]
+[module: Sharpmake.Include("Engine\\UnitTest\\project\\UnitTest.sharpmake.cs")]
 
 namespace StarWay
 {
@@ -21,7 +22,7 @@ namespace StarWay
                     DevEnv.vs2017,
                     Optimization.Debug | Optimization.Release,
 					OutputType.Lib,
-					Blob.NoBlob | Blob.Blob
+					Blob.NoBlob/* | Blob.Blob */
             ));
         }
 
@@ -38,6 +39,7 @@ namespace StarWay
 			conf.AddProject<TinyEngine.TinyEngineProject>(target);
 			conf.AddProject<StarWay.StarWayProject>(target);
 			conf.AddProject<WinLancher.WinLancherProject>(target);
+			conf.AddProject<UnitTest.UnitTestProject>(target);
         }
 
 		[Configure()]

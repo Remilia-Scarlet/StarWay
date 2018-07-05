@@ -14,7 +14,7 @@ namespace Common
                     DevEnv.vs2017,
                     Optimization.Debug | Optimization.Release,
 					OutputType.Lib,
-					Blob.NoBlob | Blob.Blob
+					Blob.NoBlob/* | Blob.Blob */
             ));
             RootPath = @"[project.SharpmakeCsPath]\..";
             SourceRootPath = RootPath;
@@ -35,7 +35,7 @@ namespace Common
 			
 			conf.Name = "[target.Blob] [target.Optimization]";
 			
-			conf.TargetFileFullName = @"[project.Name]_[target.Platform]_[target.Optimization]_[target.Blob]";
+			conf.TargetFileFullName = @"[project.Name]_[target.DevEnv]_[target.Platform]_[target.Optimization]_[target.Blob]";
 			conf.Output = Configuration.OutputType.Lib;
 			
 			conf.Options.Add(Options.Vc.General.TreatWarningsAsErrors.Enable);
