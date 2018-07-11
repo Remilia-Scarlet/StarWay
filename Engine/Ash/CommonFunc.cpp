@@ -4,8 +4,8 @@
 #include <memory>
 #include "TinyAssert.h"
 
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
-#include <windows.h>
+#if defined(TINY_PLATFORM_WINDOWS)
+#include <Windows.h>
 #endif
 
 void DebugString(const char* fmt, ...)
@@ -19,7 +19,7 @@ void DebugString(const char* fmt, ...)
 	va_start(args, fmt);
 	vsprintf(buffer.get(), format.c_str(), args);
 	va_end(args);
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 	OutputDebugStringA(buffer.get());
 #endif
 	if (!NO_LOG_FILE)
@@ -93,7 +93,7 @@ std::string& replaceSubstr(std::string& src, const std::string& searchKey, const
 
 std::wstring charToWchar(const char * c)
 {
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 	std::wstring str;
 	int len = MultiByteToWideChar(CP_ACP, 0, c, (int)strlen(c), NULL, 0);
 	wchar_t*    m_wchar = new wchar_t[len + 1];
@@ -109,7 +109,7 @@ std::wstring charToWchar(const char * c)
 
 std::string wcharToChar(const wchar_t * wp)
 {
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 	std::string str;
 	int len = WideCharToMultiByte(CP_ACP, 0, wp, (int)wcslen(wp), NULL, 0, NULL, NULL);
 	char    *m_char = new char[len + 1];

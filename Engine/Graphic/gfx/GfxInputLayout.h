@@ -2,7 +2,7 @@
 #include "Graphic/Vertex/InputLayoutDefine.h"
 #include "Ash/RefCountPointer/RefCountObj.h"
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	class DX11InputLayout;
 
 	typedef DX11InputLayout PlatformInputLayout;

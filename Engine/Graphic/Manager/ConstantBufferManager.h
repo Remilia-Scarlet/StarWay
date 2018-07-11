@@ -4,7 +4,7 @@
 #include "Math/vector/Vector.h"
 #include "Math/matrix/Matrix.h"
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	class DX11ConstantBufferManager;
 	typedef DX11ConstantBufferManager PlatformConstantBufferManager;
 #else
@@ -44,7 +44,7 @@ protected:
 };
 
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	#include "Graphic/DX11/DX11ConstantBufferManager.h"
 #else
 	#error Unknown graphic engine

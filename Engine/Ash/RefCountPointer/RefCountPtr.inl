@@ -1,4 +1,4 @@
-#include "RefCountPtr.h"
+
 //////////////////////////////////////////////////////////////////////////
 template <class T>
 T* RefCountPtr<T>::operator->() const
@@ -23,7 +23,7 @@ template <class T>
 template<class T2, class>
 RefCountPtr<T>& RefCountPtr<T>::operator=(const RefCountPtr<T2>& other)
 {
-	reset(other.get());
+	reset(other.clone().get());
 	return *this;
 }
 
@@ -35,7 +35,7 @@ RefCountPtr<T>& RefCountPtr<T>::operator=(const RefCountPtr<T>& other)
 }
 
 template <class T>
-RefCountPtr<T>& RefCountPtr<T>::operator=(RefCountPtr<T>&& other)
+RefCountPtr<T>& RefCountPtr<T>::operator=(RefCountPtr<T>&& other) noexcept
 {
 	reset();
 	swap(other);
@@ -75,6 +75,7 @@ void RefCountPtr<T>::reset()
 template <class T>
 void RefCountPtr<T>::reset(T* ptr)
 {
+	std::unique_lock<SpinMutex> lock(_spinMutex);
 	if (_obj != ptr)
 	{
 		if (ptr)
@@ -89,12 +90,14 @@ void RefCountPtr<T>::reset(T* ptr)
 template <class T>
 void RefCountPtr<T>::reset(const RefCountPtr& other)
 {
-	reset(other._obj);
+	reset(other.clone()._obj);
 }
 
 template <class T>
-void RefCountPtr<T>::swap(RefCountPtr& other)
+void RefCountPtr<T>::swap(RefCountPtr& other) noexcept
 {
+	std::lock(_spinMutex, other._spinMutex);
+
 	T* obj = _obj;
 	_obj = other._obj;
 	other._obj = obj;
@@ -102,6 +105,17 @@ void RefCountPtr<T>::swap(RefCountPtr& other)
 	_RefInfo* info = _refInfo;
 	_refInfo = other._refInfo;
 	other._refInfo = info;
+
+	_spinMutex.unlock();
+	other._spinMutex.unlock();
+}
+
+template <class T>
+RefCountPtr<T> RefCountPtr<T>::clone() const
+{
+	std::unique_lock<SpinMutex> lock(_spinMutex);
+	RefCountPtr ptr(_obj);
+	return ptr;
 }
 
 template <class T>
@@ -127,7 +141,7 @@ template <class T>
 RefCountPtr<T>::RefCountPtr(const RefCountPtr<T>& other)
 	:_obj(nullptr), _refInfo(nullptr)
 {
-	reset(other.get());
+	reset(other);
 }
 
 template< class T >
@@ -135,7 +149,7 @@ template <class T2, class>
 RefCountPtr<T>::RefCountPtr(const RefCountPtr<T2>& other)
 	: _obj(nullptr), _refInfo(nullptr)
 {
-	reset(other.get());
+	reset(other.clone().get());
 }
 
 template <class T>
@@ -148,6 +162,7 @@ RefCountPtr<T>::RefCountPtr(RefCountPtr<T>&& other)
 template <class T>
 RefCountPtr<T>::~RefCountPtr()
 {
+	std::unique_lock<SpinMutex> lock(_spinMutex);
 	if (_refInfo)
 		_refInfo->releaseStrongRef();
 }

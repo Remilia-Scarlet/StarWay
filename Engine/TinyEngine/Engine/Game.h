@@ -1,6 +1,6 @@
 #pragma once
 
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 #include <Windows.h>
 #endif
 

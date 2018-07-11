@@ -7,7 +7,7 @@
 #include "Graphic/gfx/GfxTexture.h"
 #include "Graphic/gfx/GfxRenderBuffer.h"
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	class DX11GraphicMgr;
 	typedef DX11GraphicMgr PlatformGraphicMgr;
 #else
@@ -40,7 +40,7 @@ struct InputLayout_COMMON
 class GraphicMgr
 {
 public:
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	static bool createInstance(int width, int height, HWND hWnd);
 #else
 	#error Unknown graphic engine
@@ -91,7 +91,7 @@ GfxInputLayoutPtr GraphicMgr::getInputLayout()
 	return layout;
 }
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 #include "Graphic/DX11/DX11GraphicMgr.h"
 #else
 #error Unknown graphic engine

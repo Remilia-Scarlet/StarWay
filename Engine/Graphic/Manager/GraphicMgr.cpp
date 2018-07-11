@@ -1,7 +1,7 @@
 #include "precomp.h"
 #include "GraphicMgr.h"
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 #include "Graphic/DX11/DX11GraphicMgr.h"
 #endif
 
@@ -16,7 +16,7 @@ PlatformGraphicMgr* GraphicMgr::instance()
 
 bool GraphicMgr::createInstance(int width, int height, HWND hWnd)
 {
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	PlatformGraphicMgr* instan = new PlatformGraphicMgr();
 	if (!instan || !instan->init(width,height,hWnd))
 	{

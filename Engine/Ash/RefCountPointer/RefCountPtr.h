@@ -1,10 +1,48 @@
 #pragma once
 #include <type_traits>
+#include "Ash/ThreadPool/SpinMutex.h"
+#include <mutex>
 
 class RefCountObj;
 class _RefInfo;
 template <class T>class WeakRefPtr;
 
+/*
+ * You can use different copies of RefCountPtr which point to the same pointer in different threads
+ * But you can't use one RefCountPtr in different threads.
+ * For example:
+ * 
+ * RefCountPtr<int> ptr {new int()};
+ * 
+ * void Thread_1()
+ * {
+ *		RefCountPtr<int> ptr1 = ptr; //OK, copy one in your thread first
+ *		doSomeThing_1(ptr1); //OK, you can use this one in your thread
+ *		ptr1 = nullptr; //OK
+ * }
+ * void Thread_2()
+ * {
+ *		RefCountPtr<int> ptr2 = ptr; //OK
+ *		doSomeThing_2(ptr2); //OK
+ *		ptr2 = nullptr; //OK
+ * }
+ * 
+ * You can't:
+ * 
+ * RefCountPtr<int> ptr {new int()};
+ * 
+ * void Thread_1()
+ * {
+ *		doSomeThing_1(ptr); //No, may crash if thread2 releases ptr when you are using it
+ *		ptr = nullptr; //No, may crash if thread1 and thread2 change the ptr at the same time.
+ * }
+ * void Thread_2()
+ * {
+ *		doSomeThing_2(ptr); //No
+ *		ptr = nullptr; //No
+ * }
+ * 
+ */
 template <class T>
 class RefCountPtr
 {
@@ -31,14 +69,15 @@ public:
 	template<class T2,
 		class = typename std::enable_if<std::is_convertible<T2*, T*>::value, void>::type>
 	inline RefCountPtr<T>& operator=(const RefCountPtr<T2>& other);
-	inline RefCountPtr<T>& operator=(RefCountPtr<T>&& other);
+	inline RefCountPtr<T>& operator=(RefCountPtr<T>&& other) noexcept;
 
 	inline T* get()const;
 	inline int getStrongRefCount()const;
 	inline int getWeakRefCount()const;
 	inline bool isValid()const;
 
-	inline void swap(RefCountPtr<T>& other);
+	inline void swap(RefCountPtr<T>& other) noexcept;
+	inline RefCountPtr clone() const;
 
 	inline void reset();
 	inline void reset(T* ptr);
@@ -46,6 +85,7 @@ public:
 protected:
 	T* _obj;
 	_RefInfo* _refInfo;
+	mutable SpinMutex _spinMutex;
 };
 
 

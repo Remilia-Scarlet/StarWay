@@ -1,3 +1,4 @@
+#include "precomp.h"
 #define _CRT_SECURE_NO_WARNINGS
 #include "gtest/gtest.h"
 #include "Ash/CommonFunc.h"
@@ -5,6 +6,10 @@
 #include "Ash/FileSystem/fs_include.h"
 #include "Ash/RefCountPointer/RefCountObj.h"
 #include "Ash/RefCountPointer/RefCountPtr.h"
+#include "Ash/Container/RingBuffer.h"
+#include "Ash/ThreadPool/Task.h"
+#include "Ash/ThreadPool/ThreadPool.h"
+#include <algorithm>
 
 TEST(Ash, StringSplitTest)
 {
@@ -261,6 +266,7 @@ class B : public A
 public:
 	RefCountPtr<B> _b;
 };
+
 TEST(Ash, SmartPtr)
 {
 	RefCountPtr<A> smartPtr = RefCountPtr<A>(new A());
@@ -311,4 +317,511 @@ TEST(Ash, SmartPtr)
 	EXPECT_EQ(ptr, nullptr);
 	EXPECT_EQ(weakPtr2.getStrongRefCount(), 0);
 	EXPECT_EQ(weakPtr2.getWeakRefCount(), 1);
+}
+
+class TestRingBufferClass
+{
+public:
+	TestRingBufferClass(char ch, int count) : _data(count,ch){ ++s_instanceNumber; }
+	TestRingBufferClass(std::string para) :_data(para) { ++s_instanceNumber; }
+	TestRingBufferClass(const TestRingBufferClass& other) :_data(other._data) { ++s_instanceNumber; }
+	TestRingBufferClass(TestRingBufferClass&&) = default;
+	TestRingBufferClass& operator= (const TestRingBufferClass&) = delete;
+	TestRingBufferClass& operator= (TestRingBufferClass&&) = default;
+	~TestRingBufferClass() { if (!_data.empty()) --s_instanceNumber; }
+	std::string _data;
+
+	static int s_instanceNumber;
+};
+int TestRingBufferClass::s_instanceNumber = 0;
+
+TEST(Ash, RingBufferTest)
+{
+	{
+		RingBuffer<int> r1;
+		EXPECT_EQ(r1.getSize(), 0);
+		EXPECT_EQ(r1.getCapacity(), 0);
+
+		r1.setCapacity(0);
+		EXPECT_EQ(r1.getCapacity(), 0);
+
+		r1.setCapacity(3);
+		EXPECT_EQ(r1.getCapacity(), 3);
+		EXPECT_EQ(r1.getSize(), 0);
+
+		r1.emplaceBackItem(123);
+		EXPECT_EQ(r1.back(), 123);
+		EXPECT_EQ(r1.front(), 123);
+		EXPECT_EQ(r1.getSize(), 1);
+		EXPECT_EQ(r1.getFreeCount(), 2);
+
+		r1.emplaceFrontItem(456);
+		EXPECT_EQ(r1.back(), 123);
+		EXPECT_EQ(r1.front(), 456);
+		EXPECT_EQ(r1.getSize(), 2);
+		EXPECT_EQ(r1.getFreeCount(), 1);
+		EXPECT_EQ(r1.isFull(), false);
+
+		r1.emplaceBackItem(789);
+		EXPECT_EQ(r1.back(), 789);
+		EXPECT_EQ(r1.front(), 456);
+		EXPECT_EQ(r1.getSize(), 3);
+		EXPECT_EQ(r1.getFreeCount(), 0);
+		EXPECT_EQ(r1.isFull(), true);
+
+		//EXPECT_DEBUG_DEATH(r1.emplaceFrontItem(0), "");
+	}
+	{
+		RingBuffer<int> r3{ 1,2,3 };
+
+	}
+	{
+		RingBuffer<int> r1(3);
+		EXPECT_EQ(r1.getSize(), 0);
+		EXPECT_EQ(r1.getCapacity(), 3);
+
+		r1.setCapacity(0);
+		EXPECT_EQ(r1.getCapacity(), 3);
+
+		r1.setCapacity(3);
+		EXPECT_EQ(r1.getCapacity(), 3);
+		EXPECT_EQ(r1.getSize(), 0);
+
+		r1.emplaceBackItem(123);
+		EXPECT_EQ(r1.back(), 123);
+		EXPECT_EQ(r1.front(), 123);
+		EXPECT_EQ(r1.getSize(), 1);
+		EXPECT_EQ(r1.getFreeCount(), 2);
+
+		r1.emplaceFrontItem(456);
+		EXPECT_EQ(r1.back(), 123);
+		EXPECT_EQ(r1.front(), 456);
+		EXPECT_EQ(r1.getSize(), 2);
+		EXPECT_EQ(r1.getFreeCount(), 1);
+		EXPECT_EQ(r1.isFull(), false);
+
+		r1.popBack();
+		EXPECT_EQ(r1.back(), 456);
+		EXPECT_EQ(r1.front(), 456);
+		EXPECT_EQ(r1.getSize(), 1);
+		EXPECT_EQ(r1.getFreeCount(), 2);
+
+		r1.emplaceBackItem(789);
+		EXPECT_EQ(r1.back(), 789);
+		EXPECT_EQ(r1.front(), 456);
+		EXPECT_EQ(r1.getSize(), 2);
+		EXPECT_EQ(r1.getFreeCount(),1);
+		EXPECT_EQ(r1.isFull(), false);
+
+		r1.emplaceFrontItem(0);
+		EXPECT_EQ(r1.back(), 789);
+		EXPECT_EQ(r1.front(), 0);
+		EXPECT_EQ(r1.getSize(), 3);
+		EXPECT_EQ(r1.getFreeCount(), 0);
+		EXPECT_EQ(r1.isFull(), true);
+
+		r1.reset();
+		EXPECT_EQ(r1.getSize(), 0);
+		EXPECT_EQ(r1.getFreeCount(), 0);
+		EXPECT_EQ(r1.getCapacity(), 0);
+	}
+	{
+		RingBuffer<TestRingBufferClass> rr;
+		int instanceNum;
+		{
+			RingBuffer<TestRingBufferClass> r1;
+
+			int index = 100000;
+			while (--index)
+			{
+				int opera = rand() % 9;
+				switch (opera)
+				{
+				case 0:
+					if (r1.getFreeCount() == 0)
+						r1.setCapacity(r1.getCapacity() + 1);
+					r1.emplaceBackItem("str");
+					EXPECT_EQ(r1.getSize(), TestRingBufferClass::s_instanceNumber);
+					break;
+				case 1:
+				{
+					int elemNum = rand() % 10;
+					if (r1.getFreeCount() < elemNum)
+						r1.setCapacity(r1.getCapacity() + elemNum);
+					r1.emplaceBackItems(elemNum, 'a', 10);
+					EXPECT_EQ(r1.getSize(), TestRingBufferClass::s_instanceNumber);
+				}
+				break;
+				case 2:
+					if (r1.getFreeCount() == 0)
+						r1.setCapacity(r1.getCapacity() + 1);
+					r1.emplaceFrontItem("strf");
+					EXPECT_EQ(r1.getSize(), TestRingBufferClass::s_instanceNumber);
+					break;
+				case 3:
+				{
+					int elemNum = rand() % 10;
+					if (r1.getFreeCount() < elemNum)
+						r1.setCapacity(r1.getCapacity() + elemNum);
+					r1.emplaceFrontItems(elemNum, 'b', 12);
+					EXPECT_EQ(r1.getSize(), TestRingBufferClass::s_instanceNumber);
+				}
+				case 4:
+					if (r1.getFreeCount() > 0)
+					{
+						EXPECT_NO_THROW(r1.front());
+					}
+					break;
+				case 5:
+					if (r1.getFreeCount() > 0)
+					{
+						EXPECT_NO_THROW(r1.popFront());
+						EXPECT_EQ(r1.getSize(), TestRingBufferClass::s_instanceNumber);
+					}
+					break;
+				case 6:
+					if (r1.getFreeCount() > 0)
+					{
+						EXPECT_NO_THROW(r1.back());
+					}
+					break;
+				case 7:
+					if (r1.getFreeCount() > 0)
+					{
+						EXPECT_NO_THROW(r1.popBack());
+						EXPECT_EQ(r1.getSize(), TestRingBufferClass::s_instanceNumber);
+					}
+					break;
+				case 8:
+					r1.reset();
+					EXPECT_EQ(r1.getSize(), TestRingBufferClass::s_instanceNumber);
+					break;
+				}
+			}
+
+			instanceNum = TestRingBufferClass::s_instanceNumber;
+			rr = r1;
+			int instanceNum2 = TestRingBufferClass::s_instanceNumber;
+			EXPECT_EQ(instanceNum * 2, instanceNum2);
+		}
+		{
+			EXPECT_EQ(TestRingBufferClass::s_instanceNumber, instanceNum);
+			RingBuffer<TestRingBufferClass> rr2{ std::move(rr) };
+			EXPECT_EQ(rr.getSize(), 0);
+			EXPECT_EQ(rr.getCapacity(), 0);
+			EXPECT_EQ(TestRingBufferClass::s_instanceNumber, instanceNum);
+
+			RingBuffer<TestRingBufferClass> rr3 { std::string("abc"),std::string("2"),std::string("3") };
+			EXPECT_EQ(rr3.getSize(), 3);
+			EXPECT_EQ(rr3.getCapacity(), 3);
+			int ii = 0;
+			RingBuffer<TestRingBufferClass>::iterator it = rr3.begin();
+			for(;it != rr3.end();++it)
+			{
+				switch(ii)
+				{
+				case 0:
+					EXPECT_EQ(it->_data, "abc");
+					break;
+				case 1:
+					EXPECT_EQ((*it)._data, "2");
+					break;
+				case 2:
+					EXPECT_EQ(it->_data, "3");
+					break;
+				default:
+					ADD_FAILURE(); //should not have more
+				}
+				++ii;
+			}
+			it = rr3.begin();
+			EXPECT_EQ(it->_data, "abc");
+			EXPECT_EQ((it++)->_data, "abc");;
+			EXPECT_EQ(it->_data, "2");
+			EXPECT_EQ((++it)->_data, "3");;
+			EXPECT_EQ(it->_data, "3");
+			EXPECT_EQ((--it)->_data, "2");
+			EXPECT_EQ(it->_data, "2");
+			EXPECT_EQ((it--)->_data, "2");
+
+			RingBuffer<int> rr4 { 0,1,2 };
+			RingBuffer<int>::ringIterator itt{ rr4.ringBegin() };
+			for(int iii = 0 ; iii < 5; ++iii)
+			{
+				EXPECT_EQ(*itt, iii % 3);
+				if (iii % 2)
+				{
+					EXPECT_EQ(*(itt++), iii % 3);
+				}
+				else
+				{
+					EXPECT_EQ(*(++itt), (iii+1) % 3);
+				}
+			}
+			itt = rr4.ringBegin();
+			for (int iii = 0; iii > -5; --iii)
+			{
+				EXPECT_EQ(*itt, (iii+6) % 3);
+				if (iii % 2)
+				{
+					EXPECT_EQ(*(itt--), (iii + 6) % 3);
+				}
+				else
+				{
+					EXPECT_EQ(*(--itt), (iii - 1 + 6) % 3);
+				}
+			}
+
+			rr3 = std::move(rr2);
+			EXPECT_EQ(TestRingBufferClass::s_instanceNumber, instanceNum);
+		}
+	}
+	EXPECT_EQ(TestRingBufferClass::s_instanceNumber, 0);
+}
+
+TEST(Ash, ThreadPoolTest)
+{
+	constexpr int threadNumber = 12;
+	std::vector<int> numbers(1000000);
+	for (auto& i : numbers)
+	{
+		i = (rand() & 0xfff) << 12 | (rand() & 0xfff);
+	}
+
+	std::function<void(int*, int)> insertionSort = [](int* arr, int size)
+	{
+		for (int current = 1; current < size; ++current)
+		{
+			for (int i = current; i > 0; --i)
+			{
+				if (arr[i] < arr[i - 1])
+					std::swap(arr[i], arr[i - 1]);
+				else
+					break;
+			}
+		}
+
+	};
+
+	std::function<void(int*,int, int) >  mergeArr = [](int* arr, int mid, int size)
+	{
+		if (mid == size || mid == 0 || size == 0)
+			return;
+		std::shared_ptr<int[]> mergedArrPtr{ new int[size] };
+		int* mergedArr = mergedArrPtr.get();
+
+		int left = 0;
+		int right = mid;
+		int curr = 0;
+		while (left < mid && right < size)
+		{
+			if (arr[left] < arr[right])
+				mergedArr[curr++] = arr[left++];
+			else
+				mergedArr[curr++] = arr[right++];
+		}
+		while (left < mid)
+			mergedArr[curr++] = arr[left++];
+		while (right < size)
+			mergedArr[curr++] = arr[right++];
+		memcpy(arr, mergedArr, size * sizeof(int));
+	};
+
+	//Test build task first
+	if(1)
+	{
+		std::vector<int> data = numbers;
+		ThreadPool threadPool(threadNumber);
+		auto start = std::chrono::system_clock::now();
+		{
+			
+			std::function <RefCountPtr<Task>(int* arr, int size)> buildTask = [&buildTask, &mergeArr, &insertionSort](int* arr, int size) -> RefCountPtr<Task>
+			{
+				RefCountPtr<Task> ret;
+				if (size <= 32)
+				{
+					std::function<void(Task*)> taskFunInsertionSort = [arr, size, &insertionSort](Task*)
+					{
+						insertionSort(arr, size);
+					};
+					ret = RefCountPtr<Task>(new Task(taskFunInsertionSort));
+				}
+				else
+				{
+					int mid = size / 2;
+					RefCountPtr<Task> sortTaskLeft = buildTask(arr, mid);
+					RefCountPtr<Task> sortTaskRight = buildTask(arr + mid, size - mid);
+					std::function<void(Task*)> mergeFun = [&mergeArr, mid, arr, size](Task*) {mergeArr(arr, mid, size); };
+					RefCountPtr<Task> mergeTask{ new Task(mergeFun) };
+					mergeTask->addDependence(sortTaskLeft);
+					mergeTask->addDependence(sortTaskRight);
+					ret = mergeTask;
+				}
+				return ret;
+			};
+
+			RefCountPtr<Task> mergeSortTask = buildTask(data.data(), (int)data.size());
+			threadPool.addTask(mergeSortTask);
+			mergeSortTask->waitForTaskDone();
+		}
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		DebugString("build task first cost: %f seconds", diff.count());
+		bool orderIsRight = true;
+		for (int i = 1; i < (int)data.size(); ++i)
+		{
+			if (data[i] < data[i - 1])
+			{
+				orderIsRight = false;
+				break;
+			}
+		}
+		EXPECT_TRUE(orderIsRight);
+	}
+
+	//Test add task in task executing
+	if(0)
+	{
+		std::vector<int> data = numbers;
+		auto start = std::chrono::system_clock::now();
+		{
+			ThreadPool threadPool(threadNumber);
+			std::function <void(Task*, int*, int)> createTaskWhenInTask = [&threadPool, &mergeArr, &createTaskWhenInTask, &insertionSort](Task*, int* arr, int size)
+			{
+				if (size <= 32)
+				{
+					insertionSort(arr, size);
+				}
+				else
+				{
+					int mid = size / 2;
+					std::function<void(Task*)> leftFun = std::bind(createTaskWhenInTask, std::placeholders::_1, arr, mid);
+					RefCountPtr<Task> sortTaskLeft(new Task(leftFun));
+					std::function<void(Task*)> rightFun = std::bind(createTaskWhenInTask, std::placeholders::_1, arr + mid, size - mid);
+					RefCountPtr<Task> sortTaskRight(new Task(rightFun));
+					std::function<void(Task*)> mergeFun = [&mergeArr, mid, arr, size](Task*) {mergeArr(arr, mid, size); };
+					RefCountPtr<Task> mergeTask{ new Task(mergeFun) };
+					threadPool.addTask(sortTaskLeft);
+					threadPool.addTask(sortTaskRight);
+					//mergeTask->addDependence(sortTaskLeft);
+					//mergeTask->addDependence(sortTaskRight);
+					//threadPool.addTask(mergeTask);
+				}
+			};
+			std::function <void(Task*)> firstTaskFun = std::bind(createTaskWhenInTask, std::placeholders::_1, data.data(), (int)data.size());
+			RefCountPtr<Task> firstTask(new Task(firstTaskFun));
+			threadPool.addTask(firstTask);
+			threadPool.waitForAllTasksFinished();
+		}
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		DebugString("build task first cost: %f seconds", diff.count());
+		bool orderIsRight = true;
+		for (int i = 1; i < (int)data.size(); ++i)
+		{
+			if (data[i] < data[i - 1])
+			{
+				orderIsRight = false;
+				break;
+			}
+		}
+		EXPECT_TRUE(orderIsRight);
+	}
+
+	//Test add task in different thread
+	if(1)
+	{
+		const int insertionSortMaxSize = 32;
+		const int addingTaskThreadNumber = 12;
+		std::vector<int> data = numbers;
+		ThreadPool threadPool(threadNumber);
+
+		auto start = std::chrono::system_clock::now();
+		{
+			int perAddingTaskHandleTaskNum = (int)std::ceil(double(data.size()) / double(insertionSortMaxSize * addingTaskThreadNumber));
+			for (int i = 0; i < addingTaskThreadNumber; ++i)
+			{
+				int begin = i * perAddingTaskHandleTaskNum * insertionSortMaxSize;
+				if (begin >= (int)data.size())
+					break;
+				threadPool.addTask(RefCountPtr<Task>(new Task([insertionSortMaxSize, begin, perAddingTaskHandleTaskNum, &threadPool, &data, &insertionSort](Task*)
+				{
+					for (int j = 0; j < perAddingTaskHandleTaskNum; ++j)
+					{
+						int start = begin + j * insertionSortMaxSize;
+						int end = start + insertionSortMaxSize;
+						if (end > (int)data.size())
+							end = (int)data.size();
+						int size = end - start;
+						std::function<void(Task*)> taskfun = [size, start, &data, &insertionSort](Task*)
+						{
+							insertionSort(data.data() + start, size);
+						};
+						threadPool.addTask(RefCountPtr<Task>(new Task(taskfun)));
+					}
+				})));
+			}
+			threadPool.waitForAllTasksFinished();
+
+			int mergeSize = insertionSortMaxSize;
+			while (true)
+			{
+				if (mergeSize >= (int)data.size())
+					break;
+				mergeSize *= 2;
+				int perAddingTaskHandleTaskNum = (int)std::ceil(double(data.size()) / double(mergeSize * addingTaskThreadNumber));
+				for (int i = 0; i < addingTaskThreadNumber; ++i)
+				{
+					int begin = i * perAddingTaskHandleTaskNum * mergeSize;
+					if (begin >= (int)data.size())
+						break;
+					threadPool.addTask(RefCountPtr<Task>(new Task([mergeSize, begin, perAddingTaskHandleTaskNum, &threadPool, &data, &mergeArr](Task*)
+					{
+						for (int j = 0; j < perAddingTaskHandleTaskNum; ++j)
+						{
+							int start = begin + j * mergeSize;
+							int end = start + mergeSize;
+							if (end > (int)data.size())
+								end = (int)data.size();
+							int size = end - start;
+							if (size <= 0)
+								break;
+							int mid = mergeSize / 2;
+							if (mid >= size)
+								break;
+							std::function<void(Task*)> taskfun = [size, start, mid, &data, &mergeArr](Task*)
+							{
+								mergeArr(data.data() + start, mid, size);
+							};
+							threadPool.addTask(RefCountPtr<Task>(new Task(taskfun)));
+						}
+					})));
+				}
+				threadPool.waitForAllTasksFinished();
+			}
+		}
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		DebugString("add task during running cost: %f seconds", diff.count());
+		bool orderIsRight = true;
+		for (int i = 1; i < (int)data.size(); ++i)
+		{
+			if (data[i] < data[i - 1])
+			{
+				orderIsRight = false;
+				break;
+			}
+		}
+		EXPECT_TRUE(orderIsRight);
+	}
+
+	{
+		auto start = std::chrono::system_clock::now();
+		{
+			std::sort(numbers.begin(), numbers.end(), std::less<int>());
+		}
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		DebugString("std::sort cost: %f seconds", diff.count());
+	}
 }

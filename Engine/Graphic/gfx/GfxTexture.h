@@ -1,6 +1,6 @@
 #pragma once
 #include "Ash/RefCountPointer/RefCountObj.h"
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	class DX11Texture;
 
 	typedef DX11Texture PlatformTexture;
@@ -27,7 +27,7 @@ protected:
 	virtual bool init(const uint8_t* ddsData, int dataSize, const char* debugName) = 0;
 };
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	#include "Graphic/DX11/DX11Texture.h"
 #else
 	#error Unknown platform

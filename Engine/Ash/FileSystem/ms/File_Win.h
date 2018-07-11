@@ -3,7 +3,7 @@
 #error Don't include this file directly. Include "fs_include.h" instead.
 #endif
 
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 
 #include "Path_Win.h"
 #include <vector>
@@ -73,4 +73,4 @@ protected:
 	HANDLE _fileHandle;
 };
 
-#endif //#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#endif //#if defined(TINY_PLATFORM_WINDOWS)

@@ -1,6 +1,6 @@
 #pragma once
 #include "TinyEngine/Scene/Scene.h"
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 #include <Windows.h>
 #endif
 class Engine
@@ -31,7 +31,7 @@ protected:
 	Engine();
 	virtual ~Engine();
 	bool init(int solutionWidth, int solutionHeight
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 		,HWND hWnd
 #endif
 	);

@@ -14,7 +14,6 @@ std::string wcharToChar(const wchar_t* wp);
 std::string toLower(std::string str);
 std::string toUpper(std::string str);
 
-
 #define TINY_BREAK_IF(CENTENCE) if(CENTENCE)break
 #define TINY_SAFE_DELETE(PTR) do{if(PTR != nullptr){delete PTR;PTR = nullptr;}}while(0)
 #define TINY_SAFE_RELEASE(PTR) do{if(PTR != nullptr){PTR->Release();PTR = nullptr;}}while(0)

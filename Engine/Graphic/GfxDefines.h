@@ -1,5 +1,5 @@
 #pragma once
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	#ifdef PLATFORM_DURANGO
 		#include <d3d11_x.h>
 		#include <d3dcompiler_x.h>
@@ -12,7 +12,7 @@
 
 
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	typedef ID3DBlob					ShaderBlob;
 	typedef ID3D11VertexShader			CompiledVSShader;
 	typedef ID3D11PixelShader			CompiledPSShader;
@@ -21,7 +21,7 @@
 	typedef ID3D11Buffer				PlatformIndexBuffer;
 	typedef ID3D11Buffer				PlatformVertexBuffer;
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	#ifdef _DEBUG
 		#define SET_DEBUG_NAME(D3DOBJ,NAME) do{D3DOBJ->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)std::strlen(NAME), (NAME));}while(0)
 	#else

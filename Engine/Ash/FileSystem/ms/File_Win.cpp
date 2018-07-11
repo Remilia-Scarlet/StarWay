@@ -1,6 +1,6 @@
 #include "precomp.h"
 
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 #include "../fs_include.h"
 #include "TinyAssert.h"
 #include <windows.h>
@@ -169,4 +169,4 @@ const Path& File::getFilePath() const
 	return _filePath;
 }
 
-#endif // #if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#endif // #if defined(TINY_PLATFORM_WINDOWS)

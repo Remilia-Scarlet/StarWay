@@ -46,7 +46,7 @@ bool GfxIndexBuffer::initBuffer(const void* indexBuffer, int size, IndexBufferDa
 
 void GfxIndexBuffer::setBuffer()
 {
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	ID3D11DeviceContext* context = GraphicMgr::instance()->getD3D11DeviceContext();
 	TinyAssert(context != nullptr, "GfxIndexBuffer::setBuffer can't get context");
 	context->IASetIndexBuffer(_indexBuffer, (_dataFormat == IndexBufferDataFormat::BIT_16 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT), 0);

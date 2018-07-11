@@ -19,7 +19,7 @@ GfxVertexBuffer::~GfxVertexBuffer()
 
 bool GfxVertexBuffer::initBuffer(const void* vertexBufferData, int size, int stride)
 {
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;

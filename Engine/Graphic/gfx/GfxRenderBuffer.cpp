@@ -1,7 +1,7 @@
 #include "precomp.h"
 #include "GfxRenderBuffer.h"
 
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	#include "Graphic/DX11/DX11RenderBuffer.h"
 	class DX11RenderBuffer;
 

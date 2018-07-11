@@ -11,7 +11,7 @@ PlatformConstantBufferManager* ConstantBufferManager::instance()
 bool ConstantBufferManager::createInstance()
 {
 	TinyAssert(s_instance == nullptr, "Call destroyInstance first");
-#if TINY_GRAPHIC_ENGINE_TARGET == TINY_GRAPHIC_ENGINE_DX11
+#if defined(TINY_PLATFORM_WINDOWS)
 	s_instance = new DX11ConstantBufferManager();
 #else
 #error unkonwn platform

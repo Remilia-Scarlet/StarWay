@@ -1,6 +1,7 @@
 #pragma once
 #include "Ash/CommonFunc.h"
 #include "Ash/TinyAssert.h"
+#include <atomic>
 
 template <class T> class RefCountPtr;
 class RefCountObj;
@@ -9,8 +10,8 @@ class _RefInfo
 {
 public:
 	_RefInfo(RefCountObj* obj) :_refCount(0), _weakCount(0), _obj(obj) {}
-	int _refCount;
-	int _weakCount;
+	std::atomic<int> _refCount;
+	std::atomic<int> _weakCount;
 	RefCountObj* _obj;
 
 	inline void addStrongRef();
@@ -54,20 +55,16 @@ void _RefInfo::addStrongRef()
 
 void _RefInfo::releaseStrongRef()
 {
-	if (_refCount > 0)
+	TinyAssert(_refCount > 0);
+	int currentVal = --_refCount;
+	if (currentVal == 0)
 	{
-		--_refCount;
-		if (_refCount == 0)
-		{
-			addWeakRef();// for not delete _RefInfo
-			_obj->_refInfo = nullptr;
-			delete _obj;
-			_obj = nullptr;
-			releaseWeakRef();
-		}
+		addWeakRef();// for not delete _RefInfo
+		_obj->_refInfo = nullptr;
+		delete _obj;
+		_obj = nullptr;
+		releaseWeakRef();
 	}
-	else
-		TinyAssert(false);
 }
 
 void _RefInfo::addWeakRef()
@@ -77,14 +74,10 @@ void _RefInfo::addWeakRef()
 
 void _RefInfo::releaseWeakRef()
 {
-	if (_weakCount > 0)
-	{
-		--_weakCount;
-		if (_refCount == 0 && _weakCount == 0)
-			delete this;
-	}
-	else
-		TinyAssert(false);
+	TinyAssert(_weakCount > 0);
+	int currentWeak = --_weakCount;
+	if (_refCount == 0 && currentWeak == 0)
+		delete this;
 }
 
 int _RefInfo::getStrongRefCount()

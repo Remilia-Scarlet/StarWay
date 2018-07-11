@@ -3,7 +3,7 @@
 #include "Math/vector/Vector.h"
 #include <unordered_map>
 
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 	class InputManagerWin;
 	typedef InputManagerWin PlatformInputManager;
 #else
@@ -72,7 +72,7 @@ protected:
 	static PlatformInputManager* s_instance;
 };
 
-#if TINY_PLATFORM_TARGET == TINY_PLATFORM_WINDOWS
+#if defined(TINY_PLATFORM_WINDOWS)
 	#include "Windows/InputManagerWin.h"
 #else
 	#error not support
