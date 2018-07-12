@@ -1,4 +1,5 @@
 #pragma once
+#include "Ash/Settings.h"
 #include <stdint.h>
 
 class Path;
