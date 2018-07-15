@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <cassert>
+#include <assert.h>
 #include <cstdarg>
 #include <memory>
 

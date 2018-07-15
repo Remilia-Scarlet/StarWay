@@ -25,17 +25,32 @@ public:
 	template<class UserDataType>
 	void setUserData(std::shared_ptr<UserDataType> userData) { _userData = std::static_pointer_cast<TaskUserData>(userData); }
 
+	const std::function<void(Task*)>& getWorkerFunction() const { return _worker; }
+	void setWorkerFunction(std::function<void(Task*)> worker) { _worker = std::move(worker); }
+
 	// if task is running, get the id of thread which is running the task
 	int getThreadID() const;
 
-	// If you add a dependence to this task, when you add this task to threadpool, the dependence task will also be added first
-	// And threadpool will ensure dependence tasks are finished when executing this task.
-	void addDependence(RefCountPtr<Task> dependence);
-	const std::vector<RefCountPtr<Task> >& getDependence() const;
-
+	/*
+	* Set the task after this task.
+	* You can link this task to multi tasks. When this task is finished, those tasks will be execute.
+	* If there are two or more tasks link to this task, only when they all finished, this task will be executed.
+	*
+	* For example:
+	* task1.linkTask(task2);
+	* task1.linkTask(task3);
+	* threadPool.addTask(task1);
+	* When task1 is finished, task2 and task3 will both be executed.
+	* 
+	* Another example:
+	* task1.linkTask(task3);
+	* task2.linkTask(task3);
+	* threadPool.addTask(task1);
+	* threadPool.addTask(task2);
+	* When task1 and task2 both finished, task3 will be executed.
+	*/
 	void linkTask(RefCountPtr<Task> task);
-	void unlinkTask(RefCountPtr<Task> task);
-
+	void unlinkTask(const RefCountPtr<Task>& task);
 
 	//You can't call this in task worker thread.
 	void waitForTaskDone();
@@ -53,8 +68,6 @@ protected:
 	std::mutex _mutex;
 	std::condition_variable _doneCondi;
 	std::atomic<int> _threadId = -1;
-	std::vector<RefCountPtr<Task> > _dependences;
-	std::vector<Task*> _unlock;
-	std::atomic<int> _unfinishDependenceNumber = 0;
-	RefCountPtr<Task> _mySelf;
+	std::vector<RefCountPtr<Task>> _linkedTasks;
+	std::atomic<int> _unfinishDependenceNumber{ 0 };
 };

@@ -14,16 +14,32 @@ int Task::getThreadID() const
 	return _threadId;
 }
 
-void Task::addDependence(RefCountPtr<Task> dependence)
+void Task::linkTask(RefCountPtr<Task> task)
 {
-	if(dependence->_TaskStatus != CREATED)
+	if (task->_TaskStatus != CREATED)
 	{
-		TinyAssert(false, "You can only change depedence before calling ThreadPool::addTask()");
+		TinyAssert(false, "You can't link an executing task!");
 		return;
 	}
-	dependence->_unlock.emplace_back(this);
-	_dependences.push_back(std::move(dependence));
-	++_unfinishDependenceNumber;
+	++task->_unfinishDependenceNumber;
+	_linkedTasks.emplace_back(std::move(task));
+	TinyAssert(_linkedTasks.back()->_TaskStatus == CREATED);
+}
+
+void Task::unlinkTask(const RefCountPtr<Task>& task)
+{
+	if (task->_TaskStatus != CREATED)
+	{
+		TinyAssert(false, "You can't unlink an executing task!");
+		return;
+	}
+	auto it = std::find(_linkedTasks.begin(), _linkedTasks.end(), task);
+	if (it != _linkedTasks.end())
+	{
+		--task->_unfinishDependenceNumber;
+		_linkedTasks.erase(it);
+	}
+	TinyAssert(task->_TaskStatus == CREATED);
 }
 
 void Task::waitForTaskDone()

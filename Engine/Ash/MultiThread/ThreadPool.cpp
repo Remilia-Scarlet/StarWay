@@ -33,13 +33,12 @@ void ThreadPool::Thread::run()
 		if (task._worker)
 			task._worker(&task);
 
-		for(auto& unlock : task._unlock)
+		for(auto& linkTask : task._linkedTasks)
 		{
-			//TinyAssert(unlock.isValid());
-			RefCountPtr<Task> ptr( unlock);
-			--ptr->_unfinishDependenceNumber;
-			TinyAssert(ptr->_unfinishDependenceNumber >= 0);
-			_threadPool.checkAllDependeceFinishedAndAddSelf(std::move(ptr));
+			TinyAssert(linkTask.isValid());
+			--linkTask->_unfinishDependenceNumber;
+			TinyAssert(linkTask->_unfinishDependenceNumber >= 0);
+			_threadPool.checkAllDependeceFinishedAndAddSelf(linkTask);
 		}
 		task._TaskStatus = Task::FINISHE;
 		--_threadPool._unfinishedTask;
@@ -92,12 +91,7 @@ void ThreadPool::addTask(RefCountPtr<Task> task)
 		return;
 	TinyAssert(status == Task::CREATED);
 
-	task->_mySelf = task;
 	++_unfinishedTask;
-	for (auto& depend : task->_dependences)
-	{
-		addTask(depend);
-	}
 	checkAllDependeceFinishedAndAddSelf(std::move(task));
 }
 
@@ -112,7 +106,6 @@ void ThreadPool::checkAllDependeceFinishedAndAddSelf(RefCountPtr<Task> task)
 	if (task->_unfinishDependenceNumber == 0)
 	{
 		addToThreadTaskPool(task);
-		task->_mySelf = nullptr;
 	}
 }
 
