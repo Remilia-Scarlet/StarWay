@@ -1,11 +1,7 @@
 #include "precomp.h"
 #define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
-#include <Windows.h>
-
 #include "ShaderCompiler.h"
 #include "Engine/Ash/CommonFunc.h"
-#include <ctime>
 
 void showHelp()
 {

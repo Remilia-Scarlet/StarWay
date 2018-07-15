@@ -7,8 +7,8 @@
 #include "Ash/RefCountPointer/RefCountObj.h"
 #include "Ash/RefCountPointer/RefCountPtr.h"
 #include "Ash/Container/RingBuffer.h"
-#include "Ash/ThreadPool/Task.h"
-#include "Ash/ThreadPool/ThreadPool.h"
+#include "Ash/MultiThread/Task.h"
+#include "Ash/MultiThread/ThreadPool.h"
 #include <algorithm>
 
 TEST(Ash, StringSplitTest)

@@ -28,10 +28,14 @@ public:
 	// if task is running, get the id of thread which is running the task
 	int getThreadID() const;
 
-	// If you add a dependence to this task, when you add this task to threadpool, the dependence task will also be added 
+	// If you add a dependence to this task, when you add this task to threadpool, the dependence task will also be added first
 	// And threadpool will ensure dependence tasks are finished when executing this task.
 	void addDependence(RefCountPtr<Task> dependence);
 	const std::vector<RefCountPtr<Task> >& getDependence() const;
+
+	void linkTask(RefCountPtr<Task> task);
+	void unlinkTask(RefCountPtr<Task> task);
+
 
 	//You can't call this in task worker thread.
 	void waitForTaskDone();

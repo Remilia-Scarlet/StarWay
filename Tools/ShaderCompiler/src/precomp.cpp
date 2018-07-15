@@ -1,5 +1,4 @@
 #include "precomp.h"
-#include <Windows.h>
 #include "Ash/FileSystem/fs_include.h"
 
 uint64_t getTimeStamp(const Path& file)

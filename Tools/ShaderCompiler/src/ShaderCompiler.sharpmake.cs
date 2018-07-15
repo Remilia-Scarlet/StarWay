@@ -41,6 +41,7 @@ namespace ShaderCompiler
 			conf.Options.Add(Options.Vc.Compiler.RTTI.Enable);		
 			conf.Options.Add(Options.Vc.Linker.SubSystem.Console);	
 			conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP17);
+			conf.Options.Add(Options.Vc.General.WindowsTargetPlatformVersion.v10_0_16299_0);
 			
 			conf.Defines.Add("_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING");
 

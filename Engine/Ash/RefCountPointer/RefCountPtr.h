@@ -1,6 +1,6 @@
 #pragma once
 #include <type_traits>
-#include "Ash/ThreadPool/SpinMutex.h"
+#include "Ash/MultiThread/SpinMutex.h"
 #include <mutex>
 
 class RefCountObj;

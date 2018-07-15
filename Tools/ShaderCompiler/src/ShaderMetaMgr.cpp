@@ -1,8 +1,8 @@
 #include "precomp.h"
 #include "ShaderMetaMgr.h"
-#include <TinyEngine/ThirdParty/rapidjson/document.h>
-#include <TinyEngine/ThirdParty/rapidjson/stringbuffer.h>
-#include <TinyEngine/ThirdParty/rapidjson/prettywriter.h>
+#include <Extern/rapidjson/include/rapidjson/document.h>
+#include <Extern/rapidjson/include/rapidjson/stringbuffer.h>
+#include <Extern/rapidjson/include/rapidjson/prettywriter.h>
 #include <TinyEngine/Engine/EngineDefs.h>
 #include "FileSystem/fs_include.h"
 #include <fstream>
