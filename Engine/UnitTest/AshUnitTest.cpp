@@ -582,248 +582,242 @@ TEST(Ash, RingBufferTest)
 TEST(Ash, ThreadPoolTest)
 {
 	constexpr int threadNumber = 12;
-	std::vector<int> numbers(20000000);
+	std::vector<int> numbers(1000000);
 	for (auto& i : numbers)
 	{
 		i = (rand() & 0xfff) << 12 | (rand() & 0xfff);
 	}
 
-	std::less<> _Pred;
-
-	auto _Move_backward_unchecked = [](int* _First, int* _Last, int* _Dest) -> int*
-	{	// move [_First, _Last) backwards to [..., _Dest), choose optimization
-		// note: _Move_backward_unchecked is called directly from elsewhere in the STL
-		while (_First != _Last)
-			*--_Dest = _STD move(*--_Last);
-		return (_Dest);
-	};
-
-
-	// FUNCTION TEMPLATE sort
-	auto _Insertion_sort_unchecked = [&](int* _First, int* _Last) -> int*
-	{	// insertion sort [_First, _Last), using _Pred
-		if (_First != _Last)
+	//MultiThread quick sort
+	if (1)
+	{
+		// Rewrite std::sort to use multithread task
+		typedef int* _RanIt;
+		std::function<void(ThreadPool&, _RanIt, _RanIt, std::_Iter_diff_t<_RanIt>)> _Sort_unchecked = [&](ThreadPool& threadPool, _RanIt _First, _RanIt _Last, std::_Iter_diff_t<_RanIt> _Ideal)
 		{
-			for (int* _Next = _First; ++_Next != _Last; )
-			{	// order next element
-				int* _Next1 = _Next;
-				int _Val = _STD move(*_Next);
+			std::less<> _Pred;
+			// order [_First, _Last), using _Pred
+			std::_Iter_diff_t<_RanIt> _Count;
+			while (32 < (_Count = _Last - _First) && 0 < _Ideal)
+			{	// divide and conquer by quicksort
+				auto _Mid = std::_Partition_by_median_guess_unchecked(_First, _Last, _Pred);
+				// TRANSITION, VSO#433486
+				_Ideal = (_Ideal >> 1) + (_Ideal >> 2);	// allow 1.5 log2(N) divisions
 
-				if (_Pred( _Val, *_First))
-				{	// found new earliest element, move to front
-					_Move_backward_unchecked(_First, _Next, ++_Next1);
-					*_First = _STD move(_Val);
+				if (_Mid.first - _First < _Last - _Mid.second)
+				{	// loop on second half
+					RefCountPtr<Task> task{ new Task([&threadPool, &_Sort_unchecked, _First,_Mid,_Ideal](Task*)
+					{
+						_Sort_unchecked(threadPool,_First, _Mid.first, _Ideal);
+					}) };
+					threadPool.addTask(task);
+					_First = _Mid.second;
 				}
 				else
-				{	// look for insertion point after first
-					for (int* _First1 = _Next1;
-						_Pred( _Val, *--_First1);
-						_Next1 = _First1)
+				{	// loop on first half
+					RefCountPtr<Task> task{ new Task([&threadPool, &_Sort_unchecked, _Last,_Mid,_Ideal](Task*)
 					{
-						*_Next1 = _STD move(*_First1);	// move hole down
+						_Sort_unchecked(threadPool, _Mid.second, _Last, _Ideal);
+					}) };
+					threadPool.addTask(task);
+					_Last = _Mid.first;
+				}
+			}
+
+			if (32 < _Count)
+			{	// heap sort if too many divisions
+				_Make_heap_unchecked(_First, _Last, _Pred);
+				_Sort_heap_unchecked(_First, _Last, _Pred);
+			}
+			else if (2 <= _Count)
+			{
+				std::_Insertion_sort_unchecked(_First, _Last, _Pred);	// small
+			}
+		};
+
+		auto quickSort = [&](ThreadPool& threadPool, const _RanIt _First, const _RanIt _Last)
+		{	// order [_First, _Last), using _Pred
+			_Sort_unchecked(threadPool, _First, _Last, _Last - _First);
+		};
+
+		//MultiThread quick sort
+		{
+			std::vector<int> data = numbers;
+			ThreadPool threadPool(threadNumber);
+			auto start = std::chrono::system_clock::now();
+			{
+				quickSort(threadPool, data.data(), data.data() + data.size());
+				threadPool.waitForAllTasksFinished();
+			}
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<double> diff = end - start;
+			DebugString("Sorted size=%ld random int array, MultiThread cost: %f seconds", data.size(), diff.count());
+			bool orderIsRight = true;
+			for (int i = 1; i < (int)data.size(); ++i)
+			{
+				if (data[i] < data[i - 1])
+				{
+					orderIsRight = false;
+					break;
+				}
+			}
+			EXPECT_TRUE(orderIsRight);
+		}
+	}
+
+	// Multithread quick sort without optimization
+	if (1)
+	{
+		std::function<void(Task*, int*, int, int)> quickSortWithoutOptimize = [&quickSortWithoutOptimize](Task* task, int* arr, int low, int high)
+		{
+			if (high + 1 - low < 32)
+			{
+				std::_Insertion_sort_unchecked(arr + low, arr + high + 1, std::less<>());	// small
+			}
+			else
+			{
+				int first = low;
+				int last = high;
+				int key = arr[first];
+
+				while (first < last)
+				{
+					while (first < last && arr[last] >= key)
+					{
+						--last;
 					}
 
-					*_Next1 = _STD move(_Val);	// insert element in hole
+					arr[first] = arr[last];
+
+					while (first < last && arr[first] <= key)
+					{
+						++first;
+					}
+
+					arr[last] = arr[first];
+
+				}
+				arr[first] = key;
+				if (low < first - 1)
+				{
+					RefCountPtr<Task> left{ new Task(std::bind(quickSortWithoutOptimize,std::placeholders::_1,arr,low,first - 1)) };
+					task->linkTask(left);
+				}
+				if (first + 1 < high)
+				{
+					RefCountPtr<Task> right{ new Task(std::bind(quickSortWithoutOptimize,std::placeholders::_1,arr, first + 1,high)) };
+					task->linkTask(right);
 				}
 			}
-		}
+		};
 
-		return (_Last);
-	};
-
-	auto _Med3_unchecked = [&](int* _First, int* _Mid, int* _Last)
-	{	// sort median of three elements to middle
-		if (_Pred( *_Mid, *_First))
 		{
-			_STD iter_swap(_Mid, _First);
-		}
-
-		if (_Pred( *_Last, *_Mid))
-		{	// swap middle and last, then test first again
-			_STD iter_swap(_Last, _Mid);
-
-			if (_Pred( *_Mid, *_First))
+			std::vector<int> data = numbers;
+			ThreadPool threadPool(threadNumber);
+			auto start = std::chrono::system_clock::now();
 			{
-				_STD iter_swap(_Mid, _First);
+				RefCountPtr<Task> task{ new Task(std::bind(quickSortWithoutOptimize,std::placeholders::_1,data.data(),0,(int)data.size() - 1)) };
+				threadPool.addTask(task);
+				threadPool.waitForAllTasksFinished();
 			}
-		}
-	};
-
-	auto _Guess_median_unchecked = [&](int* _First, int* _Mid, int* _Last)
-	{	// sort median element to middle
-		using _Diff = std::_Iter_diff_t<int*>;
-		const _Diff _Count = _Last - _First;
-		if (40 < _Count)
-		{	// median of nine
-			const _Diff _Step = (_Count + 1) >> 3; // +1 can't overflow because range was made inclusive in caller
-			const _Diff _Two_step = _Step << 1; // note: intentionally discards low-order bit
-			_Med3_unchecked(_First, _First + _Step, _First + _Two_step);
-			_Med3_unchecked(_Mid - _Step, _Mid, _Mid + _Step);
-			_Med3_unchecked(_Last - _Two_step, _Last - _Step, _Last);
-			_Med3_unchecked(_First + _Step, _Mid, _Last - _Step);
-		}
-		else
-		{
-			_Med3_unchecked(_First, _Mid, _Last);
-		}
-	};
-
-	typedef int* _RanIt;
-	auto _Partition_by_median_guess_unchecked = [&](_RanIt _First, _RanIt _Last) -> std::pair<_RanIt, _RanIt>
-	{	// partition [_First, _Last), using _Pred
-		_RanIt _Mid = _First + ((_Last - _First) >> 1);	// TRANSITION, VSO#433486
-		_Guess_median_unchecked(_First, _Mid, _Last - 1);
-		_RanIt _Pfirst = _Mid;
-		_RanIt _Plast = _Pfirst + 1;
-
-		while (_First < _Pfirst
-			&& !_Pred( *(_Pfirst - 1), *_Pfirst)
-			&& !_Pred(*_Pfirst, *(_Pfirst - 1)))
-		{
-			--_Pfirst;
-		}
-
-		while (_Plast < _Last
-			&& !_Pred( *_Plast, *_Pfirst)
-			&& !_Pred(*_Pfirst, *_Plast))
-		{
-			++_Plast;
-		}
-
-		_RanIt _Gfirst = _Plast;
-		_RanIt _Glast = _Pfirst;
-
-		for (;;)
-		{	// partition
-			for (; _Gfirst < _Last; ++_Gfirst)
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<double> diff = end - start;
+			DebugString("Sorted size=%ld random int array, MultiThread without optimize cost: %f seconds", data.size(), diff.count());
+			bool orderIsRight = true;
+			for (int i = 1; i < (int)data.size(); ++i)
 			{
-				if (_Pred( *_Pfirst, *_Gfirst))
+				if (data[i] < data[i - 1])
 				{
-				}
-				else if (_Pred(*_Gfirst, *_Pfirst))
-				{
+					orderIsRight = false;
 					break;
 				}
-				else if (_Plast != _Gfirst)
-				{
-					_STD iter_swap(_Plast, _Gfirst);
-					++_Plast;
-				}
-				else
-				{
-					++_Plast;
-				}
 			}
-
-			for (; _First < _Glast; --_Glast)
-			{
-				if (_Pred( *(_Glast - 1), *_Pfirst))
-				{
-				}
-				else if (_Pred(*_Pfirst, *(_Glast - 1)))
-				{
-					break;
-				}
-				else if (--_Pfirst != _Glast - 1)
-				{
-					_STD iter_swap(_Pfirst, _Glast - 1);
-				}
-			}
-
-			if (_Glast == _First && _Gfirst == _Last)
-			{
-				return (std::pair<_RanIt, _RanIt>(_Pfirst, _Plast));
-			}
-
-			if (_Glast == _First)
-			{	// no room at bottom, rotate pivot upward
-				if (_Plast != _Gfirst)
-				{
-					_STD iter_swap(_Pfirst, _Plast);
-				}
-
-				++_Plast;
-				_STD iter_swap(_Pfirst, _Gfirst);
-				++_Pfirst;
-				++_Gfirst;
-			}
-			else if (_Gfirst == _Last)
-			{	// no room at top, rotate pivot downward
-				if (--_Glast != --_Pfirst)
-				{
-					_STD iter_swap(_Glast, _Pfirst);
-				}
-
-				_STD iter_swap(_Pfirst, --_Plast);
-			}
-			else
-			{
-				_STD iter_swap(_Gfirst, --_Glast);
-				++_Gfirst;
-			}
+			EXPECT_TRUE(orderIsRight);
 		}
-	};
+	}
 
-	std::function<void(_RanIt, _RanIt, std::_Iter_diff_t<_RanIt>)> _Sort_unchecked = [&](_RanIt _First, _RanIt _Last,std::_Iter_diff_t<_RanIt> _Ideal)
-	{	// order [_First, _Last), using _Pred
-		std::_Iter_diff_t<_RanIt> _Count;
-		while (32 < (_Count = _Last - _First) && 0 < _Ideal)
-		{	// divide and conquer by quicksort
-			auto _Mid = _Partition_by_median_guess_unchecked(_First, _Last);
-			// TRANSITION, VSO#433486
-			_Ideal = (_Ideal >> 1) + (_Ideal >> 2);	// allow 1.5 log2(N) divisions
-
-			if (_Mid.first - _First < _Last - _Mid.second)
-			{	// loop on second half
-				_Sort_unchecked(_First, _Mid.first, _Ideal);
-				_First = _Mid.second;
-			}
-			else
-			{	// loop on first half
-				_Sort_unchecked(_Mid.second, _Last, _Ideal);
-				_Last = _Mid.first;
-			}
-		}
-
-		if (32 < _Count)
-		{	// heap sort if too many divisions
-			_Make_heap_unchecked(_First, _Last, _Pred);
-			_Sort_heap_unchecked(_First, _Last, _Pred);
-		}
-		else if (2 <= _Count)
-		{
-			_Insertion_sort_unchecked(_First, _Last);	// small
-		}
-	};
-
-	auto quickSort = [&](const _RanIt _First, const _RanIt _Last)
-	{	// order [_First, _Last), using _Pred
-		_Sort_unchecked(_First, _Last, _Last - _First);
-	};
-
-	//MultiThread quick sort
+	// MultiThread merge sort
+	if(1)
 	{
-		std::vector<int> data = numbers;
-		auto start = std::chrono::system_clock::now();
+		std::vector<RefCountPtr<Task>> topTasks;
+		std::function<RefCountPtr<Task>(int*,int)> getTask = [&](int* arr, int size) -> RefCountPtr<Task>
 		{
-			quickSort(data.data(), data.data() + data.size());
-		}
-		auto end = std::chrono::system_clock::now();
-		std::chrono::duration<double> diff = end - start;
-		DebugString("MultiThread cost: %f seconds", diff.count());
-		bool orderIsRight = true;
-		for (int i = 1; i < (int)data.size(); ++i)
-		{
-			if (data[i] < data[i - 1])
+			if(size < 32)
 			{
-				orderIsRight = false;
-				break;
+				RefCountPtr<Task> task{new Task([arr,size](Task*)
+				{
+					std::_Insertion_sort_unchecked(arr, arr + size, std::less<>());	// small
+				})};
+				topTasks.push_back(task);
+				return task;
 			}
+			else
+			{
+				int mid = size / 2;
+				RefCountPtr<Task> left = getTask(arr, mid);
+				RefCountPtr<Task> right = getTask(arr + mid, size - mid);
+				RefCountPtr<Task> merge{ new Task([arr,size](Task*)
+				{
+					int mid = size / 2;
+					if (mid == size || mid == 0 || size == 0)
+						return;
+					std::shared_ptr<int[]> mergedArrPtr{ new int[size] };
+					int* mergedArr = mergedArrPtr.get();
+
+					int left = 0;
+					int right = mid;
+					int curr = 0;
+					while (left < mid && right < size)
+					{
+						if (arr[left] < arr[right])
+							mergedArr[curr++] = arr[left++];
+						else
+							mergedArr[curr++] = arr[right++];
+					}
+					while (left < mid)
+						mergedArr[curr++] = arr[left++];
+					while (right < size)
+						mergedArr[curr++] = arr[right++];
+					memcpy(arr, mergedArr, size * sizeof(int));
+
+				}) };
+				left->linkTask(merge);
+				right->linkTask(merge);
+				return merge;
+			}
+		};
+		//MultiThread merge sort
+		{
+			std::vector<int> data = numbers;
+			ThreadPool threadPool(threadNumber);
+			auto start = std::chrono::system_clock::now();
+			{
+				getTask(data.data(), (int)data.size());
+				for (auto& task : topTasks)
+				{
+					threadPool.addTask(std::move(task));
+				}
+				topTasks.clear();
+				threadPool.waitForAllTasksFinished();
+			}
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<double> diff = end - start;
+			DebugString("Sorted size=%ld random int array, MultiThread merge sort cost: %f seconds", data.size(), diff.count());
+			bool orderIsRight = true;
+			for (int i = 1; i < (int)data.size(); ++i)
+			{
+				if (data[i] < data[i - 1])
+				{
+					orderIsRight = false;
+					break;
+				}
+			}
+			EXPECT_TRUE(orderIsRight);
 		}
-		EXPECT_TRUE(orderIsRight);
 	}
 
 	//std::sort
+	if(1)
 	{
 		auto start = std::chrono::system_clock::now();
 		{
@@ -831,6 +825,6 @@ TEST(Ash, ThreadPoolTest)
 		}
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> diff = end - start;
-		DebugString("std::sort cost: %f seconds", diff.count());
+		DebugString("Sorted size=%ld random int array, std::sort cost: %f seconds", numbers.size(), diff.count());
 	}
 }

@@ -91,8 +91,7 @@ void ThreadPool::addTask(RefCountPtr<Task> task)
 		return;
 	TinyAssert(status == Task::CREATED);
 
-	++_unfinishedTask;
-	checkAllDependeceFinishedAndAddSelf(std::move(task));
+	addToThreadTaskPool(std::move(task));
 }
 
 void ThreadPool::waitForAllTasksFinished()
@@ -105,18 +104,18 @@ void ThreadPool::checkAllDependeceFinishedAndAddSelf(RefCountPtr<Task> task)
 {
 	if (task->_unfinishDependenceNumber == 0)
 	{
-		addToThreadTaskPool(task);
+		Task::TaskStatus status = Task::LINKED_BY_OTHER_TASK;
+		bool changeStatusResult = task->_TaskStatus.compare_exchange_strong(status, Task::ADDED_TO_THREAD_POOL);
+		if (!changeStatusResult)
+			return;
+		TinyAssert(status == Task::LINKED_BY_OTHER_TASK);
+		addToThreadTaskPool(std::move(task));
 	}
 }
 
 void ThreadPool::addToThreadTaskPool(RefCountPtr<Task> task)
 {
-	Task::TaskStatus status = Task::ADDED_TO_THREAD_POOL;
-	bool changeStatusResult = task->_TaskStatus.compare_exchange_strong(status, Task::SUBMITTED_TO_THREAD);
-	if(!changeStatusResult)
-		return;
-	TinyAssert(status == Task::ADDED_TO_THREAD_POOL);
-
+	++_unfinishedTask;
 	int minWaitingTaskSize = INT_MAX;
 	int minWaitingTaskIndex = 0;
 	for (int i = 0; i < static_cast<int>(_threads.size()); ++i)

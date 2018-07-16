@@ -18,7 +18,7 @@ class Task : public RefCountObj
 public:
 	// userdata can be get by getUserData. 
 	Task(std::function<void(Task*)> worker = [](Task*) {} , std::shared_ptr<TaskUserData> userData = nullptr);
-	virtual ~Task() = default;
+	virtual ~Task();
 public:
 	template<class UserDataType>
 	std::shared_ptr<UserDataType> getUserData() const { return std::static_pointer_cast<UserDataType>(_userData); }
@@ -59,7 +59,7 @@ protected:
 	{
 		CREATED,
 		ADDED_TO_THREAD_POOL,
-		SUBMITTED_TO_THREAD,
+		LINKED_BY_OTHER_TASK,
 		FINISHE
 	};
 	std::shared_ptr<TaskUserData> _userData;

@@ -8,6 +8,18 @@ Task::Task(std::function<void(Task*)> worker, std::shared_ptr<TaskUserData> user
 {
 }
 
+Task::~Task()
+{
+	if(_TaskStatus != FINISHE)
+	{
+		for(auto& task: _linkedTasks)
+		{
+			--task->_unfinishDependenceNumber;
+		}
+	}
+	_linkedTasks.clear();
+}
+
 
 int Task::getThreadID() const
 {
@@ -16,19 +28,19 @@ int Task::getThreadID() const
 
 void Task::linkTask(RefCountPtr<Task> task)
 {
-	if (task->_TaskStatus != CREATED)
+	if (task->_TaskStatus != Task::CREATED && task->_TaskStatus != Task::LINKED_BY_OTHER_TASK)
 	{
 		TinyAssert(false, "You can't link an executing task!");
 		return;
 	}
+	task->_TaskStatus = Task::LINKED_BY_OTHER_TASK;
 	++task->_unfinishDependenceNumber;
 	_linkedTasks.emplace_back(std::move(task));
-	TinyAssert(_linkedTasks.back()->_TaskStatus == CREATED);
 }
 
 void Task::unlinkTask(const RefCountPtr<Task>& task)
 {
-	if (task->_TaskStatus != CREATED)
+	if (task->_TaskStatus != CREATED && task->_TaskStatus != Task::LINKED_BY_OTHER_TASK)
 	{
 		TinyAssert(false, "You can't unlink an executing task!");
 		return;
@@ -37,9 +49,10 @@ void Task::unlinkTask(const RefCountPtr<Task>& task)
 	if (it != _linkedTasks.end())
 	{
 		--task->_unfinishDependenceNumber;
+		if(task->_unfinishDependenceNumber == 0)
+			task->_TaskStatus = Task::CREATED;
 		_linkedTasks.erase(it);
 	}
-	TinyAssert(task->_TaskStatus == CREATED);
 }
 
 void Task::waitForTaskDone()
