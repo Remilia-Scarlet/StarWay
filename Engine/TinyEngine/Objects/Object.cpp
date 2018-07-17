@@ -79,7 +79,7 @@ BaseComponentPtr Object::getComponent(const std::string& name)
 
 void Object::update(float dt)
 {
-	//@@TODO : if in update, _components was removed a item, it will crash
+	//@@TODO : if in update, _components removed a item, it will crash
 	if (_components)
 	{
 		for (auto it = _components->begin(); it != _components->end(); ++it)
