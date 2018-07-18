@@ -1,9 +1,9 @@
-#include "precomp.h"
+#include "WinLancher/precomp.h"
 #include <Windows.h>
 #include <d3d11sdklayers.h>
 #include "TinyEngine/Input/InputManager.h"
 #include "tools/renderdoc/RenderDoc.h"
-#include "StartWayCmdLineCfg/StartWayCmdLineCfg.h"
+#include "StarWay//StartWayCmdLineCfg/StartWayCmdLineCfg.h"
 #include "StarWay/Game/StarWayGame.h"
 #include <crtdbg.h>
 

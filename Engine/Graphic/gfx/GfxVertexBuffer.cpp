@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "Graphic/precomp.h"
 #include "GfxVertexBuffer.h"
 #include "Graphic\Manager\GraphicMgr.h"
 #include "Graphic\DX11\DX11GraphicMgr.h"

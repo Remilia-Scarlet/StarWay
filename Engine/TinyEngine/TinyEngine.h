@@ -3,7 +3,7 @@
 #include "Ash/Settings.h"
 #include "TinyEngine/Engine/EngineDefs.h"
 
-#include "precomp.h"
+#include "TinyEngine/precomp.h"
 #include <memory>
 #include <string>
 #include <vector>

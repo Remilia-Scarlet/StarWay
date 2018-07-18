@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "TinyEngine/precomp.h"
 #include "ScriptComponent.h"
 #include "TinyEngine\Objects\Object.h"
 

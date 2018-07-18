@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "TinyEngine/precomp.h"
 #include "MeshComponent.h"
 #include "Graphic\Vertex\DefaultVertex.h"
 #include "Graphic\Vertex\InputLayoutDefine.h"

@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "TinyEngine/precomp.h"
 #include "TinyEngine/Graphic/WavefrontParser.h"
 #include "Ash/FileSystem/fs_include.h"
 

@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "Ash/precomp.h"
 
 #if defined(TINY_PLATFORM_WINDOWS)
 #include "../fs_include.h"
@@ -6,7 +6,7 @@
 #include <windows.h>
 #include <stack>
 #include "Ash/CommonFunc.h"
-#include "TinyAssert.h"
+#include "Ash/TinyAssert.h"
 
 void Path::_getIsDirectory(DWORD att) const
 {

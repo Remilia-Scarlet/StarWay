@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "TinyEngine/precomp.h"
 #include "PointLightComponet.h"
 #include "TransformComponent.h"
 

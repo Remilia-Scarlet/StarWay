@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "Graphic/precomp.h"
 #include "DX11ConstantBufferManager.h"
 #include "DX11GraphicMgr.h"
 #include "Math\vector\Vector.h"

@@ -1,9 +1,9 @@
-#include "precomp.h"
+#include "Ash/precomp.h"
 #include "CommandLineCfg.h"
-#include "CommonFunc.h"
-#include "TinyAssert.h"
+#include "Ash/CommonFunc.h"
+#include "Ash/TinyAssert.h"
 #include <cctype>
-#include "CommonStateMachine/StateMachine.h"
+#include "Ash/CommonStateMachine/StateMachine.h"
 
 bool CommandLineCfg::init(const char* commandLine)
 {

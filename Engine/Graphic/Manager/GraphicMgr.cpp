@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "Graphic/precomp.h"
 #include "GraphicMgr.h"
 
 #if defined(TINY_PLATFORM_WINDOWS)

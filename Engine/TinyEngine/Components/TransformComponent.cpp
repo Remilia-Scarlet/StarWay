@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "TinyEngine/precomp.h"
 #include "TransformComponent.h"
 #include "Graphic\Manager\ConstantBufferManager.h"
 #include "TinyEngine\Engine\Engine.h"

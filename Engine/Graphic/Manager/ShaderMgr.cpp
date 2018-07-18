@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "Graphic/precomp.h"
 #include "ShaderMgr.h"
 #include "GraphicMgr.h"
 

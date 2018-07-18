@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "Graphic/precomp.h"
 #include "DX11RenderBuffer.h"
 #include "Graphic\Manager\GraphicMgr.h"
 

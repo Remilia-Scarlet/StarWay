@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "TinyEngine/precomp.h"
 #include "CameraComponent.h"
 #include "TransformComponent.h"
 #include "Graphic/Manager/ConstantBufferManager.h"

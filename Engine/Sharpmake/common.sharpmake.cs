@@ -30,7 +30,7 @@ namespace Common
             conf.ProjectPath = @"[project.SharpmakeCsPath]";
 			conf.IntermediatePath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]_[target.Blob]\[target.Optimization]";
 			conf.TargetPath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\lib";
-			conf.IncludePaths.Add(@"[project.RootPath]");
+			//conf.IncludePaths.Add(@"[project.RootPath]");
 			conf.IncludePaths.Add(@"[project.RootPath]\..");
 			
 			conf.Name = "[target.Blob] [target.Optimization]";
@@ -47,8 +47,8 @@ namespace Common
 			conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP17);
 			conf.Options.Add(Options.Vc.General.WindowsTargetPlatformVersion.v10_0_16299_0);
 
-            conf.PrecompHeader = "precomp.h";
-            conf.PrecompSource = "precomp.cpp";
+            conf.PrecompHeader = "[project.Name]\\precomp.h";
+            conf.PrecompSource = "[project.Name]\\precomp.cpp";
         }
 		
 		[Configure(Platform.win32 | Platform.win64)]

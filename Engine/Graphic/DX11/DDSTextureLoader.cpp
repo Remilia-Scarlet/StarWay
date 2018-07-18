@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "Graphic/precomp.h"
 //--------------------------------------------------------------------------------------
 // File: DDSTextureLoader.cpp
 //

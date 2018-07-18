@@ -1,4 +1,4 @@
-#include "precomp.h"
+#include "TinyEngine/precomp.h"
 #include "Engine.h"
 #include "Graphic/Manager/GraphicMgr.h"
 #include "Graphic/gfx/GfxMesh.h"

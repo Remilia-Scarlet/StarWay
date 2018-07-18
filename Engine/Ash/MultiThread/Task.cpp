@@ -1,6 +1,6 @@
-#include "precomp.h"
+#include "Ash/precomp.h"
 #include "Task.h"
-#include "TinyAssert.h"
+#include "Ash/TinyAssert.h"
 
 Task::Task(std::function<void(Task*)> worker, std::shared_ptr<TaskUserData> userData)
 	:_userData(std::move(userData))
