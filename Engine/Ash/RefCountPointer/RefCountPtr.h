@@ -253,5 +253,11 @@ RefCountPtr<To> StaticRefCountCast(const RefCountPtr<From>& ptr)
 	To* toPtr = static_cast<To*>(ptr.get());
 	return RefCountPtr<To>(toPtr);
 }
+
+template<class T, class ...Param>
+RefCountPtr<T> MakeRefCountPtr(Param&&... param)
+{
+	return RefCountPtr<T>{new T(std::forward<Param>(param)...)};
+}
 //////////////////////////////////////////////////////////////////////////
 #include "RefCountPtr.inl"

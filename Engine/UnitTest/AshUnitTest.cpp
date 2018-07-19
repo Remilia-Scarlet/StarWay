@@ -582,7 +582,7 @@ TEST(Ash, RingBufferTest)
 TEST(Ash, ThreadPoolTest)
 {
 	constexpr int threadNumber = 12;
-	std::vector<int> numbers(1000000);
+	std::vector<int> numbers(2000000);
 	for (auto& i : numbers)
 	{
 		i = (rand() & 0xfff) << 12 | (rand() & 0xfff);
@@ -666,7 +666,7 @@ TEST(Ash, ThreadPoolTest)
 	}
 
 	// Multithread quick sort without optimization
-	if (1)
+	/*if (1)
 	{
 		std::function<void(Task*, int*, int, int)> quickSortWithoutOptimize = [&quickSortWithoutOptimize](Task* task, int* arr, int low, int high)
 		{
@@ -734,56 +734,51 @@ TEST(Ash, ThreadPoolTest)
 			}
 			EXPECT_TRUE(orderIsRight);
 		}
-	}
+	}*/
 
 	// MultiThread merge sort
 	if(1)
 	{
-		std::vector<RefCountPtr<Task>> topTasks;
-		std::function<RefCountPtr<Task>(int*,int)> getTask = [&](int* arr, int size) -> RefCountPtr<Task>
+		auto mergeArray = [](int* arr, int size)
 		{
-			if(size < 32)
+			int mid = size / 2;
+			if (mid == size || mid == 0 || size == 0)
+				return;
+			std::shared_ptr<int[]> mergedArrPtr{ new int[size] };
+			int* mergedArr = mergedArrPtr.get();
+
+			int left = 0;
+			int right = mid;
+			int curr = 0;
+			while (left < mid && right < size)
 			{
-				RefCountPtr<Task> task{new Task([arr,size](Task*)
-				{
-					std::_Insertion_sort_unchecked(arr, arr + size, std::less<>());	// small
-				})};
-				topTasks.push_back(task);
-				return task;
+				if (arr[left] < arr[right])
+					mergedArr[curr++] = arr[left++];
+				else
+					mergedArr[curr++] = arr[right++];
+			}
+			while (left < mid)
+				mergedArr[curr++] = arr[left++];
+			while (right < size)
+				mergedArr[curr++] = arr[right++];
+			memcpy(arr, mergedArr, size * sizeof(int));
+		};
+		std::function<void(Task*, int*,int)> mergeSort = [&](Task* task, int* arr, int size)
+		{
+			if(size <= 32)
+			{
+				std::_Insertion_sort_unchecked(arr, arr + size, std::less<>());	// small
 			}
 			else
 			{
 				int mid = size / 2;
-				RefCountPtr<Task> left = getTask(arr, mid);
-				RefCountPtr<Task> right = getTask(arr + mid, size - mid);
-				RefCountPtr<Task> merge{ new Task([arr,size](Task*)
-				{
-					int mid = size / 2;
-					if (mid == size || mid == 0 || size == 0)
-						return;
-					std::shared_ptr<int[]> mergedArrPtr{ new int[size] };
-					int* mergedArr = mergedArrPtr.get();
+				TaskPtr leftTask = MakeRefCountPtr<Task>(std::bind(mergeSort, std::placeholders::_1, arr, mid));
+				TaskPtr rightTask = MakeRefCountPtr<Task>(std::bind(mergeSort, std::placeholders::_1, arr + mid, size - mid));;
+				task->linkTask(leftTask);
+				task->linkTask(rightTask);
 
-					int left = 0;
-					int right = mid;
-					int curr = 0;
-					while (left < mid && right < size)
-					{
-						if (arr[left] < arr[right])
-							mergedArr[curr++] = arr[left++];
-						else
-							mergedArr[curr++] = arr[right++];
-					}
-					while (left < mid)
-						mergedArr[curr++] = arr[left++];
-					while (right < size)
-						mergedArr[curr++] = arr[right++];
-					memcpy(arr, mergedArr, size * sizeof(int));
-
-				}) };
-				left->linkTask(merge);
-				right->linkTask(merge);
-				return merge;
+				TaskPtr mergeTask = MakeRefCountPtr<Task>(std::bind(mergeArray, arr, size));
+				task->linkEndTask(mergeTask);
 			}
 		};
 		//MultiThread merge sort
@@ -792,12 +787,8 @@ TEST(Ash, ThreadPoolTest)
 			ThreadPool threadPool(threadNumber);
 			auto start = std::chrono::system_clock::now();
 			{
-				getTask(data.data(), (int)data.size());
-				for (auto& task : topTasks)
-				{
-					threadPool.addTask(std::move(task));
-				}
-				topTasks.clear();
+				TaskPtr task = MakeRefCountPtr<Task>(std::bind(mergeSort, std::placeholders::_1, data.data(), (int)data.size()));
+				threadPool.addTask(std::move(task));
 				threadPool.waitForAllTasksFinished();
 			}
 			auto end = std::chrono::system_clock::now();

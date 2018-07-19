@@ -10,53 +10,71 @@ Task::Task(std::function<void(Task*)> worker, std::shared_ptr<TaskUserData> user
 
 Task::~Task()
 {
-	if(_TaskStatus != FINISHE)
-	{
-		for(auto& task: _linkedTasks)
-		{
-			--task->_unfinishDependenceNumber;
-		}
-	}
 	_linkedTasks.clear();
+	_endTask.reset();
 }
 
 
-int Task::getThreadID() const
+const std::function<void(Task*)>& Task::getWorkerFunction() const
+{
+	return _worker;
+}
+
+void Task::setWorkerFunction(std::function<void(Task*)> worker)
+{
+	_worker = std::move(worker);
+}
+
+std::thread::id Task::getThreadID() const
 {
 	return _threadId;
 }
 
 void Task::linkTask(RefCountPtr<Task> task)
 {
-	if (task->_TaskStatus != Task::CREATED && task->_TaskStatus != Task::LINKED_BY_OTHER_TASK)
-	{
-		TinyAssert(false, "You can't link an executing task!");
-		return;
-	}
-	task->_TaskStatus = Task::LINKED_BY_OTHER_TASK;
-	++task->_unfinishDependenceNumber;
+	TinyAssert((_taskStatus == Task::CREATED || _taskStatus == Task::LINKED_BY_OTHER_TASK || _taskStatus == Task::AS_LINK_END_TASK)
+		|| (_taskStatus == Task::ADDED_TO_THREAD_POOL && _threadId == std::this_thread::get_id())
+		, "You can only call linkTask either before you adding this task to thread pool, or in its worker function");
+	TinyAssert(task->_taskStatus == CREATED, "You can only link a task before it is added to thread pool");
+	task->_taskStatus  = Task::LINKED_BY_OTHER_TASK;
+	task->_parent = TaskWeakPtr(this);
+	++_unfinishLinkedTaskNumber;
 	_linkedTasks.emplace_back(std::move(task));
 }
 
 void Task::unlinkTask(const RefCountPtr<Task>& task)
 {
-	if (task->_TaskStatus != CREATED && task->_TaskStatus != Task::LINKED_BY_OTHER_TASK)
-	{
-		TinyAssert(false, "You can't unlink an executing task!");
-		return;
-	}
+	TinyAssert(_taskStatus == Task::CREATED || _taskStatus == Task::LINKED_BY_OTHER_TASK || _taskStatus == Task::AS_LINK_END_TASK
+		|| (_taskStatus == Task::ADDED_TO_THREAD_POOL && _threadId == std::this_thread::get_id())
+		, "You can only call unlinkTask either before you adding this task to thread pool, or in its worker function");
 	auto it = std::find(_linkedTasks.begin(), _linkedTasks.end(), task);
-	if (it != _linkedTasks.end())
-	{
-		--task->_unfinishDependenceNumber;
-		if(task->_unfinishDependenceNumber == 0)
-			task->_TaskStatus = Task::CREATED;
-		_linkedTasks.erase(it);
-	}
+	TinyAssert(it != _linkedTasks.end(), "You can't unlink a task that haven't been linked to you");
+	TinyAssert(task->_taskStatus == Task::LINKED_BY_OTHER_TASK, "You can't unlink a executing task.");
+	task->_taskStatus = Task::CREATED;
+	task->_parent = nullptr;
+	--_unfinishLinkedTaskNumber;
+	_linkedTasks.erase(it);
 }
 
-void Task::waitForTaskDone()
+void Task::linkEndTask(RefCountPtr<Task> task)
 {
-	std::unique_lock<std::mutex> lock(_mutex);
-	_doneCondi.wait(lock, [this]() {return _TaskStatus == FINISHE; });
+	TinyAssert(task.isValid());
+	TinyAssert((_taskStatus == Task::CREATED || _taskStatus == Task::LINKED_BY_OTHER_TASK || _taskStatus == Task::AS_LINK_END_TASK)
+		|| (_taskStatus == Task::ADDED_TO_THREAD_POOL && _threadId == std::this_thread::get_id())
+		, "You can only call linkEndTask either before you adding this task to thread pool, or in its worker function");
+	TinyAssert(!_endTask.isValid(), "There is already an end task");
+	TinyAssert(task->_taskStatus == Task::CREATED, "You can't only linkEndTask to a new task.");
+	task->_taskStatus = Task::AS_LINK_END_TASK;
+	task->_parent = TaskWeakPtr(this);
+	_endTask = task;
+}
+
+void Task::clearEndTask()
+{
+	TinyAssert((_taskStatus == Task::CREATED || _taskStatus == Task::LINKED_BY_OTHER_TASK || _taskStatus == Task::AS_LINK_END_TASK)
+		|| (_taskStatus == Task::ADDED_TO_THREAD_POOL && _threadId == std::this_thread::get_id())
+		, "You can only call clearEndTask either before you adding this task to thread pool, or in its worker function");
+	_endTask->_taskStatus = Task::CREATED;
+	_endTask->_parent = nullptr;
+	_endTask.reset();
 }
