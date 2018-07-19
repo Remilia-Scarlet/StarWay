@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <functional>
 #include "Ash/RefCountPointer/RefCountObj.h"
+class Task;
 TINY_DEFINE_PTR(Scene);
 
 class Scene : public RefCountObj
@@ -18,7 +19,7 @@ public:
 
 	virtual void removeObject(ObjectPtr obj);
 
-	virtual void update(float dt);
+	virtual void update(Task* task, float dt);
 	virtual void render();
 
 

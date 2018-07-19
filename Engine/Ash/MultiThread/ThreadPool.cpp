@@ -36,6 +36,7 @@ void ThreadPool::Thread::run()
 		}
 
 		_runningTask.reset();
+		Lock waitingLock(_threadPool._waitingForUnfinishedTasks);
 		--_threadPool._unfinishedTask;
 		_threadPool._waitingForUnfinishedTasksCondi.notify_all();
 

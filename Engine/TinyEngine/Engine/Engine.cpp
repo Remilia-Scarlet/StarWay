@@ -13,8 +13,10 @@
 #include "TinyEngine/Components/CameraComponent.h"
 #include "Graphic/Manager/LightManager.h"
 #include "Graphic/Manager/DefaultMgr.h"
+#include "Ash/MultiThread/Task.h"
 
 const int DESIRED_FPS = 60;
+const int THREAD_POOL_THREAD_NUMBER = 12;
 
 Engine::Engine()
 	:_solutionWidth(0)
@@ -23,6 +25,7 @@ Engine::Engine()
 	, _currentTime(0)
 	, _paused(false)
 	, _exit(false)
+	, _threadPool(THREAD_POOL_THREAD_NUMBER)
 {
 }
 
@@ -94,7 +97,12 @@ void Engine::mainLoop(float dt)
 	_currentTime += dt;
 
 	//game logic
-	updateWorld(dt);
+	TaskPtr updateTask = MakeRefCountPtr<Task>(std::bind(&Engine::updateWorld, this, std::placeholders::_1, dt));
+	_threadPool.addTask(updateTask);
+	_threadPool.waitForAllTasksFinished();
+
+	//game logic
+	//updateWorld(dt);
 
 	//draw current scene
 	drawScene();
@@ -137,11 +145,11 @@ void Engine::drawScene()
 	GraphicMgr::instance()->render();
 }
 
-void Engine::updateWorld(float dt)
+void Engine::updateWorld(Task* task, float dt)
 {
 	TimerManager::instance()->update(dt);
 	if (_currentScene.isValid())
-		_currentScene->update(dt);
+		_currentScene->update(task, dt);
 }
 
 Engine* Engine::s_instance = nullptr;

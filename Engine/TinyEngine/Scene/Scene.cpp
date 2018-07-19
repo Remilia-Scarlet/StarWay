@@ -5,6 +5,7 @@
 #include "TinyEngine/Components/DirectionLightComponent.h"
 #include "TinyEngine/Components/PointLightComponet.h"
 #include "Graphic/Manager/GraphicMgr.h"
+#include "Ash/MultiThread/Task.h"
 
 Scene::Scene()
 {
@@ -46,15 +47,12 @@ void Scene::removeObject(ObjectPtr obj)
 	}
 }
 
-void Scene::update(float dt)
+void Scene::update(Task* task, float dt)
 {
-	//@@TODO : if in update, _object removed a item, it will crash
-	for (auto it = _objects.begin(); it != _objects.end(); ++it)
+	for(auto& it : _objects)//@@TODO : if in update, _object removed a item, it will crash
 	{
-		if (it->second.isValid())
-		{
-			it->second->update(dt);
-		}
+		TaskPtr objTaskPtr = MakeRefCountPtr<Task>(std::bind(&Object::update, it.second.get(), /*std::placeholders::_1,*/ dt));
+		task->linkTask(objTaskPtr);
 	}
 }
 

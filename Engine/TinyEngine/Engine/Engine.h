@@ -1,8 +1,11 @@
 #pragma once
 #include "TinyEngine/Scene/Scene.h"
+#include "Ash/MultiThread/ThreadPool.h"
+
 #if defined(TINY_PLATFORM_WINDOWS)
 #include <Windows.h>
 #endif
+
 class Engine
 {
 public:
@@ -37,7 +40,7 @@ protected:
 	);
 
 	void drawScene();
-	void updateWorld(float dt);
+	void updateWorld(Task* task, float dt);
 	static Engine* s_instance;
 	int _solutionWidth;
 	int _solutionHeight;
@@ -46,5 +49,6 @@ protected:
 	float _currentTime;
 	bool _paused;
 	bool _exit;
+	ThreadPool _threadPool;
 };
 
