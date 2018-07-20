@@ -96,19 +96,20 @@ void Engine::mainLoop(float dt)
 		return;
 	_currentTime += dt;
 
+	TaskPtr frameBegin = MakeRefCountPtr<Task>();
+
+	TaskPtr managerUpdate = MakeRefCountPtr<Task>(std::bind(&Engine::updateManager, this, std::placeholders::_1, dt));
+	frameBegin->linkEndTask(managerUpdate);
+
 	//game logic
 	TaskPtr updateTask = MakeRefCountPtr<Task>(std::bind(&Engine::updateWorld, this, std::placeholders::_1, dt));
-	_threadPool.addTask(updateTask);
+	managerUpdate->linkEndTask(updateTask);
+
+	TaskPtr renderTask = MakeRefCountPtr<Task>(std::bind(&Engine::drawScene, this, std::placeholders::_1, dt));
+	updateTask->linkEndTask(renderTask);
+
+	_threadPool.addTask(frameBegin);
 	_threadPool.waitForAllTasksFinished();
-
-	//game logic
-	//updateWorld(dt);
-
-	//draw current scene
-	drawScene();
-
-	// input
-	InputManager::instance()->update(dt);
 }
 
 
@@ -137,7 +138,7 @@ ScenePtr Engine::getCurrentScene()
 	return _currentScene;
 }
 
-void Engine::drawScene()
+void Engine::drawScene(Task* task, float dt)
 {
 	GraphicMgr::instance()->preRender();
 	if (_currentScene.isValid())
@@ -145,9 +146,16 @@ void Engine::drawScene()
 	GraphicMgr::instance()->render();
 }
 
+void Engine::updateManager(Task* task, float dt)
+{
+	// input
+	InputManager::instance()->update(dt);
+
+}
+
 void Engine::updateWorld(Task* task, float dt)
 {
-	TimerManager::instance()->update(dt);
+
 	if (_currentScene.isValid())
 		_currentScene->update(task, dt);
 }

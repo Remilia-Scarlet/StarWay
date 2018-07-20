@@ -7,6 +7,7 @@
 #include "TinyEngine\Engine\Engine.h"
 #include "TinyEngine\Components\DirectionLightComponent.h"
 #include "TinyEngine\Components\PointLightComponet.h"
+#include "Ash/MultiThread/Task.h"
 
 ObjectPtr Object::create()
 {
@@ -77,13 +78,16 @@ BaseComponentPtr Object::getComponent(const std::string& name)
 	return BaseComponentPtr();
 }
 
-void Object::update(float dt)
+void Object::update(Task* task, float dt)
 {
 	//@@TODO : if in update, _components removed a item, it will crash
 	if (_components)
 	{
 		for (auto it = _components->begin(); it != _components->end(); ++it)
-			it->second->update(dt);
+		{
+			TaskPtr compTaskPtr = MakeRefCountPtr<Task>(std::bind(&BaseComponent::update, it->second.get(), std::placeholders::_1, dt));
+			task->linkTask(compTaskPtr);
+		}
 	}
 }
 

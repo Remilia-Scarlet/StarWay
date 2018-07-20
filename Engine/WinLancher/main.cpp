@@ -6,6 +6,7 @@
 #include "StarWay//StartWayCmdLineCfg/StartWayCmdLineCfg.h"
 #include "StarWay/Game/StarWayGame.h"
 #include <crtdbg.h>
+#include "Ash/CommonFunc.h"
 
 static const bool SHOW_WIN32_CONSOLE_AT_START = true;
 
@@ -203,7 +204,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		}
 	}
 
-	//DebugString("Average frame time:%f", average/frame);
+	DebugString("Average frame time:%f", average/frame);
 
 	theGame.cleanUp();
 

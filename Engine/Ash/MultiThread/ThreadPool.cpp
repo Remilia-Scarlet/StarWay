@@ -36,10 +36,13 @@ void ThreadPool::Thread::run()
 		}
 
 		_runningTask.reset();
-		Lock waitingLock(_threadPool._waitingForUnfinishedTasks);
-		--_threadPool._unfinishedTask;
-		_threadPool._waitingForUnfinishedTasksCondi.notify_all();
-
+		
+		int remainNum = --_threadPool._unfinishedTask;
+		if(remainNum == 0)
+		{
+			Lock waitingLock(_threadPool._waitingForUnfinishedTasks);
+			_threadPool._waitingForUnfinishedTasksCondi.notify_all();
+		}
 	}		
 }
 

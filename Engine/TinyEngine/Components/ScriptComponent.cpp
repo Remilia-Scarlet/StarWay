@@ -17,9 +17,9 @@ void ScriptComponent::setOwner(const RefCountPtr<Object> & owner)
 	_script->_owner = owner;
 }
 
-void ScriptComponent::update(float dt)
+void ScriptComponent::update(Task* task, float dt)
 {
-	BaseComponent::update(dt);
+	BaseComponent::update(task, dt);
 	if (!_inited)
 	{
 		_script->init();

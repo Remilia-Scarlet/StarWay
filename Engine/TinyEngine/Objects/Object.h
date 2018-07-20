@@ -7,9 +7,11 @@
 #include <type_traits>
 #include <bitset>
 
+
 TINY_DEFINE_PTR(Object);
 TINY_DEFINE_PTR(BaseComponent);
 class BaseComponent;
+class Task;
 
 enum class ObjectFlag
 {
@@ -38,7 +40,7 @@ public:
 	template<class T> std::vector<RefCountPtr<T> > getComponents();
 	BaseComponentPtr getComponent(const std::string& name);
 
-	virtual void update(float dt);
+	virtual void update(Task* task, float dt);
 	virtual void render();
 
 	virtual void setFlag(ObjectFlag flagType, bool val);

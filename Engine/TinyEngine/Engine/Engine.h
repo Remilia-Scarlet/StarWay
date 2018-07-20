@@ -39,7 +39,8 @@ protected:
 #endif
 	);
 
-	void drawScene();
+	void drawScene(Task* task, float dt);
+	void updateManager(Task* task, float dt);
 	void updateWorld(Task* task, float dt);
 	static Engine* s_instance;
 	int _solutionWidth;

@@ -19,7 +19,7 @@ public:
 
 	void setOwner(const RefCountPtr<Object> & owner) override;
 
-	virtual void update(float dt) override;
+	virtual void update(Task* task, float dt) override;
 protected:
 	virtual bool init(std::shared_ptr<Script>& script);
 	ScriptComponent();
