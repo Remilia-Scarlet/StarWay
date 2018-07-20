@@ -33,9 +33,6 @@ protected:
 	virtual bool init(const std::string& fileName, const std::string& shadeName);
 	TextureComponent();
 
-	GfxTexturePtr _gfxTexture;
 	GfxMaterialPtr _gfxMaterial;
-
-	GfxShaderPixelPtr _psShader;
 };
 

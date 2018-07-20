@@ -2,6 +2,7 @@
 #include "Graphic/GfxDefines.h"
 #include "Ash/RefCountPointer/RefCountObj.h"
 #include "Math/vector/Vector.h"
+#include "GfxShaderPixel.h"
 
 TINY_DEFINE_PTR(GfxMaterial);
 class GfxMaterial : public RefCountObj
@@ -33,6 +34,7 @@ private:
 	Vector4 _diffuse;
 	Vector4 _specular;// w is weight
 	Vector4 _emit;
+	GfxShaderPixel _shader;
 };
 
 
