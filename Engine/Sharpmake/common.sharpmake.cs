@@ -33,6 +33,10 @@ namespace Common
 			//conf.IncludePaths.Add(@"[project.RootPath]");
 			conf.IncludePaths.Add(@"[project.RootPath]\..");
 			
+			//boost
+			conf.IncludePaths.Add(@"[project.RootPath]\..\..\Engine\Extern\boost");
+			conf.LibraryPaths.Add(@"[project.RootPath]\..\..\Engine\Extern\boost\stage\lib");
+			
 			conf.Name = "[target.Blob] [target.Optimization]";
 			
 			conf.TargetFileFullName = @"[project.Name]_[target.DevEnv]_[target.Platform]_[target.Optimization]_[target.Blob]";

@@ -2,7 +2,7 @@
 #include "MainScene.h"
 #include "TinyEngine/Objects/Object.h"
 #include "TinyEngine/Graphic/GeometryGenerator.h"
-#include "TinyEngine/Components/TextureComponent.h"
+#include "TinyEngine/Components/MaterialComponent.h"
 #include "TinyEngine/Components/TransformComponent.h"
 #include "TinyEngine/Graphic/WavefrontObjReader.h"
 #include "TinyEngine/Components/CameraComponent.h"
@@ -42,7 +42,7 @@ void MainScene::createGround()
 	MeshComponentPtr meshComponent = GeometryGenerator::instance()->createCubeMesh(30, 1, 30);
 	obj->addComponent(meshComponent);
 
-	TextureComponentPtr texture = TextureComponent::create();
+	MaterialComponentPtr texture = MaterialComponent::create();
 	obj->addComponent(texture);
 
 	TransformComponentPtr transform = TransformComponent::create();
@@ -59,7 +59,7 @@ void MainScene::createObj()
 	MeshComponentPtr meshComponent = GeometryGenerator::instance()->createCubeMesh(2, 2, 2);
 	obj->addComponent(meshComponent);
 
-	TextureComponentPtr texture = TextureComponent::create("game:seafloor.dds", "game:shaders/pass_through_no_tex.ps.cso");
+	MaterialComponentPtr texture = MaterialComponent::create("game:seafloor.dds", "game:shaders/pass_through_no_tex.ps.cso");
 	obj->addComponent(texture);
 
 	TransformComponentPtr transform = TransformComponent::create();
@@ -76,7 +76,7 @@ void MainScene::createObj()
 	MeshComponentPtr meshConponent = GeometryGenerator::instance()->createSphereMeshData(1.5, 4);
 	sphereObj->addComponent(meshConponent);
 
-	TextureComponentPtr texture2 = TextureComponent::create();
+	MaterialComponentPtr texture2 = MaterialComponent::create();
 	sphereObj->addComponent(texture2);
 
 	this->addObject(sphereObj);
@@ -148,7 +148,7 @@ void MainScene::createLight()
 	trans->setLocation(Vector3(0, 0, 0));
 	MeshComponentPtr meshConponent = GeometryGenerator::instance()->createSphereMeshData(0.5, 3);
 	pointLightObj->addComponent(meshConponent);
-	TextureComponentPtr texture = TextureComponent::create("game:seafloor.dds", "game:point_light_PS.cso");
+	MaterialComponentPtr texture = MaterialComponent::create("game:seafloor.dds", "game:point_light_PS.cso");
 	pointLightObj->addComponent(texture);
 	ScriptComponentPtr pointLightScript = ScriptComponent::create(std::make_shared<PointLightMovement>());
 	pointLightObj->addComponent(pointLightScript);

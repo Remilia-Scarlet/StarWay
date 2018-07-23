@@ -5,7 +5,7 @@
 
 TINY_DEFINE_PTR(Object);
 TINY_DEFINE_PTR(GfxMaterial);
-TINY_DEFINE_PTR(TextureComponent);
+TINY_DEFINE_PTR(MaterialComponent);
 
 class WavefrontObjReader
 {
@@ -36,6 +36,6 @@ protected:
 	std::vector<Vector2> _tempTexArr;
 
 	std::vector<CommonVertex> _meshVertex;
-	std::map<std::string, TextureComponentPtr> _materials;
+	std::map<std::string, MaterialComponentPtr> _materials;
 	std::string _mtlName;
 };

@@ -3,7 +3,7 @@
 #include "Graphic/Manager/GraphicMgr.h"
 #include "Graphic/gfx/GfxMesh.h"
 #include "TinyEngine/Components/MeshComponent.h"
-#include "TinyEngine/Components/TextureComponent.h"
+#include "TinyEngine/Components/MaterialComponent.h"
 #include "TinyEngine/Components/TransformComponent.h"
 #include "Graphic/Manager/ConstantBufferManager.h"
 #include "Graphic/Manager/ShaderMgr.h"

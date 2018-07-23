@@ -5,7 +5,7 @@
 #include <string>
 #include "TinyEngine/Components/MeshComponent.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
-#include "WavefrontMtlReader.h"
+
 
 WavefrontObjReader::WavefrontObjReader(const std::string& fileName)
 	: _parser(fileName)
@@ -120,9 +120,9 @@ void WavefrontObjReader::finishedObj()
 		_meshVertex.clear();
 
 		auto it = _materials.find(_mtlName);
-		TextureComponentPtr texture = nullptr;
+		MaterialComponentPtr texture = nullptr;
 		if (it == _materials.end())
-			texture = TextureComponent::create();
+			texture = MaterialComponent::create();
 		else
 			texture = it->second;
 		_currentObj->addComponent(texture);
@@ -134,8 +134,8 @@ void WavefrontObjReader::finishedObj()
 
 void WavefrontObjReader::readMaterialFile(const std::string& filename)
 {
-	WavefrontMtlReader matReader(std::string("game:") + filename);
-	std::map<std::string,TextureComponentPtr> outMtl;
-	matReader.readMtlFile(outMtl);
-	_materials = std::move(outMtl);
+	//WavefrontMtlReader matReader(std::string("game:") + filename);
+	//std::map<std::string,MaterialComponentPtr> outMtl;
+	//matReader.readMtlFile(outMtl);
+	//_materials = std::move(outMtl);
 }

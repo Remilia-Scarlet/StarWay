@@ -6,7 +6,6 @@
 #include "GfxIndexBuffer.h"
 #include "GfxVertexBuffer.h"
 #include "Math/vector/Vector.h"
-#include "GfxMaterial.h"
 #include "GfxInputLayout.h"
 
 TINY_DEFINE_PTR(GfxMesh);

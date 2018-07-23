@@ -34,11 +34,6 @@ const GfxTexturePtr& DefaultMgr::getDefaultTexture()
 	return _defaultTexture;
 }
 
-const GfxMaterialPtr& DefaultMgr::getDefaultMaterial()
-{
-	return _defaultMaterial;
-}
-
 const GfxShaderPixelPtr& DefaultMgr::getDefaultPSWithTex()
 {
 	return _defaultPSWithTex;
@@ -60,8 +55,7 @@ bool DefaultMgr::init()
 	{
 		_defaultTexture = GfxTexture::create();
 		TINY_BREAK_IF(!_defaultTexture.isValid());
-		_defaultMaterial = GfxMaterial::create({ 0.3f, 0.3f, 0.3f, 1.f }, { 0.64f, 0.64f, 0.64f, 1.0f }, { 0.5f, 0.5f, 0.5f, 96.078f }, { 0.f,0.f,0.f,0.f });
-		TINY_BREAK_IF(!_defaultMaterial.isValid());
+
 		_defaultPSWithTex = ShaderMgr::instance()->getPSShader("game:shaders/pass_through.ps.cso");
 		TINY_BREAK_IF(!_defaultPSWithTex.isValid());
 		_defaultPSWithNoTex = ShaderMgr::instance()->getPSShader("game:shaders/pass_through_no_tex.ps.cso");
