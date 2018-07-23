@@ -1,2 +1,2 @@
 ﻿#include "TinyEngine\precomp.h"
-#include "MaterialTemplate.h"
+#include "GraphicCommand.h"
