@@ -14,7 +14,7 @@ public:
 	static MaterialComponentPtr create(const std::string& fileName);
 
 	void setMaterial(const MaterialPtr& material);
-	const MaterialPtr& getMaterial();
+	const MaterialPtr& getMaterial() const;
 
 	void setWireFrame(bool wireFrame);
 	bool isWireFrame();
@@ -24,6 +24,6 @@ protected:
 	virtual bool init(const std::string& fileName);
 	MaterialComponent();
 
-	MaterialPtr _gfxMaterial;
+	MaterialPtr _material;
 };
 

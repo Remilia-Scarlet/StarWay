@@ -1,5 +1,7 @@
 #pragma once
 
+#include <streambuf>
+
 // Use an array as stream target
 class ArrayStream: public std::streambuf
 {	
@@ -58,7 +60,7 @@ protected:
 		}
 		else
 		{
-			_Traits::eof();
+			return _Traits::eof();
 		}
 	}
 
@@ -79,7 +81,7 @@ protected:
 		}
 	}
 
-	virtual int_type underflow()
+	virtual int_type underflow() override
 	{	// get an element from stream, but don't point past it
 		if (_Mysb::gptr() == 0)
 			return (_Traits::eof());	// no character buffer, fail

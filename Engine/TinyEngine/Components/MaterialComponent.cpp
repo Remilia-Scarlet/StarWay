@@ -43,16 +43,17 @@ void MaterialComponent::render()
 
 void MaterialComponent::setMaterial(const MaterialPtr& material)
 {
-	_gfxMaterial = material;
+	_material = material;
 }
 
-const MaterialPtr& MaterialComponent::getMaterial()
+const MaterialPtr& MaterialComponent::getMaterial() const
 {
-	return _gfxMaterial;
+	return _material;
 }
 
 void MaterialComponent::setWireFrame(bool wireFrame)
 {
+	TinyAssert(false);//todo
 	//if (_gfxTexture == nullptr || _gfxTexture == DefaultMgr::instance()->getDefaultTexture())
 	//{
 	//	_gfxTexture = GfxTexture::create();
@@ -62,6 +63,7 @@ void MaterialComponent::setWireFrame(bool wireFrame)
 
 bool MaterialComponent::isWireFrame()
 {
+	TinyAssert(false);//todo
 	//if (_gfxTexture == nullptr)
 	//	return DefaultMgr::instance()->getDefaultTexture()->isWireFrame();
 	//return _gfxTexture->isWireFrame();
@@ -72,25 +74,11 @@ bool MaterialComponent::init(const std::string& fileName)
 {
 	do 
 	{
-		if (!fileName.empty())
-		{
-			MaterialPtr material = Material::create();
-			File picFile;
-			picFile.open(fileName, File::AccessMode::READ, File::CreateMode::OPEN_EXIST);
-			std::vector<char> data = picFile.readAll();
-			_gfxTexture = GfxTexture::create(reinterpret_cast<uint8_t*>(data.data()), int(data.size()), fileName.c_str());
-			TINY_BREAK_IF(!_gfxTexture.isValid());
-		}
-		else
-			_gfxTexture = nullptr;
-
-		GfxMaterialPtr defaultMat = DefaultMgr::instance()->getDefaultMaterial();
-		setMaterial(defaultMat);
-
-		_psShader = ShaderMgr::instance()->getPSShader(shadeName);
+		_material = Material::create(fileName);
+		TINY_BREAK_IF(!_material.isValid());
 		return true;
 	} while (0);
-	TinyAssert(false,"MaterialComponent::init failed");*/
+	TinyAssert(false,"MaterialComponent::init failed");
 	return false;
 }
 
