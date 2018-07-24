@@ -120,12 +120,12 @@ void WavefrontObjReader::finishedObj()
 		_meshVertex.clear();
 
 		auto it = _materials.find(_mtlName);
-		MaterialComponentPtr texture = nullptr;
-		if (it == _materials.end())
-			texture = MaterialComponent::create();
-		else
-			texture = it->second;
-		_currentObj->addComponent(texture);
+		//MaterialComponentPtr texture = nullptr;
+		//if (it == _materials.end())
+		//	texture = MaterialComponent::create();
+		//else
+		//	texture = it->second;
+		//_currentObj->addComponent(texture);
 		_mtlName.clear();
 
 		_pawnObj.push_back(_currentObj);

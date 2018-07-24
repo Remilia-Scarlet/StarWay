@@ -17,4 +17,4 @@ ipch/*
 *.ipch
 *.db
 *.user
-/Engine/WinLancher/project/winlancher_vs2017_win_runtimedependencies.txt
+*runtimedependencies.txt

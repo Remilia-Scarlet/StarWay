@@ -9,8 +9,9 @@ TINY_DEFINE_PTR(Material);
 class Material : public RefCountObj
 {
 public:
-
+	static MaterialPtr create(const std::string& fileName);
 protected:
+	Material();
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version)

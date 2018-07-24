@@ -5,10 +5,10 @@
 #include "Graphic\Manager\DefaultMgr.h"
 #include "Ash/FileSystem/fs_include.h"
 
-MaterialComponentPtr MaterialComponent::create( const std::string& fileName, const std::string& shadeName)
+MaterialComponentPtr MaterialComponent::create( const std::string& fileName)
 {
 	MaterialComponent* ret = new MaterialComponent();
-	if (!ret || !ret->init(fileName, shadeName))
+	if (!ret || !ret->init(fileName))
 		TINY_SAFE_DELETE(ret);
 	return MaterialComponentPtr(ret);
 }
@@ -16,28 +16,9 @@ MaterialComponentPtr MaterialComponent::create( const std::string& fileName, con
 MaterialComponentPtr MaterialComponent::create()
 {
 	MaterialComponent* ret = new MaterialComponent();
-	if (!ret || !ret->init("",""))
+	if (!ret || !ret->init(""))
 		TINY_SAFE_DELETE(ret);
 	return MaterialComponentPtr(ret);
-}
-
-MaterialComponentPtr MaterialComponent::create(const std::string & fileName)
-{
-	MaterialComponent* ret = new MaterialComponent();
-	if (!ret || !ret->init(fileName, ""))
-		TINY_SAFE_DELETE(ret);
-	return MaterialComponentPtr(ret);
-}
-
-void MaterialComponent::setTexture(const GfxTexturePtr& texture)
-{
-	//_gfxTexture = texture;
-}
-
-const GfxTexturePtr& MaterialComponent::getTexture()
-{
-	//return _gfxTexture;
-	return {};
 }
 
 void MaterialComponent::render()
@@ -70,17 +51,6 @@ const MaterialPtr& MaterialComponent::getMaterial()
 	return _gfxMaterial;
 }
 
-void MaterialComponent::setShader(GfxShaderPixelPtr psShader)
-{
-	//_psShader = psShader;
-}
-
-const GfxShaderPixelPtr& MaterialComponent::getShader()
-{
-	//return _psShader;
-	return {};
-}
-
 void MaterialComponent::setWireFrame(bool wireFrame)
 {
 	//if (_gfxTexture == nullptr || _gfxTexture == DefaultMgr::instance()->getDefaultTexture())
@@ -98,12 +68,13 @@ bool MaterialComponent::isWireFrame()
 	return false;
 }
 
-bool MaterialComponent::init(const std::string& fileName, const std::string& shadeName)
+bool MaterialComponent::init(const std::string& fileName)
 {
-	/*do 
+	do 
 	{
 		if (!fileName.empty())
 		{
+			MaterialPtr material = Material::create();
 			File picFile;
 			picFile.open(fileName, File::AccessMode::READ, File::CreateMode::OPEN_EXIST);
 			std::vector<char> data = picFile.readAll();
@@ -121,7 +92,6 @@ bool MaterialComponent::init(const std::string& fileName, const std::string& sha
 	} while (0);
 	TinyAssert(false,"MaterialComponent::init failed");*/
 	return false;
-
 }
 
 MaterialComponent::MaterialComponent()

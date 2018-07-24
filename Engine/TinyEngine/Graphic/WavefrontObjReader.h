@@ -4,7 +4,6 @@
 #include "WavefrontParser.h"
 
 TINY_DEFINE_PTR(Object);
-TINY_DEFINE_PTR(GfxMaterial);
 TINY_DEFINE_PTR(MaterialComponent);
 
 class WavefrontObjReader
