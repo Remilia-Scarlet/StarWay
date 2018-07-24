@@ -1,3 +1,13 @@
+#define DECLARE_TEXTURE2D(_NAME_, _SLOT_) \
+    Texture2D _NAME_ : register(t##_SLOT_); \
+    SamplerState sampler##_NAME_ : register(s##index)
+
+#define tex2D(_NAME_, _UV_)  _NAME_.Sample(sampler##_NAME_ , _UV_)
+
+#define BEGING_LOCAL_CONSTANT cbuffer LocalConstant : register(b1){
+#define DECLEAR_LOCAL_CONSTANT(_TYPE_,_NAME,OFFSET) _TYPE_ _NAME : packoffset(c##OFFSET);
+#define END_LOCAL_CONSTANT };
+
 struct VS_INPUT
 {
 	float3 pos : POSITION;
