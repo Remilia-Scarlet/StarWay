@@ -195,5 +195,5 @@ Vector3 TransformComponent::parentPointToLocal(const Vector3& parentPoint)
 void TransformComponent::render()
 {
 	Matrix4 worldMat = getNodeToParentMatrix();
-	ConstantBufferManager::instance()->getVsGlobalConstant().g_worldMatrix = worldMat;
+	ConstantBufferManager::instance()->getVsGlobalConstant().setWorldMatrix(worldMat);
 }

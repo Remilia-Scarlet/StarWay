@@ -87,14 +87,14 @@ void CameraComponent::render()
 
 	// set view matrix
 	Matrix4 viewMatrix = trans->getParentToNodeMatrix();
-	ConstantBufferManager::instance()->getVsGlobalConstant().g_viewMatrix = viewMatrix;
+	ConstantBufferManager::instance()->getVsGlobalConstant().setViewMatrix(viewMatrix);
 
 	// set proj matrix
 	Matrix4 projMatrix = CreatePerspectiveProjMatrix(_fieldOfView, _viewPort.Width / _viewPort.Height, _nearClipPlane, _farClipPlane);
-	ConstantBufferManager::instance()->getVsGlobalConstant().g_projectionMatrix = projMatrix;
+	ConstantBufferManager::instance()->getVsGlobalConstant().setProjectionMatrix(projMatrix);
 
 	// set camera pos
-	ConstantBufferManager::instance()->getPsGlobalConstant().g_CameraPos = Vector3(trans->getLocation().X(), trans->getLocation().Y(), trans->getLocation().Z());
+	ConstantBufferManager::instance()->getPsGlobalConstant().setCameraPos(Vector3(trans->getLocation().X(), trans->getLocation().Y(), trans->getLocation().Z()));
 }
 
 void CameraComponent::setOwner(const RefCountPtr<Object> & owner)
