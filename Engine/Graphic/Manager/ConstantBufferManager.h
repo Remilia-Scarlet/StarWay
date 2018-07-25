@@ -3,7 +3,7 @@
 #include "Graphic/gfx/GfxShaderVertex.h"
 #include "Math/vector/Vector.h"
 #include "Math/matrix/Matrix.h"
-#include "Graphic/shader/global_constants.h"
+#include "Graphic/ShaderInclude/global_constants.h"
 
 #if defined(TINY_PLATFORM_WINDOWS)
 	class DX11ConstantBufferManager;

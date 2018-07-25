@@ -201,6 +201,7 @@ void ShaderMetaMgr::setIncludePath(const std::vector<Path>& paths)
 
 DependenceInfo ShaderMetaMgr::getDependent(const Path& file)
 {
+	TinyAssert(file.isFile());
 	MetaInfoMapItem* info = getMapItem(file);
 	return waitDependenceInfo(info);
 }

@@ -85,6 +85,8 @@ bool ShaderCompiler::parseArg(const std::string& cmdLine)
 	_dependenceMgr.setIncludePath(_config._includePath);
 	//filter
 	_config._filter = parser.getFilter();
+	//meta out
+	_config._metaOut = parser.getMetaOut();
 
 	_config._intermidiatePath = parser.getIntDir();
 	_config._compileRecordJson = Path(std::string(_config._intermidiatePath.getAbsolutePath()) + "\\" + COMPILE_RECORD); //todo: check \\ at end
@@ -191,8 +193,8 @@ bool ShaderCompiler::doCompile(const Path& sourceFile, ShaderType shaderType, co
 
 	output.getParentDirectory().createDirectory();
 
-	std::string param = std::string("\"") + cmd + std::string("\"") //full path of fxc
-		+ " /T " + shaderTypeStr + "_5_0" // /T vs_5_0 
+	std::string param = 
+		  " /T " + shaderTypeStr + "_5_0" // /T vs_5_0 
 		+ " /E " + entry  // /E main
 		+ " /O3"
 		+ " /Zi"
@@ -283,6 +285,8 @@ bool ShaderCompiler::threadWorker()
 
 bool ShaderCompiler::checkTimeStampHashOfAllDependence(const Path& file, uint64_t depdenceTimeStampHash)
 {
+	if (!file.isFile())
+		return false;
 	const DependenceInfo& depInfo = _dependenceMgr.getDependent(file);
 	uint64_t hash = calcTimeStampHash(depInfo);
 	return hash == depdenceTimeStampHash;
@@ -310,10 +314,14 @@ uint64_t ShaderCompiler::calcTimeStampHashImp(const DependenceInfo& depInfo, std
 		{
 			alreadyCheckedList.insert(file);
 			hashAddVal(hash, getTimeStamp(file));
-			const DependenceInfo& myDependence = _dependenceMgr.getDependent(file);
-			uint64_t myDepthHash = calcTimeStampHashImp(myDependence, alreadyCheckedList);
-			if(myDepthHash != 0)
-				hashAddVal(hash, myDepthHash);
+			if(file.isFile())
+			{
+				const DependenceInfo& myDependence = _dependenceMgr.getDependent(file);
+				uint64_t myDepthHash = calcTimeStampHashImp(myDependence, alreadyCheckedList);
+				if(myDepthHash != 0)
+					hashAddVal(hash, myDepthHash);
+			}
+
 		}
 	}
 	return hash;

@@ -20,6 +20,7 @@ public:
 	DEFINE_COMMANDLINE_STR(Filter, "", "/Filter:<*.*> The filter which will be used to filter out all the files to be compiled");
 	DEFINE_COMMANDLINE_STR(IntDir, "", "/IntDir:<Directory> Intermidiate directory where compiler will keep the dependecy files and tempory file. All files in IntDir should be managed by compiler, not user.");
 	DEFINE_COMMANDLINE_STR(Include, "", "/Include:<Directory> Additional include path. ");
+	DEFINE_COMMANDLINE_STR(MetaOut, "", "/MetaOut:<MetaOutFilePath> The .h file that contains all shader meta info");
 };
 
 struct CompileRecord
@@ -44,6 +45,7 @@ struct Config
 	Path _compileRecordJson;
 	Path _dependenceJson;
 	std::string _filter;
+	Path _metaOut;
 	
 	int _threadNumber = 6;
 

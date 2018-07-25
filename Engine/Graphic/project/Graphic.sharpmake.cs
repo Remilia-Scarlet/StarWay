@@ -31,12 +31,12 @@ namespace Graphic
 			
 			conf.EventCustomBuildDescription = "Compiling shader";
 			conf.EventCustomBuild.Add(@"..\..\..\Tools\ShaderCompiler\build\shadercompiler.exe"+
-				@" /Source:..\shader\" +
+				@" /Source:..\EmbeddedShader\" +
 				@" /Source:..\..\..\resources\shaders\" +
 				@" /Output:..\..\..\output\[target.Platform]\shaders" +
 				@" /IntDir:$(IntDir)" +
 				@" /Filter:*.hlsl" + 
-				@" /Include:..\shader\"
+				@" /Include:..\ShaderInclude\"
 			);
 			conf.EventCustomBuildOutputs = "ThereIsNoOutputSoThatExecuteEveryBuild.txt";
 			conf.CustomBuildStepBeforeTargets = "ClCompile";
