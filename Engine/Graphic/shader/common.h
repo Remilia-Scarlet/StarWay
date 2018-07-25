@@ -1,12 +1,10 @@
 #define DECLARE_TEXTURE2D(_NAME_, _SLOT_) \
     Texture2D _NAME_ : register(t##_SLOT_); \
-    SamplerState sampler##_NAME_ : register(s##index)
+    SamplerState sampler##_NAME_ : register(s##_SLOT_)
 
 #define tex2D(_NAME_, _UV_)  _NAME_.Sample(sampler##_NAME_ , _UV_)
 
-#define BEGING_LOCAL_CONSTANT cbuffer LocalConstant : register(b1){
-#define DECLEAR_LOCAL_CONSTANT(_TYPE_,_NAME,OFFSET) _TYPE_ _NAME : packoffset(c##OFFSET);
-#define END_LOCAL_CONSTANT };
+#define DECLEAR_LOCAL_CONSTANT(_TYPE_,_NAME,OFFSET) _TYPE_ _NAME : register(c##OFFSET);
 
 struct VS_INPUT
 {
@@ -69,7 +67,7 @@ struct SpotLight
 	float pad;
 };
 
-cbuffer LightInfo : register(b1)
+cbuffer LightInfo : register(b2)
 {
 	int g_DirectLightNumber;
 	int g_PointLightNumber;

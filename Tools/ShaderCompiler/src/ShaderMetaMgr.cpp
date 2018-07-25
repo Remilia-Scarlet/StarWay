@@ -4,10 +4,10 @@
 #include <Extern/rapidjson/include/rapidjson/stringbuffer.h>
 #include <Extern/rapidjson/include/rapidjson/prettywriter.h>
 #include <TinyEngine/Engine/EngineDefs.h>
-#include "FileSystem/fs_include.h"
+#include "Ash/FileSystem/fs_include.h"
 #include <fstream>
 #include <iostream>
-#include "CommonStateMachine/StateMachine.h"
+#include "Ash/CommonStateMachine/StateMachine.h"
 #include <regex>
 using namespace rapidjson;
 
@@ -194,6 +194,11 @@ bool ShaderMetaMgr::writeDependenceCacheToFile()
 	return true;
 }
 
+void ShaderMetaMgr::setIncludePath(const std::vector<Path>& paths)
+{
+	_includePath = paths;
+}
+
 DependenceInfo ShaderMetaMgr::getDependent(const Path& file)
 {
 	MetaInfoMapItem* info = getMapItem(file);
@@ -356,6 +361,18 @@ bool ShaderMetaMgr::readDependenceAndMetaInFile(const Path& file, MetaInfoMapIte
 		{
 			TinyAssert(mr.size() == 2);
 			Path path = file.getParentDirectory().getRelativePath() + mr[1].str();
+			if(!path.isFile())
+			{
+				for(auto& includePath : _includePath)
+				{
+					Path pathTmp = includePath.getRelativePath() + mr[1].str();
+					if(pathTmp.isFile())
+					{
+						path = pathTmp;
+						break;
+					}
+				}
+			}
 			info->_dependdInfo._dependences.emplace_back(path);
 		}
 	}

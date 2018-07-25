@@ -67,9 +67,23 @@ bool ShaderCompiler::parseArg(const std::string& cmdLine)
 		DebugString("Parsing command line error, use /h for help.");
 		return false;
 	}
-
+	//output path
 	_config._output = parser.getOutput();
-	_config._source = parser.getSource();
+	//source
+	typedef std::multimap<std::string, std::string>::const_iterator It;
+	std::pair<It,It> range = parser.getSplitedCommandLine().equal_range("source");
+	for (It it = range.first; it != range.second; ++it)
+	{
+		_config._source.push_back(it->second);
+	}
+	//include
+	range = parser.getSplitedCommandLine().equal_range("include");
+	for (It it = range.first; it != range.second; ++it)
+	{
+		_config._includePath.push_back(it->second);
+	}
+	_dependenceMgr.setIncludePath(_config._includePath);
+	//filter
 	_config._filter = parser.getFilter();
 
 	_config._intermidiatePath = parser.getIntDir();
@@ -116,17 +130,20 @@ bool ShaderCompiler::parseConfig()
 
 bool ShaderCompiler::fillShaderList()
 {
-	Path shaderPath(_config._source);
-	if (!shaderPath.isDirectory())
+	for(auto& shaderPath : _config._source)
 	{
-		std::cout << "\"" << shaderPath.getAbsolutePath() << "\" does not exist." << std::endl;
-		return false;
+		if (!shaderPath.isDirectory())
+		{
+			std::cout << "\"" << shaderPath.getAbsolutePath() << "\" does not exist." << std::endl;
+			continue;
+		}
+		std::list<Path> allFiles = shaderPath.getFileList(_config._filter);
+		for (const Path& pa : allFiles)
+		{
+			_shaderList.emplace_back(pa.getRelativePath());
+		}
 	}
-	std::list<Path> allFiles = shaderPath.getFileList(_config._filter);
-	for (const Path& pa : allFiles)
-	{
-		_shaderList.emplace_back(pa.getRelativePath());
-	}
+	
 	return true;
 }
 
@@ -155,7 +172,10 @@ std::optional<CompileRecord> ShaderCompiler::compileShader(const Path& file)
 		Path outputFile = declear.calculateOutputFileName(_config._output);
 		bool result = doCompile(file, declear._shaderType, declear._entry, declear._defines, outputFile);
 		if (!result)
+		{
+			DebugString("compiling shader %s failed with entry: %s, declear: %s", file.getFileName().c_str(), declear._entry.c_str(), outputFile.getFileNameWithoutExt().c_str());
 			return {};
+		}
 		record._output.emplace_back(outputFile, getTimeStamp(outputFile));//todo: if output file not exist
 	}
 	return { record };
@@ -178,10 +198,18 @@ bool ShaderCompiler::doCompile(const Path& sourceFile, ShaderType shaderType, co
 		+ " /Zi"
 		+ " /Fo \"" + output.getAbsolutePath() + "\""
 		+ " /nologo";
+
+	for (auto& path : _config._includePath)
+	{
+		param += " /I \"" + path.getAbsolutePath() + " \"";
+	}
+
+	param += " /D_SHADER=1";
 	for(auto& def : defines)
 	{
 		param += " /D " + def + "=1";
 	}
+
 	param += " \"" + sourceFile.getAbsolutePath() + "\" ";
 
 	STARTUPINFO si;

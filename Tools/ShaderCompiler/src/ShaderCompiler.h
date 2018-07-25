@@ -15,10 +15,11 @@ enum class ShaderType;
 class MyCommandLineCfg : public CommandLineCfg
 {
 public:
-	DEFINE_COMMANDLINE_STR(Output, "", "/Output:OutputFile. Give the shader output file path and name");
-	DEFINE_COMMANDLINE_STR(Source, "", "/Source:The hlsl file. Give the shader output file path and name");
-	DEFINE_COMMANDLINE_STR(Filter, "", "/Filter:The filter which will be used to filter out all the files to be compiled");
-	DEFINE_COMMANDLINE_STR(IntDir, "", "/IntDir:Intermidiate directory where compiler will keep the dependecy files and tempory file. All files in IntDir should be managed by compiler, not user.");
+	DEFINE_COMMANDLINE_STR(Output, "", "/Output:<OutputFile>. Give the shader output file path and name");
+	DEFINE_COMMANDLINE_STR(Source, "", "/Source:<SourceFile> The hlsl file. Give the shader output file path and name");
+	DEFINE_COMMANDLINE_STR(Filter, "", "/Filter:<*.*> The filter which will be used to filter out all the files to be compiled");
+	DEFINE_COMMANDLINE_STR(IntDir, "", "/IntDir:<Directory> Intermidiate directory where compiler will keep the dependecy files and tempory file. All files in IntDir should be managed by compiler, not user.");
+	DEFINE_COMMANDLINE_STR(Include, "", "/Include:<Directory> Additional include path. ");
 };
 
 struct CompileRecord
@@ -37,7 +38,8 @@ struct CompileRecord
 struct Config
 {
 	Path _output;
-	Path _source;
+	std::vector<Path> _source;
+	std::vector<Path> _includePath;
 	Path _intermediatePath;
 	Path _compileRecordJson;
 	Path _dependenceJson;

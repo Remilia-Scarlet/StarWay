@@ -52,11 +52,11 @@ class CommandLineCfg
 	friend class CommandLineHelper;
 public:
 	bool init(const char* commandLine);
-	const std::map<std::string,std::string>& getSplitedCommandLine() const { return _splitedCommandLine; }
+	const std::multimap<std::string,std::string>& getSplitedCommandLine() const { return _splitedCommandLine; }
 	std::string generateHelpString() const;
 protected:
 	bool _initImp();
 	bool spliteCommandLine(const char* commandLine);
-	std::map<std::string,std::string> _splitedCommandLine;
+	std::multimap<std::string,std::string> _splitedCommandLine;
 	std::map<std::string, CommandLineHelper> _registedCommandLines;
 };

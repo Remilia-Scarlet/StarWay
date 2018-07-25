@@ -1,8 +1,8 @@
 #pragma once
 #include <string>  
 #include <vector>
-#include "FileSystem/fs_include.h"
-#include "TinyAssert.h"
+#include "Ash/FileSystem/fs_include.h"
+#include "Ash/TinyAssert.h"
 class Path;
 
 enum class ShaderType

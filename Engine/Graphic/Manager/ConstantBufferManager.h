@@ -3,6 +3,7 @@
 #include "Graphic/gfx/GfxShaderVertex.h"
 #include "Math/vector/Vector.h"
 #include "Math/matrix/Matrix.h"
+#include "Graphic/shader/global_constants.h"
 
 #if defined(TINY_PLATFORM_WINDOWS)
 	class DX11ConstantBufferManager;
@@ -18,14 +19,14 @@ public:
 	static bool createInstance();
 	static bool destroyInstance();
 public:
-	virtual void setVSVector(int slot, const Vector4& vector) = 0;
-	virtual void setPSVector(int slot, const Vector4& vector) = 0;
+	virtual void setVSLocalVector(int slot, const Vector4& vector) = 0;
+	virtual void setPSLocalVector(int slot, const Vector4& vector) = 0;
 
-	virtual void setVSFloat(int slot, float value) = 0;
-	virtual void setPSFloat(int slot, float value) = 0;
+	virtual void setVSLocalFloat(int slot, float value) = 0;
+	virtual void setPSLocalFloat(int slot, float value) = 0;
 
-	virtual void setVSMatrix(int slot, const Matrix4& matrix) = 0;
-	virtual void setPSMatrix(int slot, const Matrix4& matrix) = 0;
+	virtual void setVSLocalMatrix(int slot, const Matrix4& matrix) = 0;
+	virtual void setPSLocalMatrix(int slot, const Matrix4& matrix) = 0;
 
 	virtual void commitVSBuffer() = 0;
 	virtual void commitPSBuffer() = 0;
@@ -35,9 +36,15 @@ public:
 
 	virtual void setRegistVSBuffer(int bufferSlot, void* data) = 0;
 	virtual void setRegistPSBuffer(int bufferSlot, void* data) = 0;
+
+	virtual PsGlobalConstantBuffer& getPsGlobalConstant() { return _psConstant; }
+	virtual VsGlobalConstantBuffer& getVsGlobalConstant() { return _vsConstant; }
 protected:
 	virtual bool init() = 0;
 	static ConstantBufferManager* s_instance;
+
+	PsGlobalConstantBuffer _psConstant;
+	VsGlobalConstantBuffer _vsConstant;
 protected:
 	ConstantBufferManager();
 	virtual ~ConstantBufferManager();

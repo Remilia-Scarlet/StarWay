@@ -196,7 +196,7 @@ RingBuffer<ElementType>::RingBuffer(int32_t initialCapacity)
 {
 	if (initialCapacity > 0)
 	{
-		_data = reinterpret_cast<ElementType*>(new uint8_t[sizeof(ElementType) * _capacity]);
+		_data = reinterpret_cast<ElementType*>(new uint8_t[sizeof(ElementType) * _capacity]);//todo: align is not right
 	}
 }
 
@@ -257,7 +257,7 @@ ElementType& RingBuffer<ElementType>::emplaceBackItem(Params&&... params)
 	++_back;
 	++_size;
 	_back %= _capacity;
-	new (ele) ElementType(std::forward<Params>(params)...);
+	new (ele) ElementType(std::forward<Params>(params)...); //todo: align is not right! will crash if ElementType align bigger than 8
 	return *ele;
 }
 
@@ -276,7 +276,7 @@ void RingBuffer<ElementType>::emplaceBackItems(int32_t elementNum, Params&&... p
 		++_back;
 		++_size;
 		_back %= _capacity;
-		new (ele) ElementType(std::forward<Params>(params)...);
+		new (ele) ElementType(std::forward<Params>(params)...);//todo: align is not right! will crash if ElementType align bigger than 8
 	}
 }
 
@@ -422,7 +422,7 @@ void RingBuffer<ElementType>::setCapacity(int32_t newSize)
 {
 	if(newSize <= getSize())
 		return;
-	ElementType* newData = reinterpret_cast<ElementType*>(new uint8_t[sizeof(ElementType) * newSize]);
+	ElementType* newData = reinterpret_cast<ElementType*>(new uint8_t[sizeof(ElementType) * newSize]); //todo: align is not right
 	int32_t newDataPos = 0;
 	while(_size.load())
 	{

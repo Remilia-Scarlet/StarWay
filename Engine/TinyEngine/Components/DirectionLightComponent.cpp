@@ -35,15 +35,15 @@ bool DirectionLightComponent::prepareRenderShadowMap()
 
 	// set world matrix
 	Matrix4 worldMat = trans->getNodeToParentMatrix();
-	ConstantBufferManager::instance()->setVSMatrix(8, worldMat);
+	ConstantBufferManager::instance()->getVsGlobalConstant().g_worldMatrix = worldMat;
 
 	// set view matrix
 	Matrix4 viewMatrix = trans->getParentToNodeMatrix();
-	ConstantBufferManager::instance()->setVSMatrix(0, viewMatrix);
+	ConstantBufferManager::instance()->getVsGlobalConstant().g_viewMatrix = viewMatrix;
 
 	// set proj matrix
 	Matrix4 projMatrix = CreateOrthographicProjMatrix((float)SHADOW_MAP_WIDTH, (float)SHADOW_MAP_HEIGHT, 0.02f, 400.f);
-	ConstantBufferManager::instance()->setVSMatrix(4, projMatrix);
+	ConstantBufferManager::instance()->getVsGlobalConstant().g_projectionMatrix = projMatrix;
 
 	GraphicMgr::instance()->setRenderBuffer(_shadowMapBuffer);
 	return true;

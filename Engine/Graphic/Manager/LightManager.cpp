@@ -51,7 +51,7 @@ void LightManager::preRender()
 
 void LightManager::render()
 {
-	ConstantBufferManager::instance()->setRegistPSBuffer(1, &_lightInfo);
+	ConstantBufferManager::instance()->setRegistPSBuffer(2, &_lightInfo);
 }
 
 LightManager::LightManager()
@@ -68,7 +68,7 @@ bool LightManager::init()
 {
 	do 
 	{
-		ConstantBufferManager::instance()->registPSBuffer(1, sizeof(LightInfo));
+		ConstantBufferManager::instance()->registPSBuffer(2, sizeof(LightInfo));
 		return true;
 	} while (0);
 	TinyAssert(false, "LightManager creating failed!");

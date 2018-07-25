@@ -1,11 +1,6 @@
 //DECLEAR_SHADER:pass_through SHADER_TYPE:vs ENTRY:main_vs DEFINE:TEST_DEFINE1,_TEST_DEFINE2
 #include "common.h"
-
-
-cbuffer CommonInfo : register(b0)
-{
-
-}
+#include "global_constants.h"
 
 PS_INPUT main_vs(VS_INPUT input)
 {

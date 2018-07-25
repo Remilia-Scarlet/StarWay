@@ -31,7 +31,7 @@ int main()
 		break;
 	case 1:// failed due to error duing compilling
 	default: // failed due to other issues
-		printf("Compiling shader failed\n");
+		//printf("Compiling shader failed\n");
 		break;
 	}
 	

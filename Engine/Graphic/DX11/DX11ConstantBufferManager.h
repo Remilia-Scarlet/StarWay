@@ -8,14 +8,14 @@ public:
 	DX11ConstantBufferManager();
 	virtual ~DX11ConstantBufferManager();
 public:
-	virtual void setVSVector(int slot, const Vector4& vector)override;
-	virtual void setPSVector(int slot, const Vector4& vector)override;
+	virtual void setVSLocalVector(int slot, const Vector4& vector)override;
+	virtual void setPSLocalVector(int slot, const Vector4& vector)override;
 
-	virtual void setVSFloat(int slot, float value)override;
-	virtual void setPSFloat(int slot, float value)override;
+	virtual void setVSLocalFloat(int slot, float value)override;
+	virtual void setPSLocalFloat(int slot, float value)override;
 
-	virtual void setVSMatrix(int slot, const Matrix4& matrix) override;
-	virtual void setPSMatrix(int slot, const Matrix4& matrix) override;
+	virtual void setVSLocalMatrix(int slot, const Matrix4& matrix) override;
+	virtual void setPSLocalMatrix(int slot, const Matrix4& matrix) override;
 
 	virtual void commitVSBuffer()override;
 	virtual void commitPSBuffer()override;
@@ -27,10 +27,12 @@ public:
 	virtual void setRegistPSBuffer(int bufferSlot, void* data)override;
 protected:
 	virtual bool init()override;
-	std::vector<Vector4> _tempVSSubmitBuffer;
-	std::vector<Vector4> _tempPSSubmitBuffer;
-	ID3D11Buffer* _vsConstantBuffer;
-	ID3D11Buffer* _psConstantBuffer;
+	std::vector<Vector4> _tempVSLocalBuffer;
+	std::vector<Vector4> _tempPSLocalBuffer;
+	ID3D11Buffer* _vsLocalBuffer; //slot 0
+	ID3D11Buffer* _psLocalBuffer; //slot 0
+	ID3D11Buffer* _vsGlobalBuffer; //slot 1
+	ID3D11Buffer* _psGlobalBuffer; //slot 1
 
 	std::unordered_map<int, ID3D11Buffer*> _registVSBufferMap;
 	std::unordered_map<int, ID3D11Buffer*> _registPSBufferMap;

@@ -1,6 +1,6 @@
 /*
-DECLEAR_SHADER:pass_through SHADER_TYPE:ps ENTRY:main_ps DEFINE:
-DECLEAR_SHADER:pass_through_no_tex SHADER_TYPE:ps ENTRY:main_ps DEFINE:SAMPLE_TEX
+DECLEAR_SHADER:default_material SHADER_TYPE:ps ENTRY:main_ps DEFINE:
+DECLEAR_SHADER:default_material_no_tex SHADER_TYPE:ps ENTRY:main_ps DEFINE:SAMPLE_TEX
 */
 #include "common.h"
 #include "global_constants.h"

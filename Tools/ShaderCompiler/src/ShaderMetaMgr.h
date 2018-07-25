@@ -31,6 +31,8 @@ public:
 
 	// only called from main thread
 	bool writeDependenceCacheToFile();
+
+	void setIncludePath(const std::vector<Path>& paths);
 protected:
 	struct OtherInfo
 	{
@@ -55,6 +57,7 @@ protected:
 	std::map<Path, MetaInfoMapItem > _dependence;
 	std::shared_mutex _dependenceMutex;
 	Path _recordFileName;
+	std::vector<Path> _includePath;
 
 	MetaInfoMapItem* getMapItem(const Path& file);
 	MetaInfoMapItem * readMap(const Path& file);

@@ -69,9 +69,9 @@ bool CommandLineCfg::spliteCommandLine(const char* commandLine)
 	name.DefineChangeTo(start
 		,[](char chr) {return chr == ' ' || chr == 0; }
 		, [this,&name](char chr){
-			std::string& curName = name.getUserData<NameUserData>()._name;
+			const std::string& curName = name.getUserData<NameUserData>()._name;
 			if(!curName.empty())
-				_splitedCommandLine[curName] = "";
+				_splitedCommandLine.insert(std::pair<std::string, std::string>(curName, ""));
 		});
 	name.DefineHandleFun([&name](char chr){
 		std::string& curName = name.getUserData<NameUserData>()._name;
@@ -118,7 +118,7 @@ bool CommandLineCfg::spliteCommandLine(const char* commandLine)
 	,[&name,&value,this](char chr){
 		std::string& curName = name.getUserData<NameUserData>()._name;
 		std::string& curValue = value.getUserData<ValueStateUserData>().curValue;
-		_splitedCommandLine[curName] = curValue;
+		_splitedCommandLine.insert(std::pair<std::string,std::string>(curName, curValue));
 	});
 	value.DefineHandleFun([&value](char chr)
 	{
