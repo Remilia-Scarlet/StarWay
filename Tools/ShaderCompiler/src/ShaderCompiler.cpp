@@ -19,7 +19,7 @@ static const char JSON_NAME_MAX_THREAD_NUM[] = "thread_number";
 static const char JSON_NAME_TIME_STAMP[] = "time_stamp";
 static const char JSON_NAME_DEPENDENT_HASH[] = "depend_time_stamp_hash";
 static const char JSON_NAME_OUTPUT_FILES[] = "output_files";
-static const char JSON_NAME_META_FILE[] = "meta_file";
+static const char JSON_NAME_META_FILE_TIME[] = "meta_file_timestamp";
 static const char JSON_NAME_FILE_NAME[] = "file_name";
 static const char JSON_NAME_EXE_TIME[] = "exe_timestamp";
 
@@ -341,6 +341,7 @@ bool ShaderCompiler::checkCompileRecordIsUpToDate(const Path& file, const std::o
 {
 	do
 	{
+		TINY_BREAK_IF(!_exeIsUpToData);
 		TINY_BREAK_IF(!record.has_value());
 		TINY_BREAK_IF(record->_timeStamp != getTimeStamp(file));
 		bool allOutputUpToDate = true;
@@ -361,9 +362,11 @@ bool ShaderCompiler::checkCompileRecordIsUpToDate(const Path& file, const std::o
 
 bool ShaderCompiler::readCache()
 {
+	readCommandInfoCache();
+	if (!_exeIsUpToData)
+		return true;
 	return _dependenceMgr.parseDependenceCache(_config._dependenceJson)
-		&& readCompileRecord()
-		&& readCommandInfoCache();
+		&& readCompileRecord();
 }
 
 bool ShaderCompiler::readCompileRecord()
@@ -449,14 +452,15 @@ bool ShaderCompiler::readCommandInfoCache()
 	}
 	for (Value::MemberIterator itDoc = doc.MemberBegin(); itDoc != doc.MemberEnd(); ++itDoc)
 	{
-		if(itDoc->name.GetString() == JSON_NAME_META_FILE)
+		if(itDoc->name.GetString() == JSON_NAME_META_FILE_TIME)
 		{
-			
+			TinyAssert(itDoc->value.IsInt64());
+			_metaFileIsUpToDate = static_cast<uint64_t>(itDoc->value.GetInt64()) == getTimeStamp(_config._metaOut.getAbsolutePath());
 		}
 		else if(itDoc->name.GetString() == JSON_NAME_EXE_TIME)
 		{
 			TinyAssert(itDoc->value.IsInt64());
-			_exeIsNotUpToData = static_cast<uint64_t>(itDoc->value.GetInt64()) == getTimeStamp(Path::getExePath());
+			_exeIsUpToData = static_cast<uint64_t>(itDoc->value.GetInt64()) == getTimeStamp(Path::getExePath());
 		}
 	}
 	return true;
@@ -530,16 +534,10 @@ bool ShaderCompiler::refreshCommandInfoCache()
 
 	Document doc(kObjectType);
 	//Meta file record
-	{
-		Value metaFile(kObjectType);
-		metaFile.AddMember(JSON_NAME_FILE_NAME, Value().SetString(_config._metaOut.getRelativePath().c_str(), static_cast<rapidjson::SizeType>(_config._metaOut.getRelativePath().size())).Move(), doc.GetAllocator());
-		metaFile.AddMember(JSON_NAME_TIME_STAMP, getTimeStamp(_config._metaOut.getAbsolutePath()), doc.GetAllocator());
-		doc.AddMember(JSON_NAME_META_FILE, metaFile, doc.GetAllocator());
-	}
+	doc.AddMember(JSON_NAME_META_FILE_TIME, getTimeStamp(_config._metaOut.getAbsolutePath()), doc.GetAllocator());
+
 	//ShaderCompiler timestamp
-	{
-		doc.AddMember(JSON_NAME_EXE_TIME, getTimeStamp(Path::getExePath()), doc.GetAllocator());
-	}
+	doc.AddMember(JSON_NAME_EXE_TIME, getTimeStamp(Path::getExePath()), doc.GetAllocator());
 	
 	rapidjson::StringBuffer buffer;
 	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);

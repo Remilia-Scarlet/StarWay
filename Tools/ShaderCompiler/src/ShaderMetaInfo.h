@@ -29,11 +29,5 @@ struct ShaderDeclear
 
 struct ShaderMetaInfo
 {
-	struct ParamInfo
-	{
-		int _index = 0;
-		std::string _name;
-	};
-	std::vector<ParamInfo> _params;
 	std::vector<ShaderDeclear> _declears;
 };

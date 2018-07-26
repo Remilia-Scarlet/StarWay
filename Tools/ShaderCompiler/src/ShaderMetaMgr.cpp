@@ -13,10 +13,7 @@ using namespace rapidjson;
 
 static const char JSON_NAME_TIME_STAMP[] = "time_stamp";
 static const char JSON_NAME_DEPENDENCE[] = "dependence";
-static const char JSON_NAME_PARAMS[] = "params";
 static const char JSON_NAME_DECLEARATION[] = "declearation";
-static const char JSON_NAME_PARAM_NAME[] = "name";
-static const char JSON_NAME_PARAM_SLOT[] = "slot";
 static const char JSON_NAME_SHADER_NAME[] = "name";
 static const char JSON_NAME_SHADER_TYPE[] = "type";
 static const char JSON_NAME_SHADER_ENTRY[] = "entry";
@@ -79,18 +76,6 @@ bool ShaderMetaMgr::parseDependenceCache(const Path& recordFileName)
 				{
 					TinyAssert(depVal.IsString());
 					depVec.emplace_back(depVal.GetString());
-				}
-			}
-			else if(itOneItem->name == JSON_NAME_PARAMS)
-			{
-				TinyAssert(itOneItem->value.IsArray());
-				std::vector<ShaderMetaInfo::ParamInfo>& params = mapItem._metaInfo._params;
-				for(const auto& param : itOneItem->value.GetArray())
-				{
-					TinyAssert(param.IsObject());
-					TinyAssert(param.HasMember(JSON_NAME_PARAM_NAME));
-					TinyAssert(param.HasMember(JSON_NAME_PARAM_SLOT));
-					params.emplace_back(ShaderMetaInfo::ParamInfo{ param[JSON_NAME_PARAM_SLOT].GetInt(), param[JSON_NAME_PARAM_NAME].GetString() });
 				}
 			}
 			else if(itOneItem->name == JSON_NAME_DECLEARATION)

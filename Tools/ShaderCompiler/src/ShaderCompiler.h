@@ -90,7 +90,8 @@ protected:
 	std::atomic <uint32_t> _shaderListIndex = 0;
 	std::atomic<bool> _hasCompillingError = false;
 	ShaderMetaMgr _dependenceMgr;
-	bool _exeIsNotUpToData = true;
+	bool _exeIsUpToData = true;
+	uint64_t _metaFileIsUpToDate = 0;
 
 
 	bool parseArg(const std::string& cmdLine);
