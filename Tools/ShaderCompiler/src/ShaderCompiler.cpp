@@ -19,11 +19,15 @@ static const char JSON_NAME_MAX_THREAD_NUM[] = "thread_number";
 static const char JSON_NAME_TIME_STAMP[] = "time_stamp";
 static const char JSON_NAME_DEPENDENT_HASH[] = "depend_time_stamp_hash";
 static const char JSON_NAME_OUTPUT_FILES[] = "output_files";
+static const char JSON_NAME_META_FILE[] = "meta_file";
+static const char JSON_NAME_FILE_NAME[] = "file_name";
+static const char JSON_NAME_EXE_TIME[] = "exe_timestamp";
 
 static const char CONFIG_JSON[] = "game:config.json";
 
 static const char COMPILE_RECORD[] = "_shader_compile_record.tmp";
 static const char DEPENDENCE_CACHE_NAME[] = "_shader_dependence.tmp";
+static const char CMMADNDINFO_CACHE_NAME[] = "_shader_command.tmp";
 
 using namespace rapidjson;
 
@@ -91,6 +95,7 @@ bool ShaderCompiler::parseArg(const std::string& cmdLine)
 	_config._intermidiatePath = parser.getIntDir();
 	_config._compileRecordJson = Path(std::string(_config._intermidiatePath.getAbsolutePath()) + "\\" + COMPILE_RECORD); //todo: check \\ at end
 	_config._dependenceJson = Path(std::string(_config._intermidiatePath.getAbsolutePath()) + "\\" + DEPENDENCE_CACHE_NAME); //todo: check \\ at end
+	_config._commandInfoJson = Path(std::string(_config._intermidiatePath.getAbsolutePath()) + "\\" + CMMADNDINFO_CACHE_NAME); //todo: check \\ at end
 	return true;
 }
 
@@ -161,6 +166,11 @@ bool ShaderCompiler::allocThreadAndDoWork()
 		th.join();
 	}
 	return !_hasCompillingError.load();
+}
+
+bool ShaderCompiler::writeMetaFile()
+{
+	return true;
 }
 
 std::optional<CompileRecord> ShaderCompiler::compileShader(const Path& file)
@@ -352,7 +362,8 @@ bool ShaderCompiler::checkCompileRecordIsUpToDate(const Path& file, const std::o
 bool ShaderCompiler::readCache()
 {
 	return _dependenceMgr.parseDependenceCache(_config._dependenceJson)
-		&& readCompileRecord();
+		&& readCompileRecord()
+		&& readCommandInfoCache();
 }
 
 bool ShaderCompiler::readCompileRecord()
@@ -415,6 +426,42 @@ bool ShaderCompiler::readCompileRecord()
 	return true;
 }
 
+bool ShaderCompiler::readCommandInfoCache()
+{
+	File file;
+	file.open(_config._commandInfoJson.getAbsolutePath(), File::AccessMode::READ, File::CreateMode::OPEN_EXIST);
+	if (!file.isOpened())
+	{
+		return true;
+	}
+
+	std::vector<char> data = file.readAll();
+	if (data.empty())
+		return true;
+
+	rapidjson::Document doc;
+	doc.Parse<kParseStopWhenDoneFlag>(data.data());
+	if (doc.HasParseError() || doc.GetType() != rapidjson::Type::kObjectType)
+	{
+		file.close();
+		DeleteFile(file.getFilePath().getAbsolutePath().c_str());
+		return true;
+	}
+	for (Value::MemberIterator itDoc = doc.MemberBegin(); itDoc != doc.MemberEnd(); ++itDoc)
+	{
+		if(itDoc->name.GetString() == JSON_NAME_META_FILE)
+		{
+			
+		}
+		else if(itDoc->name.GetString() == JSON_NAME_EXE_TIME)
+		{
+			TinyAssert(itDoc->value.IsInt64());
+			_exeIsNotUpToData = static_cast<uint64_t>(itDoc->value.GetInt64()) == getTimeStamp(Path::getExePath());
+		}
+	}
+	return true;
+}
+
 std::optional<CompileRecord> ShaderCompiler::getCompileRecord(const Path & file)
 {
 	std::map<Path, CompileRecord>::iterator it = _recordFromLastComp.find(file);
@@ -427,7 +474,8 @@ std::optional<CompileRecord> ShaderCompiler::getCompileRecord(const Path & file)
 bool ShaderCompiler::writeCache()
 {
 	return _dependenceMgr.writeDependenceCacheToFile()
-		&& refreshCompileRecord();
+		&& refreshCompileRecord()
+		&& refreshCommandInfoCache();
 }
 
 bool ShaderCompiler::refreshCompileRecord()
@@ -460,6 +508,39 @@ bool ShaderCompiler::refreshCompileRecord()
 		doc.AddMember(Value().SetString(outPathStr.c_str(), static_cast<SizeType>(outPathStr.length())).Move(), compileRecord, doc.GetAllocator());
 	}
 
+	rapidjson::StringBuffer buffer;
+	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+	bool formatScceed = doc.Accept(writer);
+	TinyAssert(formatScceed);
+	file.write(buffer.GetString(), static_cast<int>(buffer.GetLength()));
+	file.setEndOfFile();
+	file.close();
+	return true;
+}
+
+bool ShaderCompiler::refreshCommandInfoCache()
+{
+	File file;
+	file.open(_config._commandInfoJson.getAbsolutePath(), File::AccessMode::WRITE);
+	if (!file.isOpened())
+	{
+		DebugString("Open compile record file [%s] failed", _config._commandInfoJson.getAbsolutePath().c_str());
+		return false;
+	}
+
+	Document doc(kObjectType);
+	//Meta file record
+	{
+		Value metaFile(kObjectType);
+		metaFile.AddMember(JSON_NAME_FILE_NAME, Value().SetString(_config._metaOut.getRelativePath().c_str(), static_cast<rapidjson::SizeType>(_config._metaOut.getRelativePath().size())).Move(), doc.GetAllocator());
+		metaFile.AddMember(JSON_NAME_TIME_STAMP, getTimeStamp(_config._metaOut.getAbsolutePath()), doc.GetAllocator());
+		doc.AddMember(JSON_NAME_META_FILE, metaFile, doc.GetAllocator());
+	}
+	//ShaderCompiler timestamp
+	{
+		doc.AddMember(JSON_NAME_EXE_TIME, getTimeStamp(Path::getExePath()), doc.GetAllocator());
+	}
+	
 	rapidjson::StringBuffer buffer;
 	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
 	bool formatScceed = doc.Accept(writer);

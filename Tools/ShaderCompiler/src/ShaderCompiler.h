@@ -31,8 +31,21 @@ struct CompileRecord
 	~CompileRecord() = default;
 	CompileRecord& operator=(const CompileRecord&) = default;
 	CompileRecord& operator=(CompileRecord&&) = default;
-	uint64_t _timeStamp = 0;
-	uint64_t _dependTimeStampHash = 0;
+	uint64_t _timeStamp = 0; //hlsl timestamp
+	uint64_t _dependTimeStampHash = 0; //all dependeces time stamp hash
+	struct ParamInfo
+	{
+		std::string _name;
+		int slot;
+		//type;
+	};
+	struct SubShaderInfo
+	{
+		std::string _name; //the name that define inside shader For example default_material
+		Path _outPath; // the output file. For example default_material.ps.cso
+		uint64_t _timeStamp; // output file timestamp
+		std::vector<ParamInfo> _localParamsInfo;//local params.
+	};
 	std::vector<std::pair<Path,uint64_t> > _output;
 };
 
@@ -44,6 +57,7 @@ struct Config
 	Path _intermediatePath;
 	Path _compileRecordJson;
 	Path _dependenceJson;
+	Path _commandInfoJson;
 	std::string _filter;
 	Path _metaOut;
 	
@@ -76,6 +90,7 @@ protected:
 	std::atomic <uint32_t> _shaderListIndex = 0;
 	std::atomic<bool> _hasCompillingError = false;
 	ShaderMetaMgr _dependenceMgr;
+	bool _exeIsNotUpToData = true;
 
 
 	bool parseArg(const std::string& cmdLine);
@@ -83,6 +98,7 @@ protected:
 
 	bool fillShaderList();
 	bool allocThreadAndDoWork();
+	bool writeMetaFile();
 	std::optional<CompileRecord> compileShader(const Path& file);
 	bool doCompile(const Path& sourceFile, ShaderType shaderType, const std::string& entry, const std::vector<std::string> defines, const Path& output);
 
@@ -94,8 +110,10 @@ protected:
 
 	bool readCache();
 	bool readCompileRecord();
+	bool readCommandInfoCache();
 	std::optional<CompileRecord> getCompileRecord(const Path& file);
 	bool writeCache();
 	bool refreshCompileRecord();
+	bool refreshCommandInfoCache();
 };
 
