@@ -7,6 +7,7 @@
 #include <stack>
 #include "Ash/CommonFunc.h"
 #include "Ash/TinyAssert.h"
+#include <boost/filesystem.hpp>
 
 void Path::_getIsDirectory(DWORD att) const
 {
@@ -85,6 +86,12 @@ std::string Path::getFileExtension() const
 		return fileName.substr(pos + 1);
 	}
 	return std::string();
+}
+
+bool Path::deleteMe()
+{
+	boost::filesystem::remove_all(boost::filesystem::path(getAbsolutePath()));
+	return true;
 }
 
 bool Path::operator<(const Path& another) const
@@ -229,22 +236,21 @@ std::list<Path> Path::getFileList(const std::string& filter) const
 	return list;
 }
 
-Path Path::getRootPath() const
+Path Path::getRootPath()
+{
+	return getExePath().getParentDirectory();
+}
+
+Path Path::getExePath()
 {
 	std::string ret;
 	const int arrSize = 500;
 	char* path = new char[arrSize];
-	char* driver = new char[50];
-	char* dir = new char[arrSize];
 	GetModuleFileNameA(NULL, path, arrSize);
-	_splitpath(path, driver, dir, nullptr, nullptr);
-	ret += driver;
-	ret += dir;
+	ret = path;
 	_fullpath(path, ret.c_str(), arrSize);
 	ret = path;
-	delete[] driver;
 	delete[] path;
-	delete[] dir;
 	return Path(ret, ret, false, "", true, true, false, false);
 }
 

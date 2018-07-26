@@ -38,8 +38,11 @@ public:
 	// If this path is a file, it returns a empty list.
 	std::list<Path> getFileList(const std::string& filter) const;
 
-	// Return the exe file path
-	Path getRootPath() const;
+	// Return the parent folder of this running exe
+	static Path getRootPath();
+
+	// Return the full path of this running exe
+	static Path getExePath();
 
 	// Return the original path which you set to Path
 	const std::string& getOriginPath() const;
@@ -64,6 +67,9 @@ public:
 
 	// Get the extension of file name
 	std::string getFileExtension() const;
+
+	//if this path is a file, delete it. If this path is a directory, delete all files under it and delete the directory self.
+	bool deleteMe();
 
 	// For container std::map
 	bool operator<(const Path& another) const;
