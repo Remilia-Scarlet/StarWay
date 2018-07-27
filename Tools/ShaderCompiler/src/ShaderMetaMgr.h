@@ -5,11 +5,19 @@
 #include <atomic>
 #include <shared_mutex>
 #include "ShaderMetaInfo.h"
+#include <boost/serialization/vector.hpp>
 
 struct DependenceInfo
 {
 	uint64_t _timeStamp = 0;
 	std::vector<Path> _dependences;
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & _timeStamp;
+		ar & _dependences;
+	}
 };
 
 class ShaderMetaMgr
@@ -20,8 +28,9 @@ public:
 	ShaderMetaMgr();
 	virtual ~ShaderMetaMgr();
 public:
+	void setRecordFile(const Path& file);
 	// only called from main thread
-	bool parseDependenceCache(const Path& recordFileName);
+	bool parseDependenceCache();
 
 	// may be called from different threads
 	DependenceInfo getDependent(const Path& file);
@@ -43,7 +52,7 @@ protected:
 			Refreshing,
 			Ready
 		};
-		std::atomic<Status> _status = Inited;
+		Status _status = Inited;
 		std::shared_mutex _mutex;
 		std::atomic<bool> _used = false;
 	};
@@ -51,7 +60,22 @@ protected:
 	{
 		DependenceInfo _dependdInfo;
 		ShaderMetaInfo _metaInfo;
-		OtherInfo _otherInfo;
+		std::shared_ptr<OtherInfo> _otherInfo{ new OtherInfo };
+		friend class boost::serialization::access;
+		template<class Archive>
+		void save(Archive & ar, const unsigned int version) const
+		{
+			ar << _dependdInfo;
+			ar << _metaInfo;
+		}
+		template<class Archive>
+		void load(Archive & ar, const unsigned int version)
+		{
+			ar >> _dependdInfo;
+			ar >> _metaInfo;
+			_otherInfo->_status = OtherInfo::Ready;
+		}
+		BOOST_SERIALIZATION_SPLIT_MEMBER()
 	};
 	
 	std::map<Path, MetaInfoMapItem > _dependence;

@@ -14,18 +14,13 @@
 #include <iostream>
 #include <thread>
 #include <optional>
+#include <sstream>
+#include "Ash/Container/ArrayStream.h"
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/map.hpp>
 
 static const char JSON_NAME_MAX_THREAD_NUM[] = "thread_number";
-static const char JSON_NAME_TIME_STAMP[] = "time_stamp";
-static const char JSON_NAME_DEPENDENT_HASH[] = "depend_time_stamp_hash";
-static const char JSON_NAME_OUTPUT_FILES[] = "output_files";
-static const char JSON_NAME_OUTPUT_FILES_PATH[] = "output_file_path";
-static const char JSON_NAME_OUTPUT_TIME_STAMP[] = "output_timestamp";
-static const char JSON_NAME_SUB_SHADER_NAME[] = "subshader_name";
-static const char JSON_NAME_SUB_SHADER_PARAMS[] = "params";
-static const char JSON_NAME_SUB_SHADER_PARAM_NAME[] = "params_name";
-static const char JSON_NAME_SUB_SHADER_PARAM_SLOT[] = "params_offset";
-static const char JSON_NAME_SUB_SHADER_PARAM_SIZE[] = "params_size";
 static const char JSON_NAME_META_FILE_TIME[] = "meta_file_timestamp";
 static const char JSON_NAME_EXE_TIME[] = "exe_timestamp";
 
@@ -105,6 +100,8 @@ bool ShaderCompiler::parseArg(const std::string& cmdLine)
 	_config._compileRecordJson = Path(std::string(_config._intermidiatePath.getAbsolutePath()) + "\\" + COMPILE_RECORD); //todo: check \\ at end
 	_config._dependenceJson = Path(std::string(_config._intermidiatePath.getAbsolutePath()) + "\\" + DEPENDENCE_CACHE_NAME); //todo: check \\ at end
 	_config._commandInfoJson = Path(std::string(_config._intermidiatePath.getAbsolutePath()) + "\\" + CMMADNDINFO_CACHE_NAME); //todo: check \\ at end
+
+	_dependenceMgr.setRecordFile(_config._dependenceJson);
 	return true;
 }
 
@@ -380,8 +377,12 @@ bool ShaderCompiler::checkCompileRecordIsUpToDate(const Path& file, const std::o
 
 bool ShaderCompiler::readCache()
 {
-	bool result = _dependenceMgr.parseDependenceCache(_config._dependenceJson);
-	result &= readCommandInfoCache();
+	readCommandInfoCache();
+
+	if (!_exeIsUpToData)
+		return true;
+
+	bool result = _dependenceMgr.parseDependenceCache();
 	result &= readCompileRecord();
 	return  result;
 }
@@ -399,55 +400,11 @@ bool ShaderCompiler::readCompileRecord()
 	if (data.empty())
 		return true;
 
-	rapidjson::Document doc;
-	doc.Parse<kParseStopWhenDoneFlag>(data.data());
-	if (doc.HasParseError() || doc.GetType() != rapidjson::Type::kObjectType)
-	{
-		file.close();
-		DeleteFile(file.getFilePath().getAbsolutePath().c_str());
-		return true;
-	}
+	ArrayStream is;
+	is.initAsInputStream(data.data(), data.size());
+	boost::archive::binary_iarchive ia(is);
+	ia >> _recordFromLastComp;
 
-	for (Value::MemberIterator itDoc = doc.MemberBegin(); itDoc != doc.MemberEnd(); ++itDoc)
-	{
-		CompileRecord record;
-		Path fileName = Path(itDoc->name.GetString());
-
-		Value& recordVal = itDoc->value;
-		TinyAssert(recordVal.IsObject());
-
-		for (Value::MemberIterator itRecord = recordVal.MemberBegin(); itRecord != recordVal.MemberEnd(); ++itRecord)
-		{
-			if (itRecord->name == JSON_NAME_TIME_STAMP)
-			{
-				TinyAssert(itRecord->value.IsUint64());
-				record._timeStamp = itRecord->value.GetUint64();
-			}
-			else if (itRecord->name == JSON_NAME_DEPENDENT_HASH)
-			{
-				TinyAssert(itRecord->value.IsUint64());
-				record._dependTimeStampHash = itRecord->value.GetUint64();
-			}
-			else if (itRecord->name == JSON_NAME_OUTPUT_FILES)
-			{
-				TinyAssert(itRecord->value.IsArray());
-				for (auto& outputVal : itRecord->value.GetArray())
-				{
-					TinyAssert(outputVal.IsObject());
-					for (Value::MemberIterator outfileIt = outputVal.MemberBegin(); outfileIt != outputVal.MemberEnd(); ++outfileIt)
-					{
-						
-					}
-					const Value& outName = outputVal.MemberBegin()->name;
-					const Value& outTimeStamp = outputVal.MemberBegin()->value;
-					TinyAssert(outTimeStamp.IsUint64());
-					//record._output.emplace_back(outName.GetString(), outTimeStamp.GetUint64());
-					//TinyAssert(false);//todo
-				}
-			}
-		}
-		_recordFromLastComp.emplace(fileName, record);
-	}
 	return true;
 }
 
@@ -515,45 +472,17 @@ bool ShaderCompiler::refreshCompileRecord()
 		return false;
 	}
 
-	Document doc(kObjectType);
-	for (const CompileResult& result : _shaderList)
+	_recordFromLastComp.clear();
+	for(auto& result : _shaderList)
 	{
-		Value compileRecord(kObjectType);
-		compileRecord.AddMember(JSON_NAME_TIME_STAMP, result._record._timeStamp, doc.GetAllocator());
-		compileRecord.AddMember(JSON_NAME_DEPENDENT_HASH, result._record._dependTimeStampHash, doc.GetAllocator());
-		Value outputList(kArrayType);
-		for (const auto& arrItem : result._record._output)
-		{
-			Value outFile(kObjectType);
-			const std::string& relaPath = arrItem._outPath.getRelativePath();
-			outFile.AddMember(JSON_NAME_OUTPUT_FILES_PATH, Value().SetString(relaPath.c_str(), static_cast<SizeType>(relaPath.length())).Move(), doc.GetAllocator());
-			outFile.AddMember(JSON_NAME_OUTPUT_TIME_STAMP, arrItem._timeStamp, doc.GetAllocator());
-			outFile.AddMember(JSON_NAME_SUB_SHADER_NAME, Value().SetString(arrItem._name.c_str(), (SizeType)arrItem._name.size()).Move(), doc.GetAllocator());
-
-			Value paramObjArr(kArrayType);
-			for(auto& param : arrItem._localParamsInfo)
-			{
-				Value paramObj(kObjectType);
-				paramObj.AddMember(JSON_NAME_SUB_SHADER_PARAM_NAME, Value().SetString(param._name.c_str(), (SizeType)param._name.size()).Move(), doc.GetAllocator());
-				paramObj.AddMember(JSON_NAME_SUB_SHADER_PARAM_SLOT, param._slot, doc.GetAllocator());
-				paramObj.AddMember(JSON_NAME_SUB_SHADER_PARAM_SIZE, param._size, doc.GetAllocator());
-				paramObjArr.PushBack(paramObj, doc.GetAllocator());
-			}
-
-			outFile.AddMember(JSON_NAME_SUB_SHADER_PARAMS, paramObjArr, doc.GetAllocator());
-			outputList.PushBack(outFile, doc.GetAllocator());
-		}
-		compileRecord.AddMember(JSON_NAME_OUTPUT_FILES, outputList, doc.GetAllocator());
-
-		const std::string& outPathStr = result._fileName.getRelativePath();
-		doc.AddMember(Value().SetString(outPathStr.c_str(), static_cast<SizeType>(outPathStr.length())).Move(), compileRecord, doc.GetAllocator());
+		_recordFromLastComp[result._fileName] = result._record;
 	}
 
-	rapidjson::StringBuffer buffer;
-	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-	bool formatScceed = doc.Accept(writer);
-	TinyAssert(formatScceed);
-	file.write(buffer.GetString(), static_cast<int>(buffer.GetLength()));
+	std::stringstream ss;
+	boost::archive::binary_oarchive oa(ss);
+	oa << _recordFromLastComp;
+	std::string data = ss.str();
+	file.write(data.c_str(), static_cast<int>(data.size()));
 	file.setEndOfFile();
 	file.close();
 	return true;

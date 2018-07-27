@@ -1,23 +1,15 @@
 #include "precomp.h"
 #include "ShaderMetaMgr.h"
-#include <Extern/rapidjson/include/rapidjson/document.h>
-#include <Extern/rapidjson/include/rapidjson/stringbuffer.h>
-#include <Extern/rapidjson/include/rapidjson/prettywriter.h>
 #include <TinyEngine/Engine/EngineDefs.h>
 #include "Ash/FileSystem/fs_include.h"
 #include <fstream>
-#include <iostream>
+#include <sstream>
 #include "Ash/CommonStateMachine/StateMachine.h"
 #include <regex>
-using namespace rapidjson;
-
-static const char JSON_NAME_TIME_STAMP[] = "time_stamp";
-static const char JSON_NAME_DEPENDENCE[] = "dependence";
-static const char JSON_NAME_DECLEARATION[] = "declearation";
-static const char JSON_NAME_SHADER_NAME[] = "name";
-static const char JSON_NAME_SHADER_TYPE[] = "type";
-static const char JSON_NAME_SHADER_ENTRY[] = "entry";
-static const char JSON_NAME_SHADER_DEFINES[] = "defines";
+#include "Ash/Container/ArrayStream.h"
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/map.hpp>
 
 
 ShaderMetaMgr::ShaderMetaMgr()
@@ -29,10 +21,13 @@ ShaderMetaMgr::~ShaderMetaMgr()
 {
 }
 
-bool ShaderMetaMgr::parseDependenceCache(const Path& recordFileName)
+void ShaderMetaMgr::setRecordFile(const Path& file)
 {
-	_recordFileName = recordFileName;
+	_recordFileName = file;
+}
 
+bool ShaderMetaMgr::parseDependenceCache()
+{
 	File file;
 	file.open(_recordFileName.getAbsolutePath(), File::AccessMode::READ, File::CreateMode::OPEN_EXIST);
 	if (!file.isOpened())
@@ -44,67 +39,11 @@ bool ShaderMetaMgr::parseDependenceCache(const Path& recordFileName)
 	if (data.empty())
 		return true;
 
-	rapidjson::Document doc;
-	doc.Parse<kParseStopWhenDoneFlag>(data.data());
-	if (doc.HasParseError() || doc.GetType() != rapidjson::Type::kObjectType)
-	{
-		file.close();
-		DeleteFile(file.getFilePath().getAbsolutePath().c_str());
-		return true;
-	}
+	ArrayStream is;
+	is.initAsInputStream(data.data(), data.size());
+	boost::archive::binary_iarchive ia(is);
+	ia >> _dependence;
 
-	for (Value::MemberIterator itDoc = doc.MemberBegin(); itDoc != doc.MemberEnd(); ++itDoc)
-	{
-		Path fileName = itDoc->name.GetString();
-		Value& oneItem = itDoc->value;
-
-		MetaInfoMapItem& mapItem = _dependence[fileName];
-		mapItem._otherInfo._status = OtherInfo::Ready;
-
-		for (Value::MemberIterator itOneItem = oneItem.MemberBegin(); itOneItem != oneItem.MemberEnd(); ++itOneItem)
-		{
-			if (itOneItem->name == JSON_NAME_TIME_STAMP)
-			{
-				TinyAssert(itOneItem->value.IsUint64());
-				mapItem._dependdInfo._timeStamp = itOneItem->value.GetUint64();
-			}
-			else if (itOneItem->name == JSON_NAME_DEPENDENCE)
-			{
-				TinyAssert(itOneItem->value.IsArray());
-				std::vector<Path>& depVec = mapItem._dependdInfo._dependences;
-				for (const auto& depVal : itOneItem->value.GetArray())
-				{
-					TinyAssert(depVal.IsString());
-					depVec.emplace_back(depVal.GetString());
-				}
-			}
-			else if(itOneItem->name == JSON_NAME_DECLEARATION)
-			{
-				TinyAssert(itOneItem->value.IsArray());
-				std::vector<ShaderDeclear>& declears = mapItem._metaInfo._declears;
-				for (const auto& declear : itOneItem->value.GetArray())
-				{
-					TinyAssert(declear.IsObject());
-					TinyAssert(declear.HasMember(JSON_NAME_SHADER_NAME));
-					TinyAssert(declear.HasMember(JSON_NAME_SHADER_TYPE));
-					TinyAssert(declear.HasMember(JSON_NAME_SHADER_ENTRY));
-					TinyAssert(declear.HasMember(JSON_NAME_SHADER_DEFINES));
-					const Value& name = declear[JSON_NAME_SHADER_NAME];
-					const Value& type = declear[JSON_NAME_SHADER_TYPE];
-					const Value& entry = declear[JSON_NAME_SHADER_ENTRY];
-					ShaderDeclear buffer{ name.GetString(), (type == "vs" ? ShaderType::VS : ShaderType::PS), entry.GetString() ,{}};
-					const Value& defs = declear[JSON_NAME_SHADER_DEFINES];
-					TinyAssert(defs.IsArray());
-					for(const auto& def : defs.GetArray())
-					{
-						TinyAssert(def.IsString());
-						buffer._defines.emplace_back(def.GetString());
-					}
-					declears.emplace_back(std::move(buffer));
-				}
-			}
-		}
-	}
 	return true;
 }
 
@@ -118,52 +57,21 @@ bool ShaderMetaMgr::writeDependenceCacheToFile()
 		return false;
 	}
 
-	rapidjson::Document doc(kObjectType);
-
-	for (auto& item : _dependence)
+	for(auto it = _dependence.begin(); it != _dependence.end() ;)
 	{
-		const Path& filePath = item.first;
-		const MetaInfoMapItem& depItem = item.second;
-		if (!depItem._otherInfo._used)
-			continue;
-
-		Value oneItem(kObjectType);
-		oneItem.AddMember(JSON_NAME_TIME_STAMP, depItem._dependdInfo._timeStamp,doc.GetAllocator());
-
-		Value depArr(kArrayType);
-		for(auto& path : depItem._dependdInfo._dependences)
-		{
-			const std::string& name = path.getRelativePath();
-			depArr.PushBack(Value().SetString(name.c_str(), static_cast<SizeType>(name.length())).Move(), doc.GetAllocator());
-		}
-		oneItem.AddMember(JSON_NAME_DEPENDENCE, depArr, doc.GetAllocator());
-
-		Value declearationArr(kArrayType);
-		for(auto& declear : depItem._metaInfo._declears)
-		{
-			Value oneDeclear(kObjectType);
-			oneDeclear.AddMember(JSON_NAME_SHADER_NAME, Value().SetString(declear._name.c_str(), static_cast<SizeType>(declear._name.length())).Move(), doc.GetAllocator());
-			oneDeclear.AddMember(JSON_NAME_SHADER_TYPE, (declear._shaderType == ShaderType::VS ? StringRef("vs") : StringRef("ps")), doc.GetAllocator());
-			oneDeclear.AddMember(JSON_NAME_SHADER_ENTRY, Value().SetString(declear._entry.c_str(), static_cast<SizeType>(declear._entry.length())).Move(), doc.GetAllocator());
-			Value defines(kArrayType);
-			for(auto& def : declear._defines)
-			{
-				defines.PushBack(Value().SetString(def.c_str(), static_cast<SizeType>(def.length())), doc.GetAllocator());
-			}
-			oneDeclear.AddMember(JSON_NAME_SHADER_DEFINES, defines,doc.GetAllocator());
-			declearationArr.PushBack(oneDeclear, doc.GetAllocator());
-		}
-		oneItem.AddMember(JSON_NAME_DECLEARATION, declearationArr, doc.GetAllocator());
-
-		const std::string& name = filePath.getRelativePath();
-		doc.AddMember(Value().SetString(name.c_str(), static_cast<SizeType>(name.length())).Move(), oneItem, doc.GetAllocator());
+		if (it->second._otherInfo->_used == false)
+			it = _dependence.erase(it);
+		else
+			++it;
 	}
 
-	rapidjson::StringBuffer buffer;
-	PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-	bool formatScceed = doc.Accept(writer);
-	TinyAssert(formatScceed);
-	file.write(buffer.GetString(), static_cast<int>(buffer.GetLength()));
+	std::stringstream ss;
+	boost::archive::binary_oarchive oa(ss);
+	oa << _dependence;
+
+	std::string str = ss.str();
+
+	file.write(str.c_str(), static_cast<int>(str.size()));
 	file.setEndOfFile();
 	file.close();
 	return true;
@@ -199,8 +107,8 @@ ShaderMetaMgr::MetaInfoMapItem* ShaderMetaMgr::getMapItem(const Path& file)
 		refreshInfo(file, info);
 	}
 	TinyAssert(info);
-	if (!info->_otherInfo._used)
-		info->_otherInfo._used = true;
+	if (!info->_otherInfo->_used)
+		info->_otherInfo->_used = true;
 	return info;
 }
 
@@ -217,10 +125,10 @@ ShaderMetaMgr::MetaInfoMapItem* ShaderMetaMgr::allocMap(const Path& file)
 {
 	WriteLock mapWriteLock(_dependenceMutex);
 	MetaInfoMapItem& item = _dependence[file];
-	if(item._otherInfo._status == OtherInfo::Inited)
+	WriteLock dataLock(item._otherInfo->_mutex);
+	if(item._otherInfo->_status == OtherInfo::Inited)
 	{
-		WriteLock dataLock(item._otherInfo._mutex);
-		item._otherInfo._status = OtherInfo::Working;
+		item._otherInfo->_status = OtherInfo::Working;
 		mapWriteLock.unlock();
 		bool result = readDependenceAndMetaInFile(file, &item);//todo handle read fail
 		TinyAssert(result);
@@ -231,14 +139,14 @@ ShaderMetaMgr::MetaInfoMapItem* ShaderMetaMgr::allocMap(const Path& file)
 void ShaderMetaMgr::refreshInfo(const Path& path, MetaInfoMapItem* info)
 {
 	TinyAssert(info);
-	WriteLock lock(info->_otherInfo._mutex);
-	if (info->_otherInfo._status != OtherInfo::Ready)
+	WriteLock lock(info->_otherInfo->_mutex);
+	if (info->_otherInfo->_status != OtherInfo::Ready)
 		return;
 
 	if (info->_dependdInfo._timeStamp == getTimeStamp(path))
 		return;
 
-	info->_otherInfo._status = OtherInfo::Refreshing;
+	info->_otherInfo->_status = OtherInfo::Refreshing;
 	bool result = readDependenceAndMetaInFile(path, info);//todo handle read fail
 	TinyAssert(result);
 }
@@ -246,23 +154,23 @@ void ShaderMetaMgr::refreshInfo(const Path& path, MetaInfoMapItem* info)
 DependenceInfo ShaderMetaMgr::waitDependenceInfo(MetaInfoMapItem* info)
 {
 	TinyAssert(info);
-	ReadLock lock(info->_otherInfo._mutex);
-	TinyAssert(info->_otherInfo._status == OtherInfo::Ready);
+	ReadLock lock(info->_otherInfo->_mutex);
+	TinyAssert(info->_otherInfo->_status == OtherInfo::Ready);
 	return info->_dependdInfo;
 }
 
 ShaderMetaInfo ShaderMetaMgr::waitShaderMetaInfo(MetaInfoMapItem* info)
 {
 	TinyAssert(info);
-	ReadLock lock(info->_otherInfo._mutex);
-	TinyAssert(info->_otherInfo._status == OtherInfo::Ready);
+	ReadLock lock(info->_otherInfo->_mutex);
+	TinyAssert(info->_otherInfo->_status == OtherInfo::Ready);
 	return info->_metaInfo;
 }
 
 bool ShaderMetaMgr::readDependenceAndMetaInFile(const Path& file, MetaInfoMapItem* info)
 {
-	TinyAssert(info && (info->_otherInfo._status == OtherInfo::Working || info->_otherInfo._status == OtherInfo::Refreshing));
-	TinyAssert(info->_otherInfo._mutex.try_lock() == false);//The data lock must be already locked
+	TinyAssert(info && (info->_otherInfo->_status == OtherInfo::Working || info->_otherInfo->_status == OtherInfo::Refreshing));
+	TinyAssert(info->_otherInfo->_mutex.try_lock() == false);//The data lock must be already locked
 
 	std::ifstream shaderFile(file.getAbsolutePath());
 	if(!shaderFile.is_open())
@@ -334,7 +242,7 @@ bool ShaderMetaMgr::readDependenceAndMetaInFile(const Path& file, MetaInfoMapIte
 			info->_dependdInfo._dependences.emplace_back(path);
 		}
 	}
-	info->_otherInfo._status = OtherInfo::Ready;
+	info->_otherInfo->_status = OtherInfo::Ready;
 
 	return true;
 }

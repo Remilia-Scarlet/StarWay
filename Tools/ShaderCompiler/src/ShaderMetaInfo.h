@@ -3,7 +3,7 @@
 #include <vector>
 #include "Ash/FileSystem/fs_include.h"
 #include "Ash/TinyAssert.h"
-class Path;
+#include <boost/serialization/vector.hpp>
 
 enum class ShaderType
 {
@@ -17,6 +17,15 @@ struct ShaderDeclear
 	ShaderType _shaderType = ShaderType::VS;
 	std::string _entry;
 	std::vector<std::string> _defines;
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & _name;
+		ar & _shaderType;
+		ar & _entry;
+		ar & _defines;
+	}
 	
 	Path calculateOutputFileName(const Path& outputDirectory) const 
 	{
@@ -30,4 +39,10 @@ struct ShaderDeclear
 struct ShaderMetaInfo
 {
 	std::vector<ShaderDeclear> _declears;
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & _declears;
+	}
 };

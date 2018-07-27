@@ -1,5 +1,4 @@
 #pragma once
-#include "Extern/rapidjson/include/rapidjson/document.h"
 #include <string>
 #include "Engine/Ash/FileSystem/fs_include.h"
 #include <vector>
@@ -33,6 +32,7 @@ struct CompileRecord
 	~CompileRecord() = default;
 	CompileRecord& operator=(const CompileRecord&) = default;
 	CompileRecord& operator=(CompileRecord&&) = default;
+
 	uint64_t _timeStamp = 0; //hlsl timestamp
 	uint64_t _dependTimeStampHash = 0; //all dependeces time stamp hash
 	struct SubShaderInfo
@@ -41,8 +41,26 @@ struct CompileRecord
 		Path _outPath; // the output file. For example default_material.ps.cso
 		uint64_t _timeStamp; // output file timestamp
 		std::vector<ParamInfo> _localParamsInfo;//local params.
+
+		friend class boost::serialization::access;
+		template<class Archive>
+		void serialize(Archive & ar, const unsigned int version)
+		{
+			ar & _name;
+			ar & _outPath;
+			ar & _timeStamp;
+			ar & _localParamsInfo;
+		}
 	};
 	std::vector<SubShaderInfo> _output;
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & _timeStamp;
+		ar & _dependTimeStampHash;
+		ar & _output;
+	}
 };
 
 struct Config
@@ -76,6 +94,7 @@ protected:
 
 	struct CompileResult
 	{
+		CompileResult() = default;
 		CompileResult(const Path& fileName) :_fileName(fileName) {}
 		Path _fileName;
 		bool _succeed = false;
@@ -86,7 +105,7 @@ protected:
 	std::atomic <uint32_t> _shaderListIndex = 0;
 	std::atomic<bool> _hasCompillingError = false;
 	ShaderMetaMgr _dependenceMgr;
-	bool _exeIsUpToData = true;
+	bool _exeIsUpToData = false;
 	bool _forceRecompile = false;
 	uint64_t _metaFileIsUpToDate = 0;
 
