@@ -138,16 +138,6 @@ bool ShaderMetaMgr::writeDependenceCacheToFile()
 		}
 		oneItem.AddMember(JSON_NAME_DEPENDENCE, depArr, doc.GetAllocator());
 
-		Value paramArr(kArrayType);
-		for (auto& param : depItem._metaInfo._params)
-		{
-			Value oneParam(kObjectType);
-			oneParam.AddMember(JSON_NAME_PARAM_NAME, Value().SetString(param._name.c_str(), static_cast<SizeType>(param._name.length())).Move(), doc.GetAllocator());
-			oneParam.AddMember(JSON_NAME_PARAM_SLOT, param._index, doc.GetAllocator());
-			paramArr.PushBack(oneParam, doc.GetAllocator());
-		}
-		oneItem.AddMember(JSON_NAME_PARAMS, paramArr, doc.GetAllocator());
-
 		Value declearationArr(kArrayType);
 		for(auto& declear : depItem._metaInfo._declears)
 		{
@@ -283,7 +273,6 @@ bool ShaderMetaMgr::readDependenceAndMetaInFile(const Path& file, MetaInfoMapIte
 	info->_dependdInfo._timeStamp = getTimeStamp(file);
 	info->_dependdInfo._dependences.clear();
 	info->_metaInfo._declears.clear();
-	info->_metaInfo._params.clear();
 
 	std::string line;
 	while(std::getline(shaderFile, line))
@@ -322,23 +311,6 @@ bool ShaderMetaMgr::readDependenceAndMetaInFile(const Path& file, MetaInfoMapIte
 			}
 
 			info->_metaInfo._declears.push_back(dec);
-			continue;
-		}
-
-		static const std::regex param("PARAM:([a-zA-Z_0-9]+)");
-		if (std::regex_search(line, mr, param))
-		{
-			ShaderMetaInfo::ParamInfo paramInfo;
-			TinyAssert(mr.size() == 2);
-			paramInfo._name = mr[1].str();
-
-			static const std::regex regis(R"(register *\(c(\d+) *\))");
-			if (std::regex_search(line, mr, regis))
-			{
-				TinyAssert(mr.size() == 2);
-				paramInfo._index = atoi(mr[1].str().c_str());
-			}
-			info->_metaInfo._params.emplace_back(paramInfo);
 			continue;
 		}
 

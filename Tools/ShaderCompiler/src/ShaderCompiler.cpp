@@ -19,8 +19,14 @@ static const char JSON_NAME_MAX_THREAD_NUM[] = "thread_number";
 static const char JSON_NAME_TIME_STAMP[] = "time_stamp";
 static const char JSON_NAME_DEPENDENT_HASH[] = "depend_time_stamp_hash";
 static const char JSON_NAME_OUTPUT_FILES[] = "output_files";
+static const char JSON_NAME_OUTPUT_FILES_PATH[] = "output_file_path";
+static const char JSON_NAME_OUTPUT_TIME_STAMP[] = "output_timestamp";
+static const char JSON_NAME_SUB_SHADER_NAME[] = "subshader_name";
+static const char JSON_NAME_SUB_SHADER_PARAMS[] = "params";
+static const char JSON_NAME_SUB_SHADER_PARAM_NAME[] = "params_name";
+static const char JSON_NAME_SUB_SHADER_PARAM_SLOT[] = "params_offset";
+static const char JSON_NAME_SUB_SHADER_PARAM_SIZE[] = "params_size";
 static const char JSON_NAME_META_FILE_TIME[] = "meta_file_timestamp";
-static const char JSON_NAME_FILE_NAME[] = "file_name";
 static const char JSON_NAME_EXE_TIME[] = "exe_timestamp";
 
 static const char CONFIG_JSON[] = "game:config.json";
@@ -55,6 +61,7 @@ int ShaderCompiler::run(const std::string& cmdLine)
 
 	if (!allocThreadAndDoWork())
 		return 1;
+
 
 	if (!writeCache())
 		return 1;
@@ -91,6 +98,8 @@ bool ShaderCompiler::parseArg(const std::string& cmdLine)
 	_config._filter = parser.getFilter();
 	//meta out
 	_config._metaOut = parser.getMetaOut();
+
+	_forceRecompile = parser.getForce();
 
 	_config._intermidiatePath = parser.getIntDir();
 	_config._compileRecordJson = Path(std::string(_config._intermidiatePath.getAbsolutePath()) + "\\" + COMPILE_RECORD); //todo: check \\ at end
@@ -170,6 +179,7 @@ bool ShaderCompiler::allocThreadAndDoWork()
 
 bool ShaderCompiler::writeMetaFile()
 {
+
 	return true;
 }
 
@@ -188,7 +198,13 @@ std::optional<CompileRecord> ShaderCompiler::compileShader(const Path& file)
 			DebugString("compiling shader %s failed with entry: %s, declear: %s", file.getFileName().c_str(), declear._entry.c_str(), outputFile.getFileNameWithoutExt().c_str());
 			return {};
 		}
-		record._output.emplace_back(outputFile, getTimeStamp(outputFile));//todo: if output file not exist
+		CompileRecord::SubShaderInfo info;
+		info._outPath = outputFile;
+		info._timeStamp = getTimeStamp(outputFile);
+		info._name = declear._name;
+		ShaderReflectionParser refParser(outputFile);
+		info._localParamsInfo = refParser.getParamInfo();
+		record._output.emplace_back(info);//todo: if output file not exist
 	}
 	return { record };
 }
@@ -341,13 +357,14 @@ bool ShaderCompiler::checkCompileRecordIsUpToDate(const Path& file, const std::o
 {
 	do
 	{
+		TINY_BREAK_IF(_forceRecompile);
 		TINY_BREAK_IF(!_exeIsUpToData);
 		TINY_BREAK_IF(!record.has_value());
 		TINY_BREAK_IF(record->_timeStamp != getTimeStamp(file));
 		bool allOutputUpToDate = true;
-		for (const std::pair<Path,uint64_t>& output : record->_output)
+		for (const auto& output : record->_output)
 		{
-			if (getTimeStamp(output.first) != output.second)
+			if (getTimeStamp(output._outPath) != output._timeStamp)
 			{
 				allOutputUpToDate = false;
 				break;
@@ -360,13 +377,13 @@ bool ShaderCompiler::checkCompileRecordIsUpToDate(const Path& file, const std::o
 	return false;
 }
 
+
 bool ShaderCompiler::readCache()
 {
-	readCommandInfoCache();
-	if (!_exeIsUpToData)
-		return true;
-	return _dependenceMgr.parseDependenceCache(_config._dependenceJson)
-		&& readCompileRecord();
+	bool result = _dependenceMgr.parseDependenceCache(_config._dependenceJson);
+	result &= readCommandInfoCache();
+	result &= readCompileRecord();
+	return  result;
 }
 
 bool ShaderCompiler::readCompileRecord()
@@ -414,13 +431,18 @@ bool ShaderCompiler::readCompileRecord()
 			else if (itRecord->name == JSON_NAME_OUTPUT_FILES)
 			{
 				TinyAssert(itRecord->value.IsArray());
-				for (const auto& outputVal : itRecord->value.GetArray())
+				for (auto& outputVal : itRecord->value.GetArray())
 				{
-					TinyAssert(outputVal.IsObject() && outputVal.MemberCount() == 1);
+					TinyAssert(outputVal.IsObject());
+					for (Value::MemberIterator outfileIt = outputVal.MemberBegin(); outfileIt != outputVal.MemberEnd(); ++outfileIt)
+					{
+						
+					}
 					const Value& outName = outputVal.MemberBegin()->name;
 					const Value& outTimeStamp = outputVal.MemberBegin()->value;
 					TinyAssert(outTimeStamp.IsUint64());
-					record._output.emplace_back(outName.GetString(), outTimeStamp.GetUint64());
+					//record._output.emplace_back(outName.GetString(), outTimeStamp.GetUint64());
+					//TinyAssert(false);//todo
 				}
 			}
 		}
@@ -477,9 +499,10 @@ std::optional<CompileRecord> ShaderCompiler::getCompileRecord(const Path & file)
 
 bool ShaderCompiler::writeCache()
 {
-	return _dependenceMgr.writeDependenceCacheToFile()
-		&& refreshCompileRecord()
-		&& refreshCommandInfoCache();
+	bool result = _dependenceMgr.writeDependenceCacheToFile();
+	result &= refreshCompileRecord();
+	result &= refreshCommandInfoCache();
+	return result;
 }
 
 bool ShaderCompiler::refreshCompileRecord()
@@ -499,11 +522,25 @@ bool ShaderCompiler::refreshCompileRecord()
 		compileRecord.AddMember(JSON_NAME_TIME_STAMP, result._record._timeStamp, doc.GetAllocator());
 		compileRecord.AddMember(JSON_NAME_DEPENDENT_HASH, result._record._dependTimeStampHash, doc.GetAllocator());
 		Value outputList(kArrayType);
-		for (const std::pair<Path, uint64_t>& arrItem : result._record._output)
+		for (const auto& arrItem : result._record._output)
 		{
 			Value outFile(kObjectType);
-			const std::string& relaPath = arrItem.first.getRelativePath();
-			outFile.AddMember(Value().SetString(relaPath.c_str(), static_cast<SizeType>(relaPath.length())).Move(), arrItem.second, doc.GetAllocator());
+			const std::string& relaPath = arrItem._outPath.getRelativePath();
+			outFile.AddMember(JSON_NAME_OUTPUT_FILES_PATH, Value().SetString(relaPath.c_str(), static_cast<SizeType>(relaPath.length())).Move(), doc.GetAllocator());
+			outFile.AddMember(JSON_NAME_OUTPUT_TIME_STAMP, arrItem._timeStamp, doc.GetAllocator());
+			outFile.AddMember(JSON_NAME_SUB_SHADER_NAME, Value().SetString(arrItem._name.c_str(), (SizeType)arrItem._name.size()).Move(), doc.GetAllocator());
+
+			Value paramObjArr(kArrayType);
+			for(auto& param : arrItem._localParamsInfo)
+			{
+				Value paramObj(kObjectType);
+				paramObj.AddMember(JSON_NAME_SUB_SHADER_PARAM_NAME, Value().SetString(param._name.c_str(), (SizeType)param._name.size()).Move(), doc.GetAllocator());
+				paramObj.AddMember(JSON_NAME_SUB_SHADER_PARAM_SLOT, param._slot, doc.GetAllocator());
+				paramObj.AddMember(JSON_NAME_SUB_SHADER_PARAM_SIZE, param._size, doc.GetAllocator());
+				paramObjArr.PushBack(paramObj, doc.GetAllocator());
+			}
+
+			outFile.AddMember(JSON_NAME_SUB_SHADER_PARAMS, paramObjArr, doc.GetAllocator());
 			outputList.PushBack(outFile, doc.GetAllocator());
 		}
 		compileRecord.AddMember(JSON_NAME_OUTPUT_FILES, outputList, doc.GetAllocator());

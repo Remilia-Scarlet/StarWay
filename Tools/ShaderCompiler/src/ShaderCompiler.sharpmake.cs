@@ -44,7 +44,10 @@ namespace ShaderCompiler
 			conf.Options.Add(Options.Vc.General.WindowsTargetPlatformVersion.v10_0_16299_0);
 			
 			conf.Defines.Add("_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING");
-
+			
+			conf.LibraryFiles.Add("D3DCompiler.lib");
+			conf.LibraryFiles.Add("dxguid.lib");
+			
 			conf.PrecompHeader = "precomp.h";
             conf.PrecompSource = "precomp.cpp";
 			

@@ -9,6 +9,7 @@
 #include <set>
 #include <optional>
 #include "ShaderMetaMgr.h"
+#include "ShaderReflectionInfo.h"
 
 enum class ShaderType;
 
@@ -21,6 +22,7 @@ public:
 	DEFINE_COMMANDLINE_STR(IntDir, "", "/IntDir:<Directory> Intermidiate directory where compiler will keep the dependecy files and tempory file. All files in IntDir should be managed by compiler, not user.");
 	DEFINE_COMMANDLINE_STR(Include, "", "/Include:<Directory> Additional include path. ");
 	DEFINE_COMMANDLINE_STR(MetaOut, "", "/MetaOut:<MetaOutFilePath> The .h file that contains all shader meta info");
+	DEFINE_COMMANDLINE_BOOL(Force, "/Force force recompile");
 };
 
 struct CompileRecord
@@ -33,12 +35,6 @@ struct CompileRecord
 	CompileRecord& operator=(CompileRecord&&) = default;
 	uint64_t _timeStamp = 0; //hlsl timestamp
 	uint64_t _dependTimeStampHash = 0; //all dependeces time stamp hash
-	struct ParamInfo
-	{
-		std::string _name;
-		int slot;
-		//type;
-	};
 	struct SubShaderInfo
 	{
 		std::string _name; //the name that define inside shader For example default_material
@@ -46,7 +42,7 @@ struct CompileRecord
 		uint64_t _timeStamp; // output file timestamp
 		std::vector<ParamInfo> _localParamsInfo;//local params.
 	};
-	std::vector<std::pair<Path,uint64_t> > _output;
+	std::vector<SubShaderInfo> _output;
 };
 
 struct Config
@@ -91,7 +87,9 @@ protected:
 	std::atomic<bool> _hasCompillingError = false;
 	ShaderMetaMgr _dependenceMgr;
 	bool _exeIsUpToData = true;
+	bool _forceRecompile = false;
 	uint64_t _metaFileIsUpToDate = 0;
+
 
 
 	bool parseArg(const std::string& cmdLine);
