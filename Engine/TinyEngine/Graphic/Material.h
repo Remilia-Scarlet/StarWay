@@ -3,6 +3,7 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include "Graphic/ShaderInclude/ShaderInfo.h"
 
 TINY_DEFINE_PTR(Material);
 
@@ -16,9 +17,9 @@ protected:
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version)
 	{
-		ar & _shaderName;
+		ar & _shader;
 		ar & _command;
 	}
-	std::string _shaderName;
+	PixelShaders _shader;
 	std::vector<GraphicCommand> _command; //We input some info here, for example textures and constants
 };

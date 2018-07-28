@@ -1,12 +1,6 @@
 #pragma once
 
-struct LocalConstantVs
-{
-	int _slot;
-	int _size;
-};
-
-struct LocalConstantPs
+struct LocalConstantInfo
 {
 	int _slot;
 	int _size;

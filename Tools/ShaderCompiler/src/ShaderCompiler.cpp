@@ -229,8 +229,12 @@ bool ShaderCompiler::writeMetaFile()
 	data += vs;
 	data += ps;
 
+	int vsShaderNum = 0;
+	int psShaderNum = 0;
 	vs = "namespace VsLocalConstant\n{\n";
 	ps = "namespace PsLocalConstant\n{\n";
+	std::string vsSwitchCase;
+	std::string psSwitchCase;
 	for (CompileResult& hlsl : _shaderList)
 	{
 		for (CompileRecord::SubShaderInfo& subShader : hlsl._record._output)
@@ -239,16 +243,20 @@ bool ShaderCompiler::writeMetaFile()
 				continue;
 
 			std::string& str = (subShader._type == ShaderType::VS ? vs : ps);
-			str += "\tnamespace " + toUpper(subShader._name) +  "\n\t{\n";
+			std::string& switchCase = (subShader._type == ShaderType::VS ? vsSwitchCase : psSwitchCase);
+			int& shaderNum = (subShader._type == ShaderType::VS ? vsShaderNum : psShaderNum);
+			++shaderNum;
+
+			int paramNum = 0;
+			str += "\tenum class " + toUpper(subShader._name) +  "\n\t{\n";
 			for(auto& param : subShader._localParamsInfo)
 			{
-				str += std::string("\t\t") + (subShader._type == ShaderType::VS ? "const LocalConstantVs " : "const LocalConstantPs ") + toUpper(param._name)
-				+ " {" 
-				+ std::to_string(param._slot / (sizeof(float) * 4)) + "," 
-				+ std::to_string(param._size) 
-				+ "};\n";
+				++paramNum;
+				std::string id = std::to_string(shaderNum * 1000 + paramNum);
+				str += std::string("\t\t") + toUpper(param._name) + " = " + id + ",\n";
+				switchCase += "\t\tcase " + id + ":return {" + std::to_string(param._slot / (sizeof(float) * 4)) + "," + std::to_string(param._size) + "};\n";
 			}
-			str += "\t}\n";
+			str += "\t};\n";
 		}
 	}
 	vs += "}\n\n";
@@ -256,6 +264,18 @@ bool ShaderCompiler::writeMetaFile()
 
 	data += vs;
 	data += ps;
+
+	data += "inline LocalConstantInfo getVsLocalParamInfo(int constant)\n{\n";
+	data += "\tswitch(constant)\n\t{\n";
+	data += vsSwitchCase;
+	data += "\t\tdefault:\n\t\t\tTinyAssert(false);\n;\t\t\treturn {-1,-1};\n";
+	data += "\t}\n}\n\n";
+
+	data += "inline LocalConstantInfo getPsLocalParamInfo(int constant)\n{\n";
+	data += "\tswitch(constant)\n\t{\n";
+	data += psSwitchCase;
+	data += "\t\tdefault:\n\t\t\tTinyAssert(false);\n\t\t\treturn {-1,-1};\n";
+	data += "\t}\n}\n\n";
 	
 	file.write(data.c_str(), static_cast<int>(data.length()));
 	file.setEndOfFile();

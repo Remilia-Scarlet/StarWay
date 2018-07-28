@@ -21,16 +21,16 @@ public:
 	static bool destroyInstance();
 public:
 	template<class T>
-	void setLocalConstantVs(const LocalConstantVs& constant, const T& data);
+	void setLocalConstantVs(int constant, const T& data);
 	template<class ValueType, int RowNum, int ColNum>
-	void setLocalConstantVs(const LocalConstantVs& constant, const MatrixStorage<ValueType,RowNum,ColNum>& data);
-	void setLocalConstantVs(const LocalConstantVs& constant, const void* data, size_t size);
+	void setLocalConstantVs(int constant, const MatrixStorage<ValueType,RowNum,ColNum>& data);
+	void setLocalConstantVs(int constant, const void* data, size_t size);
 
 	template<class T>
-	void setLocalConstantPs(const LocalConstantPs& constant, const T& data);
+	void setLocalConstantPs(int constant, const T& data);
 	template<class ValueType, int RowNum, int ColNum>
-	void setLocalConstantPs(const LocalConstantVs& constant, const MatrixStorage<ValueType, RowNum, ColNum>& data);
-	void setLocalConstantPs(const LocalConstantPs& constant, const void* data, size_t size);
+	void setLocalConstantPs(int constant, const MatrixStorage<ValueType, RowNum, ColNum>& data);
+	void setLocalConstantPs(int constant, const void* data, size_t size);
 
 	virtual void commitVSBuffer() = 0;
 	virtual void commitPSBuffer() = 0;
@@ -58,13 +58,13 @@ protected:
 };
 
 template <class T>
-void ConstantBufferManager::setLocalConstantVs(const LocalConstantVs& constant, const T& data)
+void ConstantBufferManager::setLocalConstantVs(int constant, const T& data)
 {
 	setLocalConstantVs(constant, &data, static_cast<int>(sizeof(data)));
 }
 
 template <class ValueType, int RowNum, int ColNum>
-void ConstantBufferManager::setLocalConstantVs(const LocalConstantVs& constant,
+void ConstantBufferManager::setLocalConstantVs(int constant,
 	const MatrixStorage<ValueType, RowNum, ColNum>& data)
 {
 #if defined(TINY_GRAPHIC_ENGINE_DX11)
@@ -75,13 +75,13 @@ void ConstantBufferManager::setLocalConstantVs(const LocalConstantVs& constant,
 }
 
 template <class T>
-void ConstantBufferManager::setLocalConstantPs(const LocalConstantPs& constant, const T& data)
+void ConstantBufferManager::setLocalConstantPs(int constant, const T& data)
 {
 	setLocalConstantPs(constant, &data, static_cast<int>(sizeof(data)));
 }
 
 template <class ValueType, int RowNum, int ColNum>
-void ConstantBufferManager::setLocalConstantPs(const LocalConstantVs& constant,
+void ConstantBufferManager::setLocalConstantPs(int constant,
 	const MatrixStorage<ValueType, RowNum, ColNum>& data)
 {
 #if defined(TINY_GRAPHIC_ENGINE_DX11)
