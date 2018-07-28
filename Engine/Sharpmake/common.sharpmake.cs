@@ -32,9 +32,11 @@ namespace Common
 			conf.TargetPath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\lib";
 			//conf.IncludePaths.Add(@"[project.RootPath]");
 			conf.IncludePaths.Add(@"[project.RootPath]\..");
-			
-			//boost
-			conf.IncludePaths.Add(@"[project.RootPath]\..\..\Engine\Extern\boost");
+
+            conf.ExportAdditionalLibrariesEvenForStaticLib = true;
+
+            //boost
+            conf.IncludePaths.Add(@"[project.RootPath]\..\..\Engine\Extern\boost");
 			conf.LibraryPaths.Add(@"[project.RootPath]\..\..\Engine\Extern\boost\stage\lib");
 			
 			conf.Name = "[target.Blob] [target.Optimization]";

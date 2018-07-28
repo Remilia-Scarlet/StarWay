@@ -8,15 +8,6 @@ public:
 	DX11ConstantBufferManager();
 	virtual ~DX11ConstantBufferManager();
 public:
-	virtual void setVSLocalVector(int slot, const Vector4& vector)override;
-	virtual void setPSLocalVector(int slot, const Vector4& vector)override;
-
-	virtual void setVSLocalFloat(int slot, float value)override;
-	virtual void setPSLocalFloat(int slot, float value)override;
-
-	virtual void setVSLocalMatrix(int slot, const Matrix4& matrix) override;
-	virtual void setPSLocalMatrix(int slot, const Matrix4& matrix) override;
-
 	virtual void commitVSBuffer()override;
 	virtual void commitPSBuffer()override;
 
@@ -27,8 +18,7 @@ public:
 	virtual void setRegistPSBuffer(int bufferSlot, void* data)override;
 protected:
 	virtual bool init()override;
-	std::vector<Vector4> _tempVSLocalBuffer;
-	std::vector<Vector4> _tempPSLocalBuffer;
+
 	ID3D11Buffer* _vsLocalBuffer; //slot 0
 	ID3D11Buffer* _psLocalBuffer; //slot 0
 	ID3D11Buffer* _vsGlobalBuffer; //slot 1

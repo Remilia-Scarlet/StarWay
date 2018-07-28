@@ -16,7 +16,7 @@ namespace UnitTest
         public override void ConfigureAll(Configuration conf, Target target)
         {
 			base.ConfigureAll(conf,target);
-			conf.SolutionFolder = "UnitTest";
+			conf.SolutionFolder = "Tools";
 			conf.TargetPath = @"[project.RootPath]\..\..\output\_temp\UnitTest\";
 			conf.Output = Configuration.OutputType.Exe;
 			conf.Options.Add(Options.Vc.Linker.SubSystem.Console);	

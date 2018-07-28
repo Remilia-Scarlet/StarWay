@@ -27,68 +27,6 @@ DX11ConstantBufferManager::~DX11ConstantBufferManager()
 		TINY_SAFE_RELEASE(pair.second);
 }
 
-
-void DX11ConstantBufferManager::setVSLocalVector(int slot, const Vector4& vector)
-{
-	TinyAssert(slot < CONSTANT_SLOT_NUMBER);
-	if (slot < CONSTANT_SLOT_NUMBER)
-	{
-		_tempVSLocalBuffer[slot] = vector;
-	}
-}
-
-void DX11ConstantBufferManager::setPSLocalVector(int slot, const Vector4& vector)
-{
-	TinyAssert(slot < CONSTANT_SLOT_NUMBER);
-	if (slot < CONSTANT_SLOT_NUMBER)
-	{
-		_tempPSLocalBuffer[slot] = vector;
-	}
-}
-
-void DX11ConstantBufferManager::setVSLocalFloat(int slot, float value)
-{
-	TinyAssert(slot < CONSTANT_SLOT_NUMBER);
-	if (slot < CONSTANT_SLOT_NUMBER)
-	{
-		_tempVSLocalBuffer[slot] = value;
-	}
-}
-
-void DX11ConstantBufferManager::setPSLocalFloat(int slot, float value)
-{
-	TinyAssert(slot < CONSTANT_SLOT_NUMBER);
-	if (slot < CONSTANT_SLOT_NUMBER)
-	{
-		_tempPSLocalBuffer[slot] = value;
-	}
-}
-
-void DX11ConstantBufferManager::setVSLocalMatrix(int slot, const Matrix4& matrix)
-{
-	Matrix4 transMatrix = matrix.transpose();
-	TinyAssert(slot + 4< CONSTANT_SLOT_NUMBER);
-	if (slot + 4 < CONSTANT_SLOT_NUMBER)
-	{
-		for (int i = 0; i < 4; ++i)
-		{
-			_tempVSLocalBuffer[slot + i] = transMatrix(i);
-		}
-	}
-}
-
-void DX11ConstantBufferManager::setPSLocalMatrix(int slot, const Matrix4& matrix)
-{
-	TinyAssert(slot + 4 < CONSTANT_SLOT_NUMBER);
-	if (slot + 4 < CONSTANT_SLOT_NUMBER)
-	{
-		for (int i = 0; i < 4; ++i)
-		{
-			_tempPSLocalBuffer[slot + i] = matrix(i);
-		}
-	}
-}
-
 void DX11ConstantBufferManager::commitVSBuffer()
 {
 	ID3D11DeviceContext* d3dContent = GraphicMgr::instance()->getD3D11DeviceContext();

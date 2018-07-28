@@ -22,6 +22,7 @@ namespace StarWay
 			conf.TargetPath = @"[project.RootPath]\..\output\_temp\[target.DevEnv]\lib";			
 
 			conf.AddPrivateDependency<Ash.AshProject>(target);
+			conf.AddPrivateDependency<Prebuild.PrebuildProject>(target);
 		    conf.AddPrivateDependency<Graphic.GraphicProject>(target);
 			conf.AddPrivateDependency<Math.MathProject>(target);
 			conf.AddPrivateDependency<TinyEngine.TinyEngineProject>(target);				

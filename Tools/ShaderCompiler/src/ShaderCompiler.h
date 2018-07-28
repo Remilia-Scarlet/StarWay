@@ -41,6 +41,7 @@ struct CompileRecord
 		Path _outPath; // the output file. For example default_material.ps.cso
 		uint64_t _timeStamp; // output file timestamp
 		std::vector<ParamInfo> _localParamsInfo;//local params.
+		ShaderType _type;
 
 		friend class boost::serialization::access;
 		template<class Archive>
@@ -50,6 +51,7 @@ struct CompileRecord
 			ar & _outPath;
 			ar & _timeStamp;
 			ar & _localParamsInfo;
+			ar & _type;
 		}
 	};
 	std::vector<SubShaderInfo> _output;
@@ -107,7 +109,8 @@ protected:
 	ShaderMetaMgr _dependenceMgr;
 	bool _exeIsUpToData = false;
 	bool _forceRecompile = false;
-	uint64_t _metaFileIsUpToDate = 0;
+	bool _metaFileIsUpToDate = false;
+	std::atomic<bool> _hasCompiledShader = false;
 
 
 

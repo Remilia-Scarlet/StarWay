@@ -30,6 +30,22 @@ bool ConstantBufferManager::destroyInstance()
 	return true;
 }
 
+void ConstantBufferManager::setLocalConstantVs(const LocalConstantVs& constant, const void* data, size_t size)
+{
+	TinyAssert((int)std::ceil(static_cast<float>(size) / sizeof(Vector4)) + constant._slot <= (int)_tempVSLocalBuffer.size());
+
+	void* ptr = &_tempVSLocalBuffer[constant._slot];
+	memcpy(ptr, data, size);
+}
+
+void ConstantBufferManager::setLocalConstantPs(const LocalConstantPs& constant, const void* data, size_t size)
+{
+	TinyAssert((int)std::ceil(static_cast<float>(size) / sizeof(Vector4)) + constant._slot <= (int)_tempPSLocalBuffer.size());
+
+	void* ptr = &_tempPSLocalBuffer[constant._slot];
+	memcpy(ptr, data, size);
+}
+
 ConstantBufferManager::ConstantBufferManager()
 {
 

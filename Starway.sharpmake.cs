@@ -1,6 +1,7 @@
 using Sharpmake;
 
 [module: Sharpmake.Include("Engine\\Ash\\project\\Ash.sharpmake.cs")]
+[module: Sharpmake.Include("Engine\\Prebuild\\project\\Prebuild.sharpmake.cs")]
 [module: Sharpmake.Include("Engine\\Graphic\\project\\Graphic.sharpmake.cs")]
 [module: Sharpmake.Include("Engine\\Math\\project\\Math.sharpmake.cs")]
 [module: Sharpmake.Include("Engine\\TinyEngine\\project\\TinyEngine.sharpmake.cs")]

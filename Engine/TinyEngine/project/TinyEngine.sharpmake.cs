@@ -12,5 +12,11 @@ namespace TinyEngine
         {
             Name = "TinyEngine";
         }
+		
+		public override void ConfigureAll(Configuration conf, Target target)
+        {
+			base.ConfigureAll(conf,target);
+			conf.AddPrivateDependency<Prebuild.PrebuildProject>(target);
+		}
     }
 }
