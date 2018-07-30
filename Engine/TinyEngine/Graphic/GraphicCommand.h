@@ -2,160 +2,75 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/export.hpp>
 #include "Graphic/ShaderInclude/ShaderInfo.h"
 
-struct SetPsConstantDetail
-{
-	int _constantId;
-	std::vector<uint8_t> _data;
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive & ar, const unsigned int version)
-	{
-		ar & _constantId;
-		ar & _data;
-	}
-};
-
-struct SetTextureDetail
-{
-	int _slot;
-	std::string _textureName;
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive & ar, const unsigned int version)
-	{
-		ar & _slot;
-		ar & _textureName;
-	}
-};
 
 class GraphicCommand
 {
 public:
-	enum class CommandType
-	{
-		UNSET,
-		SET_LOCAL_PS_CONSTANT,
-		SET_TEXTURE
-	};
-	GraphicCommand(CommandType type);
+	GraphicCommand() = default;
 	GraphicCommand(const GraphicCommand& other) = delete;
 	GraphicCommand(GraphicCommand&& other) = default;
-	virtual ~GraphicCommand();
+	virtual ~GraphicCommand() = default;
 public:
-	void apply();
+	virtual void apply() = 0;
 protected:
-	CommandType _commandType = CommandType::UNSET;
-	union
-	{
-		SetPsConstantDetail* _setConstantDetail;
-		SetTextureDetail* _setTextureDetail;
-		void* _setDetail;
-	};
 	friend class boost::serialization::access;
-	//template<class Archive>
-	//void serialize(Archive & ar, const unsigned int version)
-	//{
-	//	ar & _commandType;
-	//	switch (_commandType)
-	//	{
-	//	case CommandType::SET_LOCAL_PS_CONSTANT:
-	//		ar & _setConstantDetail;
-	//		break;
-	//	case CommandType::SET_TEXTURE:
-	//		ar & _setTextureDetail;
-	//		break;
-	//	}
-	//}
-	template <class Archive> void serialize(Archive &, const unsigned int) {
-		TinyAssert(false);
-	}
-
-	template<class Archive>
-	inline friend void save_construct_data(Archive & ar, const GraphicCommand * graphicCommand, const unsigned int file_version)
+	template <class Archive> void serialize(Archive &, const unsigned int)
 	{
-		ar << graphicCommand->_commandType;
-		switch (graphicCommand->_commandType)
-		{
-		case GraphicCommand::CommandType::SET_LOCAL_PS_CONSTANT:
-			ar << graphicCommand->_setConstantDetail;
-			break;
-		case GraphicCommand::CommandType::SET_TEXTURE:
-			ar << graphicCommand->_setTextureDetail;
-			break;
-		}
+		//nothing to do
 	}
+};
 
-	template<class Archive>
-	inline friend void load_construct_data(Archive & ar, GraphicCommand * graphicCommand, const unsigned int file_version)
-	{
-		GraphicCommand::CommandType cmdType;
-		ar >> cmdType;
-		new (graphicCommand) GraphicCommand(cmdType);
-
-		switch (graphicCommand->_commandType)
-		{
-		case GraphicCommand::CommandType::SET_LOCAL_PS_CONSTANT:
-			ar >> graphicCommand->_setConstantDetail;
-			break;
-		case GraphicCommand::CommandType::SET_TEXTURE:
-			ar >> graphicCommand->_setTextureDetail;
-			break;
-		}
-	}
-};/*
-namespace boost {
-	namespace serialization {
-
-		template<class Archive>
-		inline void save_construct_data(Archive & ar, const GraphicCommand * graphicCommand, const unsigned int file_version)
-		{
-			
-		}
-
-		template<class Archive>
-		inline void load_construct_data(Archive & ar, GraphicCommand * graphicCommand, const unsigned int file_version)
-		{
-			
-		}
-	}
-}*/
-
-struct SetPsConstantDetailSaver
+class SetPsLocalConstantCmd : GraphicCommand
 {
-	std::string _constantName;
+public:
+	template<class ValueType>
+	SetPsLocalConstantCmd(int constantId, const ValueType& data);
+	SetPsLocalConstantCmd(SetPsLocalConstantCmd&&) = default;
+protected:
+	SetPsLocalConstantCmd() = default;//for boost serialization only 
+	int _constantId = -1;
 	std::vector<uint8_t> _data;
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version)
 	{
-		ar & _constantName;
+		ar & boost::serialization::base_object<GraphicCommand>(*this);
+		ar & _constantId;
 		ar & _data;
 	}
 };
+BOOST_CLASS_EXPORT_KEY(SetPsLocalConstantCmd)
 
-struct SetTextureDetailSaver
+struct SetTextureCmd : public GraphicCommand
 {
-	int _slot;
+public:
+	SetTextureCmd(int slot, const std::string& texName);
+	SetTextureCmd(SetTextureCmd&&) = default;
+protected:
+	SetTextureCmd() = default;//for boost serialization only 
+	int _slot = -1;
 	std::string _textureName;
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version)
 	{
+		ar & boost::serialization::base_object<GraphicCommand>(*this);
 		ar & _slot;
 		ar & _textureName;
 	}
 };
+BOOST_CLASS_EXPORT_KEY(SetTextureCmd)
 
-struct GraphicCommandSaver
+////////////////////////////////////////////////////////////////////////////////////////////////////
+template <class ValueType>
+SetPsLocalConstantCmd::SetPsLocalConstantCmd(int constantId, const ValueType& data)
+	:_constantId(constantId)
 {
-	GraphicCommandSaver(){}
-	~GraphicCommandSaver() {}
-	GraphicCommand::CommandType _commandType = GraphicCommand::CommandType::UNSET;
-	union
-	{
-		SetPsConstantDetailSaver _setConstantDetail;
-		SetTextureDetailSaver _setTextureDetail;
-	};
-};
+	LocalConstantInfo info = getPsLocalParamInfo(constantId);
+	TinyAssert(info._size == (int)sizeof(ValueType));
+	_data.resize(sizeof(ValueType));
+	memcpy(_data.data(), &data, sizeof(ValueType));
+}

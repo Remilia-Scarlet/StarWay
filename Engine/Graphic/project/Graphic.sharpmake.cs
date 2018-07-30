@@ -24,7 +24,7 @@ namespace Graphic
 			conf.AddPublicDependency<Prebuild.PrebuildProject>(target);
 			
 			conf.LibraryFiles.Add("d3d11");
-			conf.LibraryFiles.Add("d3dcompiler.lib");
+			//conf.LibraryFiles.Add("d3dcompiler.lib");
 			conf.LibraryFiles.Add("dxguid.lib");
 
         }

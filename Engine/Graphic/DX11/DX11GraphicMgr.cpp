@@ -5,7 +5,6 @@
 #include "Graphic/Manager/ConstantBufferManager.h"
 #include "Graphic/Manager/ShaderMgr.h"
 #include <functional>
-#include "DX11Wrapper.h"
 #include "Graphic/Vertex/InputLayoutDefine.h"
 #include "Graphic/Manager/LightManager.h"
 #include "DX11InputLayout.h"
@@ -158,8 +157,9 @@ GfxInputLayoutPtr DX11GraphicMgr::initInputLayout(const VertexInputlayoutDescrip
 		"return float4(0,0,0,0);\n"
 		"}\n"
 		;
-	ID3DBlob* shaderBlob;
-	bool successed = DX11Wrapper::CompileShader(shaderCode.c_str(), (int)shaderCode.length(), "main","vs_5_0", &shaderBlob);
+	ID3DBlob* shaderBlob = nullptr;
+	bool successed = false; //DX11Wrapper::CompileShader(shaderCode.c_str(), (int)shaderCode.length(), "main","vs_5_0", &shaderBlob);
+	TinyAssert(successed);
 
 	ID3D11InputLayout* d3dInputLayout = nullptr;
 	if (successed)
