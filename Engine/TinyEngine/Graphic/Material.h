@@ -3,6 +3,7 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
 #include "Graphic/ShaderInclude/ShaderInfo.h"
 
 TINY_DEFINE_PTR(Material);
@@ -21,5 +22,19 @@ protected:
 		ar & _command;
 	}
 	PixelShaders _shader;
+	std::vector<GraphicCommand> _command; //We input some info here, for example textures and constants
+};
+
+// Origin material property. 
+struct MaterialSaver
+{
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & _shader;
+		ar & _command;
+	}
+	std::string _shader;
 	std::vector<GraphicCommand> _command; //We input some info here, for example textures and constants
 };

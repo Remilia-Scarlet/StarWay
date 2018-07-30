@@ -8,6 +8,7 @@ using Sharpmake;
 [module: Sharpmake.Include("StarWay\\project\\StarWay.sharpmake.cs")]
 [module: Sharpmake.Include("Engine\\WinLancher\\project\\WinLancher.sharpmake.cs")]
 [module: Sharpmake.Include("Engine\\UnitTest\\project\\UnitTest.sharpmake.cs")]
+[module: Sharpmake.Include("Engine\\MaterialCompiler\\project\\MaterialCompiler.sharpmake.cs")]
 
 namespace StarWay
 {
@@ -41,6 +42,7 @@ namespace StarWay
 			conf.AddProject<StarWay.StarWayProject>(target);
 			conf.AddProject<WinLancher.WinLancherProject>(target);
 			conf.AddProject<UnitTest.UnitTestProject>(target);
+			conf.AddProject<MaterialCompiler.MaterialCompilerProject>(target);
         }
 
 		[Configure()]

@@ -15,7 +15,7 @@ MaterialPtr Material::create(const std::string& fileName)
 	TinyAssert(result, "Can't open material file [%s]", fullName.c_str());
 	if(result)
 	{
-		MaterialPtr ptr = MakeRefCountPtr<Material>();
+		MaterialPtr ptr = MaterialPtr{ new Material() };
 		auto data = file.readAll();
 		ArrayStream stream;
 		stream.initAsInputStream(data.data(), data.size());

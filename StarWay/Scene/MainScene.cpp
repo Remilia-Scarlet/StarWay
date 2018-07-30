@@ -59,7 +59,7 @@ void MainScene::createObj()
 	MeshComponentPtr meshComponent = GeometryGenerator::instance()->createCubeMesh(2, 2, 2);
 	obj->addComponent(meshComponent);
 
-	MaterialComponentPtr texture = MaterialComponent::create("game:seafloor.dds", "game:shaders/pass_through_no_tex.ps.cso");
+	MaterialComponentPtr texture = nullptr;// MaterialComponent::create("game:seafloor.dds", "game:shaders/pass_through_no_tex.ps.cso");
 	obj->addComponent(texture);
 
 	TransformComponentPtr transform = TransformComponent::create();
@@ -148,7 +148,7 @@ void MainScene::createLight()
 	trans->setLocation(Vector3(0, 0, 0));
 	MeshComponentPtr meshConponent = GeometryGenerator::instance()->createSphereMeshData(0.5, 3);
 	pointLightObj->addComponent(meshConponent);
-	MaterialComponentPtr texture = MaterialComponent::create("game:seafloor.dds", "game:point_light_PS.cso");
+	MaterialComponentPtr texture = nullptr;// MaterialComponent::create("game:seafloor.dds", "game:point_light_PS.cso");
 	pointLightObj->addComponent(texture);
 	ScriptComponentPtr pointLightScript = ScriptComponent::create(std::make_shared<PointLightMovement>());
 	pointLightObj->addComponent(pointLightScript);
