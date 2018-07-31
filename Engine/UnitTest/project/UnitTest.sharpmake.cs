@@ -10,6 +10,7 @@ namespace UnitTest
     {
         public UnitTestProject()
         {
+			AddTargets(TinyTarget.GetAllTarget());
             Name = "UnitTest";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
 			SourceRootPath = @"[project.SharpmakeCsPath]\..";

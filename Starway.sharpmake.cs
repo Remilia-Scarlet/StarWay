@@ -1,4 +1,5 @@
 using Sharpmake;
+using Common;
 
 [module: Sharpmake.Include("Engine\\Ash\\project\\Ash.sharpmake.cs")]
 [module: Sharpmake.Include("Engine\\Prebuild\\project\\Prebuild.sharpmake.cs")]
@@ -16,22 +17,17 @@ namespace StarWay
     public class StarWaySolution : Sharpmake.Solution
     {
         public StarWaySolution()
+			:base(typeof(TinyTarget))
         {
             Name = "StarWay";
 
-            AddTargets(new Target(
-                    Platform.win32 | Platform.win64,
-                    DevEnv.vs2017,
-                    Optimization.Debug | Optimization.Release | Optimization.Retail,
-					OutputType.Lib,
-					Blob.NoBlob/* | Blob.Blob */
-            ));
+            AddTargets(TinyTarget.GetAllTarget());
         }
 
         [Configure()]
-        public void ConfigureAll(Configuration conf, Target target)
+        public void ConfigureAll(Configuration conf, TinyTarget target)
         {
-			conf.Name = "[target.Blob] [target.Optimization]";
+			conf.Name = "[target.Mode] [target.Blob] [target.Optimization]";
 		    conf.SolutionFileName = "[solution.Name]_[target.DevEnv]_[target.Platform]";
             conf.SolutionPath = @"[solution.SharpmakeCsPath]";
 
@@ -42,11 +38,12 @@ namespace StarWay
 			conf.AddProject<StarWay.StarWayProject>(target);
 			conf.AddProject<WinLancher.WinLancherProject>(target);
 			conf.AddProject<UnitTest.UnitTestProject>(target);
-			conf.AddProject<MaterialCompiler.MaterialCompilerProject>(target);
+			if(target.Mode == Mode.ToolMode)
+				conf.AddProject<MaterialCompiler.MaterialCompilerProject>(target);
         }
 
 		[Configure()]
-        public void ConfigureWindows(Configuration conf, Target target)
+        public void ConfigureWindows(Configuration conf, TinyTarget target)
 		{
 			conf.SolutionFileName = "[solution.Name]_[target.DevEnv]_win";
 		}

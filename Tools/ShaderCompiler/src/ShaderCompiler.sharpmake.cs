@@ -10,6 +10,7 @@ namespace ShaderCompiler
     {
         public ShaderCompilerProject()
         {
+			AddTargets(TinyTarget.GetToolTarget());
             Name = "ShaderCompiler";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
             SourceRootPath = @"[project.SharpmakeCsPath]";
@@ -42,13 +43,15 @@ namespace ShaderCompiler
     public class ShaderCompilerSolution : Sharpmake.Solution
     {
         public ShaderCompilerSolution()
+			:base(typeof(TinyTarget))
         {
             Name = "ShaderCompiler";
 
-            AddTargets(new Target(
+            AddTargets(new TinyTarget(
                     Platform.win64,
                     DevEnv.vs2017,
-                    Optimization.Debug | Optimization.Release | Optimization.Retail
+                    Optimization.Debug | Optimization.Release | Optimization.Retail,
+					Mode.ToolMode
             ));
         }
 

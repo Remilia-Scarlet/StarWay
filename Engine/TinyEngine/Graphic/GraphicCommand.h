@@ -23,22 +23,41 @@ protected:
 	}
 };
 
-class SetPsLocalConstantCmd : GraphicCommand
+class SetPsLocalConstantCmd : public GraphicCommand
 {
 public:
 	template<class ValueType>
 	SetPsLocalConstantCmd(int constantId, const ValueType& data);
+#if defined(TINY_TOOL_MODE)
+	template<class ValueType>
+	SetPsLocalConstantCmd(const std::string& shaderName, const std::string& constantName, const ValueType& data);
+#endif
 	SetPsLocalConstantCmd(SetPsLocalConstantCmd&&) = default;
+public:
+	virtual void apply()override {};
 protected:
 	SetPsLocalConstantCmd() = default;//for boost serialization only 
+protected:
 	int _constantId = -1;
 	std::vector<uint8_t> _data;
+#if defined(TINY_TOOL_MODE)
+	std::string _shaderName;
+	std::string _constName;
+#endif
 	friend class boost::serialization::access;
 	template<class Archive>
-	void serialize(Archive & ar, const unsigned int version)
+	void serializeEngine(Archive & ar, const unsigned int version)
 	{
 		ar & boost::serialization::base_object<GraphicCommand>(*this);
 		ar & _constantId;
+		ar & _data;
+	}
+	template<class Archive>
+	void serializeToolMode(Archive & ar, const unsigned int version)
+	{
+		ar & boost::serialization::base_object<GraphicCommand>(*this);
+		ar & _shaderName;
+		ar & _constName;
 		ar & _data;
 	}
 };
@@ -69,6 +88,17 @@ template <class ValueType>
 SetPsLocalConstantCmd::SetPsLocalConstantCmd(int constantId, const ValueType& data)
 	:_constantId(constantId)
 {
+	LocalConstantInfo info = getPsLocalParamInfo(constantId);
+	TinyAssert(info._size == (int)sizeof(ValueType));
+	_data.resize(sizeof(ValueType));
+	memcpy(_data.data(), &data, sizeof(ValueType));
+}
+
+template <class ValueType>
+SetPsLocalConstantCmd::SetPsLocalConstantCmd(const std::string& shaderName, const std::string& constantName,
+	const ValueType& data)
+{
+	int constantId = PsLocalConstant::getConstantIdFromName(shaderName, constantName);
 	LocalConstantInfo info = getPsLocalParamInfo(constantId);
 	TinyAssert(info._size == (int)sizeof(ValueType));
 	_data.resize(sizeof(ValueType));

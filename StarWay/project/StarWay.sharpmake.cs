@@ -10,6 +10,7 @@ namespace StarWay
     {
         public StarWayProject()
         {
+			AddTargets(TinyTarget.GetAllTarget());
             Name = "StarWay";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
 			SourceRootPath = @"[project.SharpmakeCsPath]\..";

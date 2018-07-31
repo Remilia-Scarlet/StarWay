@@ -10,6 +10,7 @@ namespace Graphic
     {
         public GraphicProject()
         {
+			AddTargets(TinyTarget.GetAllTarget());
             Name = "Graphic";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
 			SourceRootPath = @"[project.SharpmakeCsPath]\..";

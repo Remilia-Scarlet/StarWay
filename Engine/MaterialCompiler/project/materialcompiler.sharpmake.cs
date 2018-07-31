@@ -10,6 +10,7 @@ namespace MaterialCompiler
     {
         public MaterialCompilerProject()
         {
+			AddTargets(TinyTarget.GetToolTarget());
             Name = "MaterialCompiler";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
 			SourceRootPath = @"[project.SharpmakeCsPath]\..";

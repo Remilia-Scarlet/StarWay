@@ -10,6 +10,7 @@ namespace Math
     {
         public MathProject()
         {
+			AddTargets(TinyTarget.GetAllTarget());
             Name = "Math";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
 			SourceRootPath = @"[project.SharpmakeCsPath]\..";

@@ -10,6 +10,7 @@ namespace Prebuild
     {
         public PrebuildProject()
         {
+			AddTargets(TinyTarget.GetAllTarget());
             Name = "Prebuild";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
 			SourceRootPath = @"[project.SharpmakeCsPath]\..";

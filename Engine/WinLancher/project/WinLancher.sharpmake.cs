@@ -10,6 +10,7 @@ namespace WinLancher
     {
         public WinLancherProject()
         {
+			AddTargets(TinyTarget.GetAllTarget());
             Name = "WinLancher";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
 			SourceRootPath = @"[project.SharpmakeCsPath]\..";

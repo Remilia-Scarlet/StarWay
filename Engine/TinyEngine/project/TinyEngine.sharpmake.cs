@@ -10,6 +10,7 @@ namespace TinyEngine
     {
         public TinyEngineProject()
         {
+			AddTargets(TinyTarget.GetAllTarget());
             Name = "TinyEngine";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
 			SourceRootPath = @"[project.SharpmakeCsPath]\..";

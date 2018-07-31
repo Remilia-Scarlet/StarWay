@@ -10,6 +10,7 @@ namespace Ash
     {
         public AshProject()
         {
+			AddTargets(TinyTarget.GetAllTarget());
             Name = "Ash";
 			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
 			SourceRootPath = @"[project.SharpmakeCsPath]\..";

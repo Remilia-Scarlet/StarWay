@@ -1,5 +1,7 @@
 using Sharpmake;
 
+[module: Sharpmake.Include("tinytarget.sharpmake.cs")]
+
 namespace Common
 {
     [Sharpmake.Generate]
@@ -7,18 +9,13 @@ namespace Common
     {
 		public string GameRoot = "";
         public CommonProject()
+			:base(typeof(TinyTarget))
         {
             //Name = "ProjectName";
 			//SourceRootPath = RootPath;
 			//GameRoot = @"[project.SharpmakeCsPath]\.."
-
-            AddTargets(new Target(
-                    Platform.win32 | Platform.win64,
-                    DevEnv.vs2017,
-                    Optimization.Debug | Optimization.Release | Optimization.Retail,
-					OutputType.Lib,
-					Blob.NoBlob/* | Blob.Blob */
-            ));
+			//AddTargets(TinyTarget.GetAllTarget());
+			
             RootPath = @"[project.SharpmakeCsPath]";
 			BlobPath = @"[project.GameRoot]\output\_temp\_blob\";
         }
@@ -29,7 +26,7 @@ namespace Common
 			string platformStr = (target.Platform == Platform.win32 | target.Platform == Platform.win64 ? "win" : "[target.Platform]");
             conf.ProjectFileName = "[project.Name]_[target.DevEnv]_" + platformStr + "_[target.Blob]";
             conf.ProjectPath = @"[project.SharpmakeCsPath]";
-			conf.IntermediatePath = @"[project.GameRoot]\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]_[target.Blob]\[target.Optimization]";
+			conf.IntermediatePath = @"[project.GameRoot]\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]_[target.Blob]\[target.Optimization]\[target.Mode]";
 			conf.TargetPath = @"[project.GameRoot]\output\_temp\[target.DevEnv]\lib";
 			conf.IncludePaths.Add(@"[project.GameRoot]\Engine");
 
@@ -40,9 +37,9 @@ namespace Common
             conf.IncludePaths.Add(@"[project.GameRoot]\Engine\Extern\boost");
 			conf.LibraryPaths.Add(@"[project.GameRoot]\Engine\Extern\boost\stage\lib");
 			
-			conf.Name = "[target.Blob] [target.Optimization]";
+			conf.Name = "[target.Mode] [target.Blob] [target.Optimization]";
 			
-			conf.TargetFileFullName = @"[project.Name]_[target.DevEnv]_[target.Platform]_[target.Optimization]_[target.Blob]";
+			conf.TargetFileFullName = @"[project.Name]_[target.DevEnv]_[target.Platform]_[target.Optimization]_[target.Mode]_[target.Blob]";
 			conf.Output = Configuration.OutputType.Lib;
 			
 			conf.Options.Add(Options.Vc.General.TreatWarningsAsErrors.Enable);
@@ -74,6 +71,18 @@ namespace Common
 		public virtual void OptimizationRetail(Configuration conf, Target target)
 		{
 			conf.Defines.Add("TINY_RETAIL");
+		}
+		
+		[Configure(Mode.ToolMode)]
+		public virtual void ModeToolMode(Configuration conf, Target target)
+		{
+			conf.Defines.Add("TINY_TOOL_MODE");
+		}
+		
+		[Configure(Mode.EngineMode)]
+		public virtual void ModeEngineMode(Configuration conf, Target target)
+		{
+			conf.Defines.Add("TINY_ENGINE_MODE");
 		}
 		
 		[Configure(Platform.win32 | Platform.win64)]

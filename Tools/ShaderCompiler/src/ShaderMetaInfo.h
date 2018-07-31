@@ -8,7 +8,9 @@
 enum class ShaderType
 {
 	VS,
-	PS
+	PS,
+
+	COUNT
 };
 
 struct ShaderDeclear
