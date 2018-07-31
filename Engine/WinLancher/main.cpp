@@ -3,8 +3,8 @@
 #include <d3d11sdklayers.h>
 #include "TinyEngine/Input/InputManager.h"
 #include "tools/renderdoc/RenderDoc.h"
-#include "StarWay//StartWayCmdLineCfg/StartWayCmdLineCfg.h"
-#include "StarWay/Game/StarWayGame.h"
+#include "StartWayCmdLineCfg/StartWayCmdLineCfg.h"
+#include "Game/StarWayGame.h"
 #include <crtdbg.h>
 #include "Ash/CommonFunc.h"
 
@@ -115,13 +115,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 
-#ifdef _DEBUG
+#ifndef TINY_RETAIL
 	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
 //	_CrtDumpMemoryLeaks();
 //	_CrtSetBreakAlloc(617);
 #endif
 
-#ifdef _DEBUG
+#ifndef TINY_RETAIL
 	new int(0x74736574); //to test if the memory leak detector works well
 #endif
 

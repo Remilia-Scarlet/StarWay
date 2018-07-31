@@ -1,4 +1,4 @@
-#include "StarWay/precomp.h"
+#include "precomp.h"
 #include "MainScene.h"
 #include "TinyEngine/Objects/Object.h"
 #include "TinyEngine/Graphic/GeometryGenerator.h"
@@ -7,10 +7,10 @@
 #include "TinyEngine/Graphic/WavefrontObjReader.h"
 #include "TinyEngine/Components/CameraComponent.h"
 #include "TinyEngine/Components/ScriptComponent.h"
-#include "StarWay//Scripts/CameraControl.h"
+#include "Scripts/CameraControl.h"
 #include "TinyEngine/Components/DirectionLightComponent.h"
 #include "TinyEngine/Components/PointLightComponet.h"
-#include "StarWay/Scripts/PointLightMovement.h"
+#include "Scripts/PointLightMovement.h"
 
 MainScenePtr MainScene::create()
 {

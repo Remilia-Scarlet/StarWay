@@ -11,6 +11,8 @@ namespace TinyEngine
         public TinyEngineProject()
         {
             Name = "TinyEngine";
+			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
+			SourceRootPath = @"[project.SharpmakeCsPath]\..";
         }
 		
 		public override void ConfigureAll(Configuration conf, Target target)

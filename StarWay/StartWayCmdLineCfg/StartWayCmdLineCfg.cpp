@@ -1,4 +1,4 @@
-#include "StarWay/precomp.h"
+#include "precomp.h"
 #include "StartWayCmdLineCfg.h"
 StartWayCmdLineCfg* StartWayCmdLineCfg::s_instance = nullptr;
 

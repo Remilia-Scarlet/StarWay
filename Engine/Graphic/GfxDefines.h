@@ -22,7 +22,7 @@
 	typedef ID3D11Buffer				PlatformVertexBuffer;
 
 #if defined(TINY_PLATFORM_WINDOWS)
-	#ifdef _DEBUG
+	#ifndef TINY_RETAIL
 		#define SET_DEBUG_NAME(D3DOBJ,NAME) do{D3DOBJ->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)std::strlen(NAME), (NAME));}while(0)
 	#else
 		#define SET_DEBUG_NAME(D3DOBJ,NAME) do{}while(0)

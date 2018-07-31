@@ -5,21 +5,22 @@ namespace Common
     [Sharpmake.Generate]
     public class CommonProject : Project
     {
+		public string GameRoot = "";
         public CommonProject()
         {
             //Name = "ProjectName";
+			//SourceRootPath = RootPath;
+			//GameRoot = @"[project.SharpmakeCsPath]\.."
 
             AddTargets(new Target(
                     Platform.win32 | Platform.win64,
                     DevEnv.vs2017,
-                    Optimization.Debug | Optimization.Release,
+                    Optimization.Debug | Optimization.Release | Optimization.Retail,
 					OutputType.Lib,
 					Blob.NoBlob/* | Blob.Blob */
             ));
-            RootPath = @"[project.SharpmakeCsPath]\..";
-            SourceRootPath = RootPath;
-			
-			BlobPath = @"[project.RootPath]\..\..\output\_temp\_blob\";
+            RootPath = @"[project.SharpmakeCsPath]";
+			BlobPath = @"[project.GameRoot]\output\_temp\_blob\";
         }
 		
         [Configure()]
@@ -28,16 +29,16 @@ namespace Common
 			string platformStr = (target.Platform == Platform.win32 | target.Platform == Platform.win64 ? "win" : "[target.Platform]");
             conf.ProjectFileName = "[project.Name]_[target.DevEnv]_" + platformStr + "_[target.Blob]";
             conf.ProjectPath = @"[project.SharpmakeCsPath]";
-			conf.IntermediatePath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]_[target.Blob]\[target.Optimization]";
-			conf.TargetPath = @"[project.RootPath]\..\..\output\_temp\[target.DevEnv]\lib";
-			//conf.IncludePaths.Add(@"[project.RootPath]");
-			conf.IncludePaths.Add(@"[project.RootPath]\..");
+			conf.IntermediatePath = @"[project.GameRoot]\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]_[target.Blob]\[target.Optimization]";
+			conf.TargetPath = @"[project.GameRoot]\output\_temp\[target.DevEnv]\lib";
+			conf.IncludePaths.Add(@"[project.GameRoot]\Engine");
+
 
             conf.ExportAdditionalLibrariesEvenForStaticLib = true;
 
             //boost
-            conf.IncludePaths.Add(@"[project.RootPath]\..\..\Engine\Extern\boost");
-			conf.LibraryPaths.Add(@"[project.RootPath]\..\..\Engine\Extern\boost\stage\lib");
+            conf.IncludePaths.Add(@"[project.GameRoot]\Engine\Extern\boost");
+			conf.LibraryPaths.Add(@"[project.GameRoot]\Engine\Extern\boost\stage\lib");
 			
 			conf.Name = "[target.Blob] [target.Optimization]";
 			
@@ -56,6 +57,24 @@ namespace Common
             conf.PrecompHeader = "[project.Name]\\precomp.h";
             conf.PrecompSource = "[project.Name]\\precomp.cpp";
         }
+		
+		[Configure(Optimization.Debug)]
+		public virtual void OptimizationDebug(Configuration conf, Target target)
+		{
+			conf.Defines.Add("TINY_DEBUG");
+		}
+		
+		[Configure(Optimization.Release)]
+		public virtual void OptimizationRelease(Configuration conf, Target target)
+		{
+			conf.Defines.Add("TINY_RELEASE");
+		}
+		
+		[Configure(Optimization.Debug)]
+		public virtual void OptimizationRetail(Configuration conf, Target target)
+		{
+			conf.Defines.Add("TINY_RETAIL");
+		}
 		
 		[Configure(Platform.win32 | Platform.win64)]
         public virtual void ConfigureWindows(Configuration conf, Target target)

@@ -11,6 +11,8 @@ namespace Ash
         public AshProject()
         {
             Name = "Ash";
+			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
+			SourceRootPath = @"[project.SharpmakeCsPath]\..";
         }
     }
 }

@@ -11,6 +11,8 @@ namespace Graphic
         public GraphicProject()
         {
             Name = "Graphic";
+			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
+			SourceRootPath = @"[project.SharpmakeCsPath]\..";
 
 			SourceFilesExtensions.Add(".hlsl");
 			SourceFilesCompileExtensions.Add(".hlsl");

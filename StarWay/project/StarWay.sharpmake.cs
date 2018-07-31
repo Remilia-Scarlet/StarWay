@@ -11,21 +11,24 @@ namespace StarWay
         public StarWayProject()
         {
             Name = "StarWay";
-			
-			BlobPath = @"[project.RootPath]\..\output\_temp\_blob\";
+			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
+			SourceRootPath = @"[project.SharpmakeCsPath]\..";
         }
 
         public override void ConfigureAll(Configuration conf, Target target)
         {
 			base.ConfigureAll(conf,target);
-			conf.IntermediatePath = @"[project.RootPath]\..\output\_temp\[target.DevEnv]\[target.Platform]\[project.Name]_[target.Blob]\[target.Optimization]";
-			conf.TargetPath = @"[project.RootPath]\..\output\_temp\[target.DevEnv]\lib";			
+			
+			conf.IncludePaths.Add(@"[project.SourceRootPath]\");
 
 			conf.AddPrivateDependency<Ash.AshProject>(target);
 			conf.AddPrivateDependency<Prebuild.PrebuildProject>(target);
 		    conf.AddPrivateDependency<Graphic.GraphicProject>(target);
 			conf.AddPrivateDependency<Math.MathProject>(target);
-			conf.AddPrivateDependency<TinyEngine.TinyEngineProject>(target);				
+			conf.AddPrivateDependency<TinyEngine.TinyEngineProject>(target);	
+			
+            conf.PrecompHeader = "precomp.h";
+            conf.PrecompSource = "precomp.cpp";			
         }
     }
 }

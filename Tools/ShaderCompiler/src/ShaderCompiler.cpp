@@ -5,10 +5,10 @@
 #include "Extern/rapidjson/include/rapidjson/stringbuffer.h"
 #include "Extern/rapidjson/include/rapidjson/prettywriter.h"
 #include "Extern/rapidjson/include/rapidjson/fwd.h"
-#include "Engine/Ash/FileSystem/fs_include.h"
-#include "Engine/TinyEngine/Engine/EngineDefs.h"
+#include "Ash/FileSystem/fs_include.h"
+#include "TinyEngine/Engine/EngineDefs.h"
 
-#include "Engine/Ash/CommonFunc.h"
+#include "Ash/CommonFunc.h"
 #include <list>
 #include <regex>
 #include <iostream>

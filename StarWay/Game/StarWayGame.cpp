@@ -1,7 +1,7 @@
-#include "StarWay/precomp.h"
+#include "precomp.h"
 #include "StarWayGame.h"
-#include "StarWay/StartWayCmdLineCfg/StartWayCmdLineCfg.h"
-#include "StarWay/Scene/MainScene.h"
+#include "StartWayCmdLineCfg/StartWayCmdLineCfg.h"
+#include "Scene/MainScene.h"
 
 StarWayGame::StarWayGame()
 {

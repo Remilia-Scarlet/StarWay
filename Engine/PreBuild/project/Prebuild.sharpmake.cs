@@ -11,6 +11,8 @@ namespace Prebuild
         public PrebuildProject()
         {
             Name = "Prebuild";
+			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
+			SourceRootPath = @"[project.SharpmakeCsPath]\..";
         }
 		
         public override void ConfigureAll(Configuration conf, Target target)

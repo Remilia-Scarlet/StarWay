@@ -11,13 +11,15 @@ namespace MaterialCompiler
         public MaterialCompilerProject()
         {
             Name = "MaterialCompiler";
+			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
+			SourceRootPath = @"[project.SharpmakeCsPath]\..";
         }
 
         public override void ConfigureAll(Configuration conf, Target target)
         {
 			base.ConfigureAll(conf,target);
 			conf.SolutionFolder = "Tools";
-			conf.TargetPath = @"[project.RootPath]\..\..\output\[target.Platform]";
+			conf.TargetPath = @"[project.GameRoot]\output\[target.Platform]";
 			conf.Output = Configuration.OutputType.Exe;
 
 			conf.Options.Add(Options.Vc.Linker.SubSystem.Application);	

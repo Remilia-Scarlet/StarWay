@@ -11,6 +11,8 @@ namespace Math
         public MathProject()
         {
             Name = "Math";
+			GameRoot = @"[project.SharpmakeCsPath]\..\..\..\";
+			SourceRootPath = @"[project.SharpmakeCsPath]\..";
         }
 	}
 }

@@ -22,7 +22,7 @@ namespace StarWay
             AddTargets(new Target(
                     Platform.win32 | Platform.win64,
                     DevEnv.vs2017,
-                    Optimization.Debug | Optimization.Release,
+                    Optimization.Debug | Optimization.Release | Optimization.Retail,
 					OutputType.Lib,
 					Blob.NoBlob/* | Blob.Blob */
             ));
