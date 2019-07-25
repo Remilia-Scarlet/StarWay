@@ -7,8 +7,9 @@
 #include "Ash/RefCountPointer/RefCountObj.h"
 class ThreadPool;
 // Inherit this class to store your own user data
-struct TaskUserData
+class TaskUserData
 {
+public:
 	virtual ~TaskUserData() = default;
 };
 TINY_DEFINE_PTR(Task);
@@ -17,10 +18,11 @@ TINY_DEFINE_PTR(Task);
  */
 class Task : public RefCountObj
 {
-public:
 	friend class ThreadPool;
-	// userdata can be get by getUserData. 
-	Task(std::function<void(Task*)> worker = [](Task*) {}, std::shared_ptr<TaskUserData> userData = nullptr);
+public:
+	Task();
+	Task(std::function<void(Task*)> worker);
+	Task(std::function<void(Task*)> worker, std::shared_ptr<TaskUserData> userData);	// userdata can be get by getUserData. 
 	virtual ~Task();
 public:
 	template<class UserDataType>
@@ -41,39 +43,34 @@ public:
 	std::thread::id getThreadID() const;
 
 	/*
-	* Set the task after this task.
-	* You can link this task to multi tasks. When this task is finished, those tasks will be execute.
+	* Next tasks will be added to thread pool immediately after this worker function finished.
 	*
 	* For example:
-	* task1.linkTask(task2);
-	* task1.linkTask(task3);
+	* task1.addNextTask(task2);
+	* task1.addNextTask(task3);
 	* threadPool.addTask(task1);
-	* When task1 is finished, task2 and task3 will both be executed.
+	* When the worker function of task1 is finished, task2 and task3 will both be added to thread pool immediately.
 	*/
-	void linkTask(RefCountPtr<Task> task);
-	void unlinkTask(const RefCountPtr<Task>& task);
+	void addNextTask(RefCountPtr<Task> task);
 
 	/*
-	 * When all linked task are finished, the end task will be executed.
-	 * For example:
-	 * 
-	 * task1.linkTask(task2);
-	 * task1.linkTask(task3);
-	 * task2.linkTask(task7);
-	 * task1.linkEndTask(task4);
-	 * task4.linkTask(task5);
-	 * task4.linkEndTask(task6);
-	 * threadPool.addTask(task1);
-	 * 
-	 * Firstly task1 will be added to pool. 
-	 * When task1 is finished, task2 and task3 will be added.
-	 * When task2 is finished, task7 will be added. 
-	 * When task7 and task3 are both finished, task4 will be added.
-	 * When task4 finished, task5 will be added.
-	 * When task5 finished, task6 will be added.
+	 * Children tasks will be added to thread pool immediately after this worker function finished.
+	 * Used together with setEndTask.
 	 */
-	void linkEndTask(RefCountPtr<Task> task);
-	void clearEndTask();
+	void addChildTask(RefCountPtr<Task> task);
+
+	/*
+	* End task will be added to thread pool after all children tasks finished.
+	* For example:
+	* task1.addChildTask(task2);
+	* task1.addChildTask(task3);
+	* task1.setEndTask(task4);
+	* task1.addNextTask(task5);
+	* threadPool.addTask(task1);
+	* When the worker function of task1 is finished, task2, task3 and task5 will be added to thread pool immediately.
+	* However task4 will be added to thread pool after task2 and task3 are both finished.
+	*/
+	void setEndTask(RefCountPtr<Task> endTask);
 protected:
 	enum TaskStatus
 	{

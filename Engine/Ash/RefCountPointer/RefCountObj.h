@@ -32,6 +32,13 @@ class RefCountObj
 	template <class T>friend class WeakRefPtr;
 	friend class _RefInfo;
 public:
+	//noncopyable
+	RefCountObj& operator=(const RefCountObj&) = delete;
+	RefCountObj(const RefCountObj&) = delete;
+	//nonmoveable
+	RefCountObj& operator=(RefCountObj&& other) = delete;
+	RefCountObj(RefCountObj&& other) = delete;
+public:
 	int getStrongRefCount()const { return _refInfo->getStrongRefCount(); }
 	int getWeakRefCount()const { return _refInfo->getWeakRefCount(); }
 	virtual ObjectID getObjectId()  const { return _id; }
