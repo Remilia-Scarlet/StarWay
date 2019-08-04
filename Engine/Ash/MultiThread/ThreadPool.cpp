@@ -22,33 +22,14 @@ void ThreadPool::Thread::run()
 			return;
 
 		Task& task = *_runningTask;
-		task._threadId = _thread.get_id();
-
-		if (task._worker)
-			task._worker(&task);
-
-		task._taskStatus = Task::FINISHED;
-		_threadPool.onTaskFinished(_runningTask);
-		for (auto& linkTask : task._linkedTasks)
-		{
-			TinyAssert(linkTask.isValid());
-			_threadPool.addLinkedTaskToTaskPool(linkTask);
-		}
-
+		task.run(_thread.get_id());
 		_runningTask.reset();
-		
-		int remainNum = --_threadPool._unfinishedTask;
-		if(remainNum == 0)
-		{
-			Lock waitingLock(_threadPool._waitingForUnfinishedTasks);
-			_threadPool._waitingForUnfinishedTasksCondi.notify_all();
-		}
 	}		
 }
 
-ThreadPool::ThreadPool(int maxThreadNumber, int initialTaskPoolSize)
+ThreadPool::ThreadPool(int threadNumber)
 {
-	for (int i = 0; i < maxThreadNumber; ++i)
+	for (int i = 0; i < threadNumber; ++i)
 	{
 		_threads.emplace_back(std::make_unique<Thread>(*this));
 	}
@@ -67,10 +48,7 @@ ThreadPool::~ThreadPool()
 void ThreadPool::addTask(RefCountPtr<Task> task)
 {
 	TinyAssert(task.isValid());
-	TinyAssert(task->_taskStatus == Task::CREATED, "You can't add a linked task or executing task to thread pool");
-
-	task->_taskStatus = Task::ADDED_TO_THREAD_POOL;
-
+	task->onAddedToThreadPool();
 	addToThreadTaskPool(std::move(task));
 }
 

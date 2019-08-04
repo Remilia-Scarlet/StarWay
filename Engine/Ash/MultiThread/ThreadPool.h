@@ -6,6 +6,7 @@
 #include "Ash/Container/RingBuffer.h"
 #include "Ash/RefCountPointer/RefCountPtr.h"
 #include <set>
+#include <functional>
 
 typedef std::unique_lock<std::mutex> Lock;
 typedef std::unique_lock<std::shared_mutex> WriteLock;
@@ -31,23 +32,16 @@ protected:
 		void run();
 	};
 public:
-	// Can only be construct in single thread. 
-	ThreadPool(int maxThreadNumber, int initialTaskPoolSize = 32);
+	ThreadPool(int threadNumber);
 	ThreadPool(const ThreadPool&) = delete;
 	ThreadPool(ThreadPool&&) = delete;
 	ThreadPool& operator=(const ThreadPool&) = delete;
 	ThreadPool& operator=(ThreadPool&&) = delete;
 	~ThreadPool();
 public:
-	// add a task to pool, if there are any free threads, this task can be executed immediately. Otherwise it will be put to a waiting queue.
+	// add a task to pool, if there are any free threads, this task can be executed immediately. Otherwise it will be put into a waiting queue.
 	// one task can only be added once
 	void addTask(RefCountPtr<Task> task);
-	// clear the waiting queue
-	void clearUnstartedTasks();
-	// means waiting queue is empty and all threads finish doing work
-	int doesAllTasksFinished();
-	// block current thread untill waiting queue is empty and all threads finish doing work
-	void waitForAllTasksFinished();
 protected:
 	RefCountPtr<Task> getNextTask();
 	void onTaskFinished(RefCountPtr<Task> task);

@@ -8,6 +8,7 @@ class _RefInfo;
 template <class T>class WeakRefPtr;
 
 /*
+ * Thread safety is same as raw pointer.
  * You can use different copies of RefCountPtr which point to the same pointer in different threads
  * But you can't use one RefCountPtr in different threads.
  * For example:
@@ -18,7 +19,7 @@ template <class T>class WeakRefPtr;
  * {
  *		RefCountPtr<int> ptr1 = ptr; //OK, copy one in your thread first
  *		doSomeThing_1(ptr1); //OK, you can use this one in your thread
- *		ptr1 = nullptr; //OK
+ *		ptr1 = nullptr; //OK, release your ref count in your thread
  * }
  * void Thread_2()
  * {
@@ -41,7 +42,8 @@ template <class T>class WeakRefPtr;
  *		doSomeThing_2(ptr); //No
  *		ptr = nullptr; //No
  * }
- * 
+ * Remember all methods in RefCountPtr are NOT thread safe except for clone().
+ * You can't use one RefCountPtr in two threads unless you can guarantee there is no race condition.
  */
 template <class T>
 class RefCountPtr
@@ -57,7 +59,7 @@ public:
 	template<class T2,
 		class = typename std::enable_if<std::is_convertible<T2*, T*>::value, void>::type>
 	RefCountPtr(const RefCountPtr<T2>& other);
-	RefCountPtr(RefCountPtr<T>&& obj);
+	RefCountPtr(RefCountPtr<T>&& obj) noexcept;
 	virtual ~RefCountPtr();
 
 	inline T* operator->() const;
@@ -78,14 +80,17 @@ public:
 
 	inline void swap(RefCountPtr<T>& other) noexcept;
 	inline RefCountPtr clone() const;
+	inline void move(RefCountPtr<T>&& other) noexcept;
 
 	inline void reset();
 	inline void reset(T* ptr);
 	inline void reset(const RefCountPtr<T>& other);
+	template<class T2,
+		class = typename std::enable_if<std::is_convertible<T2*, T*>::value, void>::type>
+	inline void reset(const RefCountPtr<T2>& other);
 protected:
 	T* _obj;
 	_RefInfo* _refInfo;
-	mutable SpinMutex _spinMutex;
 };
 
 

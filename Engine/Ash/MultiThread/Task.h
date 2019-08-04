@@ -13,9 +13,6 @@ public:
 	virtual ~TaskUserData() = default;
 };
 TINY_DEFINE_PTR(Task);
-/*
- * All methods in Task are NOT thread safe. Which means you can't modify a Task in different threads at the same time.
- */
 class Task : public RefCountObj
 {
 	friend class ThreadPool;
@@ -23,7 +20,12 @@ public:
 	Task();
 	Task(std::function<void(Task*)> worker);
 	Task(std::function<void(Task*)> worker, std::shared_ptr<TaskUserData> userData);	// userdata can be get by getUserData. 
+	Task(const Task&) = delete;
+	Task(Task&&) = delete;
 	virtual ~Task();
+public:
+	Task& operator=(const Task&) = delete;
+	Task& operator=(Task&&) = delete;
 public:
 	template<class UserDataType>
 	std::shared_ptr<UserDataType> getUserData() const
@@ -71,22 +73,32 @@ public:
 	* However task4 will be added to thread pool after task2 and task3 are both finished.
 	*/
 	void setEndTask(RefCountPtr<Task> endTask);
+
+	/*
+	 * Block the calling thread till all children tasks are finished 
+	 */
+	void blockTillFinished();
+protected:
+	void run(std::thread::id threadId);
+	void finish();
+	void onChildFinish(RefCountPtr<Task> child);
+	void onAddedToThreadPool();
 protected:
 	enum TaskStatus
 	{
-		CREATED,
-		LINKED_BY_OTHER_TASK,
-		AS_LINK_END_TASK,
+		NEW,
 		ADDED_TO_THREAD_POOL,
+		WORKING,
+		WAIT_FOR_CHILDREN_FINISH,
 		FINISHED
 	};
 	std::shared_ptr<TaskUserData> _userData;
 	std::function<void(Task*)> _worker;
-	TaskStatus _taskStatus = CREATED;
+	TaskStatus _taskStatus = NEW;
 	std::thread::id _threadId;
-	std::vector<RefCountPtr<Task>> _linkedTasks;
+	std::vector<RefCountPtr<Task>> _nextTasks;
+	std::vector<RefCountPtr<Task>> _childTasks;
 	RefCountPtr<Task> _endTask;
-	bool savedForEndTask = false;
 	WeakRefPtr<Task> _parent;
-	std::atomic<int> _unfinishLinkedTaskNumber{ 0 };
+	std::atomic<int> _unfinishChildrenTaskNumber{ 0 };
 };
