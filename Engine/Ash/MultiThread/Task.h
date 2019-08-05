@@ -82,7 +82,7 @@ protected:
 	void run(std::thread::id threadId);
 	void finish();
 	void onChildFinish(RefCountPtr<Task> child);
-	void onAddedToThreadPool();
+	void onAddedToThreadPool(ThreadPool* threadPool);
 protected:
 	enum TaskStatus
 	{
@@ -101,4 +101,5 @@ protected:
 	RefCountPtr<Task> _endTask;
 	WeakRefPtr<Task> _parent;
 	std::atomic<int> _unfinishChildrenTaskNumber{ 0 };
+	ThreadPool* _threadPool{ nullptr };
 };

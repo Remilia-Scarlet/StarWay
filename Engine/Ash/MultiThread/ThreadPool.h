@@ -3,14 +3,11 @@
 #include <thread>
 #include <shared_mutex>
 #include <atomic>
-#include "Ash/Container/RingBuffer.h"
+#include "Ash/MultiThread/TaskRingBuffer.h"
 #include "Ash/RefCountPointer/RefCountPtr.h"
 #include <set>
 #include <functional>
 
-typedef std::unique_lock<std::mutex> Lock;
-typedef std::unique_lock<std::shared_mutex> WriteLock;
-typedef std::shared_lock<std::shared_mutex> ReadLock;
 
 class Task;
 class ThreadPool
@@ -50,7 +47,7 @@ protected:
 	void addToThreadTaskPool(RefCountPtr<Task> task);
 	std::mutex _mutexForThreadPoolMember;
 	std::condition_variable _workerThreadWaitingForTaskPool;
-	RingBuffer<RefCountPtr<Task>> _waitingTasks;
+	TaskRingBuffer<RefCountPtr<Task>> _waitingTasks;
 
 	std::mutex _mutexForWaitEndTask;
 	std::set<RefCountPtr<Task>> _waitEndTask;

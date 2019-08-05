@@ -86,10 +86,9 @@ void Task::onChildFinish(RefCountPtr<Task> child)
 
 }
 
-void Task::onAddedToThreadPool()
+void Task::onAddedToThreadPool(ThreadPool* threadPool)
 {
-	TinyAssert(task->_taskStatus == Task::NEW, "You can't add a linked task or executing task to thread pool");
-
-
-	task->_taskStatus = Task::ADDED_TO_THREAD_POOL;
+	TinyAssert(_taskStatus == Task::NEW, "You can't add a linked task or executing task to thread pool");
+	_taskStatus = Task::ADDED_TO_THREAD_POOL;
+	_threadPool = threadPool;
 }

@@ -48,18 +48,38 @@ ThreadPool::~ThreadPool()
 void ThreadPool::addTask(RefCountPtr<Task> task)
 {
 	TinyAssert(task.isValid());
-	task->onAddedToThreadPool();
-	addToThreadTaskPool(std::move(task));
-}
-
-void ThreadPool::waitForAllTasksFinished()
-{
-	Lock lock(_waitingForUnfinishedTasks);
-	_waitingForUnfinishedTasksCondi.wait(lock, [this]() {return _unfinishedTask.load() == 0; });
+	task->onAddedToThreadPool(this);
+	_waitingTasks.pushBack(std::move(task));
+	//notify_one
 }
 
 RefCountPtr<Task> ThreadPool::getNextTask()
 {
+	RefCountPtr<Task> task = _waitingTasks.popFront();
+	return task;
+
+//Single circlebuf
+//Put:
+	//circlebuf.push_front
+		//assert(front+1 is invalid)
+		//¹¹½¨ÔÚfront+1
+		//front++
+		//notify_one
+
+//Get:
+	//RefCountPtr<Task> task= circlebuf.popback
+		//int myindex = back.load
+		//if circlebuf not empty
+			//myindex++
+			//cas myindex
+		//else
+			//mutex.lock
+			//condition_variable.wait
+
+
+
+
+
 	Lock lock(_mutexForThreadPoolMember);
 	_workerThreadWaitingForTaskPool.wait(lock, [this]() { return _waitingTasks.getSize() > 0 || _isDestruction == true; });
 	if (_isDestruction)
