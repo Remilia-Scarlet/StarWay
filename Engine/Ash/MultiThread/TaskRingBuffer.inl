@@ -71,7 +71,8 @@ T TaskRingBuffer<T>::popFront()
 
 	while (!_isExiting.load())
 	{
-		if (isEmpty() || _blockForFull.load())
+		int32_t currentFront = _front.load();
+		if (currentFront == _back || _blockForFull.load())//empty or full
 		{
 			NumGuard popingWaitingThreadNumGuard(_popingWaitingThreadNum);
 			std::unique_lock<std::mutex> lock(_waitingForPushMtx);
@@ -80,12 +81,8 @@ T TaskRingBuffer<T>::popFront()
 		else
 		{
 			//CAS popping the front
-			int32_t currentFront = _front.load();
-			int32_t currentBack = _back.load();
-			if(currentBack == currentFront)
-				continue;
-			_front.compare_exchange_strong(currentFront, currentFront + 1);
-
+			if(!_front.compare_exchange_strong(currentFront, currentFront + 1))
+c				continue;
 			//Now currentFront is mine
 			T ret{ std::move(_data[currentFront]) };
 			_data[currentFront].~T();
