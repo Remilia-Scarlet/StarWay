@@ -585,13 +585,33 @@ TEST(Ash, TaskRingBufferTest)
 {
 	TaskRingBuffer<std::string> ringBuffer;
 	std::vector<std::thread> threads;
+	std::vector<std::string> result;
 	for(int i = 0 ; i < 50; ++i)
 	{
-		threads.emplace_back([]()
+		threads.emplace_back([&ringBuffer, &result]()
 		{
-			
+			std::string s = ringBuffer.popFront();
+			result.push_back(std::move(s));
 		});
 	}
+	for(int i = 0 ; i < 50000; ++i)
+	{
+		char tmp[10];
+		sprintf(tmp, "%d", i);
+		ringBuffer.pushBack(tmp);
+	}
+	for(auto& th : threads)
+	{
+		th.join();
+	}
+	std::sort(result.begin(), result.end());
+	for(int i = 0 ; i < 50000; ++i)
+	{
+		char tmp[10];
+		sprintf(tmp, "%d", i);
+		EXPECT_EQ(std::string(tmp), result[i]);
+	}
+	
 }
 
 TEST(Ash, ThreadPoolTest)

@@ -19,20 +19,11 @@ MaterialPtr Material::create(const std::string& fileName)
 		auto data = file.readAll();
 		ArrayStream stream;
 		stream.initAsInputStream(data.data(), data.size());
-		boost::archive::binary_iarchive ia(stream);
-		ia >> *ptr;
+	//	boost::archive::binary_iarchive ia(stream);
+	//	ia >> *ptr;
 		return ptr;
 	}
 	return {};
-}
-
-MaterialPtr Material::create(const std::string& shaderName, std::vector<std::unique_ptr<GraphicCommand>> _command)
-{
-	Material* mat = new Material();
-	mat->_shaderName = shaderName;
-	mat->_shader = getPixelShaderFromStr(shaderName);
-	mat->_command = std::move(_command);
-	return MaterialPtr(mat);
 }
 
 Material::Material()

@@ -52,7 +52,7 @@ void Scene::update(Task* task, float dt)
 	for(auto& it : _objects)//@@TODO : if in update, _object removed a item, it will crash
 	{
 		TaskPtr objTaskPtr = MakeRefCountPtr<Task>(std::bind(&Object::update, it.second.get(), std::placeholders::_1, dt));
-		task->linkTask(objTaskPtr);
+		task->addNextTask(objTaskPtr);
 	}
 }
 

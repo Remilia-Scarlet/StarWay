@@ -96,20 +96,20 @@ void Engine::mainLoop(float dt)
 		return;
 	_currentTime += dt;
 
-	TaskPtr frameBegin = MakeRefCountPtr<Task>();
+	//TaskPtr frameBegin = MakeRefCountPtr<Task>();
 
-	TaskPtr managerUpdate = MakeRefCountPtr<Task>(std::bind(&Engine::updateManager, this, std::placeholders::_1, dt));
-	frameBegin->linkEndTask(managerUpdate);
+	//TaskPtr managerUpdate = MakeRefCountPtr<Task>(std::bind(&Engine::updateManager, this, std::placeholders::_1, dt));
+	//frameBegin->linkEndTask(managerUpdate);
 
-	//game logic
-	TaskPtr updateTask = MakeRefCountPtr<Task>(std::bind(&Engine::updateWorld, this, std::placeholders::_1, dt));
-	managerUpdate->linkEndTask(updateTask);
+	////game logic
+	//TaskPtr updateTask = MakeRefCountPtr<Task>(std::bind(&Engine::updateWorld, this, std::placeholders::_1, dt));
+	//managerUpdate->linkEndTask(updateTask);
 
-	TaskPtr renderTask = MakeRefCountPtr<Task>(std::bind(&Engine::drawScene, this, std::placeholders::_1, dt));
-	updateTask->linkEndTask(renderTask);
+	//TaskPtr renderTask = MakeRefCountPtr<Task>(std::bind(&Engine::drawScene, this, std::placeholders::_1, dt));
+	//updateTask->linkEndTask(renderTask);
 
-	_threadPool.addTask(frameBegin);
-	_threadPool.waitForAllTasksFinished();
+	//_threadPool.addTask(frameBegin);
+	//_threadPool.waitForAllTasksFinished();
 }
 
 

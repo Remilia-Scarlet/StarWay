@@ -93,7 +93,7 @@ SetPsLocalConstantCmd::SetPsLocalConstantCmd(int constantId, const ValueType& da
 	_data.resize(sizeof(ValueType));
 	memcpy(_data.data(), &data, sizeof(ValueType));
 }
-
+#if defined(TINY_TOOL_MODE)
 template <class ValueType>
 SetPsLocalConstantCmd::SetPsLocalConstantCmd(const std::string& shaderName, const std::string& constantName,
 	const ValueType& data)
@@ -104,3 +104,4 @@ SetPsLocalConstantCmd::SetPsLocalConstantCmd(const std::string& shaderName, cons
 	_data.resize(sizeof(ValueType));
 	memcpy(_data.data(), &data, sizeof(ValueType));
 }
+#endif

@@ -96,7 +96,7 @@ template <class T>
 template <class T2, class>
 void RefCountPtr<T>::reset(const RefCountPtr<T2>& other)
 {
-	reset(other._obj);
+	reset(other.get());
 }
 
 template <class T>

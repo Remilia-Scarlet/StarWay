@@ -86,7 +86,7 @@ void Object::update(Task* task, float dt)
 		for (auto it = _components->begin(); it != _components->end(); ++it)
 		{
 			TaskPtr compTaskPtr = MakeRefCountPtr<Task>(std::bind(&BaseComponent::update, it->second.get(), std::placeholders::_1, dt));
-			task->linkTask(compTaskPtr);
+			task->addNextTask(compTaskPtr);
 		}
 	}
 }

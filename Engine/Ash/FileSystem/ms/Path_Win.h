@@ -8,6 +8,7 @@
 
 #include <list>
 #include <windows.h>
+#include <string>
 
 static const char* GAME_PATH = "game:";
 

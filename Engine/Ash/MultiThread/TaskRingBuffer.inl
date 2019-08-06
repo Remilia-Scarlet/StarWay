@@ -76,13 +76,13 @@ T TaskRingBuffer<T>::popFront()
 		{
 			NumGuard popingWaitingThreadNumGuard(_popingWaitingThreadNum);
 			std::unique_lock<std::mutex> lock(_waitingForPushMtx);
-			_waitingForPushCondi.wait([this]() {return (!isEmpty() && !_blockForFull) || _isExiting; });
+			_waitingForPushCondi.wait(lock, [this]() {return (!isEmpty() && !_blockForFull) || _isExiting; });
 		}
 		else
 		{
 			//CAS popping the front
 			if(!_front.compare_exchange_strong(currentFront, currentFront + 1))
-c				continue;
+				continue;
 			//Now currentFront is mine
 			T ret{ std::move(_data[currentFront]) };
 			_data[currentFront].~T();
@@ -114,7 +114,10 @@ bool TaskRingBuffer<T>::isEmpty() const
 template<class T>
 inline int32_t TaskRingBuffer<T>::getSize() const
 {
-	return (_back + _capacity - _front) % _capacity;
+	/*if (_back < _front)
+		return _back + _capacity - _front;
+	else
+		return _back - _front;*/
 }
 
 template<class T>

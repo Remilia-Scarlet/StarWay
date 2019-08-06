@@ -1,6 +1,7 @@
 #include "Ash/precomp.h"
 #include "Task.h"
 #include "Ash/TinyAssert.h"
+#include "ThreadPool.h"
 
 Task::Task()
 {

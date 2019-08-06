@@ -3,13 +3,13 @@
 #include <thread>
 #include <shared_mutex>
 #include <atomic>
+#include "Ash/MultiThread/Task.h"
 #include "Ash/MultiThread/TaskRingBuffer.h"
 #include "Ash/RefCountPointer/RefCountPtr.h"
 #include <set>
 #include <functional>
 
 
-class Task;
 class ThreadPool
 {
 protected:
@@ -41,22 +41,6 @@ public:
 	void addTask(RefCountPtr<Task> task);
 protected:
 	RefCountPtr<Task> getNextTask();
-	void onTaskFinished(RefCountPtr<Task> task);
-	void addLinkedTaskToTaskPool(RefCountPtr<Task> task);
-	void addLinkEndTaskToTaskPool(RefCountPtr<Task> task);
-	void addToThreadTaskPool(RefCountPtr<Task> task);
-	std::mutex _mutexForThreadPoolMember;
-	std::condition_variable _workerThreadWaitingForTaskPool;
 	TaskRingBuffer<RefCountPtr<Task>> _waitingTasks;
-
-	std::mutex _mutexForWaitEndTask;
-	std::set<RefCountPtr<Task>> _waitEndTask;
-
-	std::atomic<bool> _isDestruction{ false };
-	std::atomic<int> _unfinishedTask = 0;
-	
-	std::mutex _waitingForUnfinishedTasks;
-	std::condition_variable _waitingForUnfinishedTasksCondi;
-
 	std::vector<std::unique_ptr<Thread> > _threads;
 };
