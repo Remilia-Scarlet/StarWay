@@ -16,9 +16,6 @@ public:
 	void pushBack(T elem);
 	T popFront();
 	void setExiting();
-	bool isFull() const;
-	bool isEmpty() const;
-	int32_t getSize() const;
 protected:
 	std::atomic<int32_t> _popingThreadNum{ 0 };
 	std::atomic<int32_t> _popingWaitingThreadNum{ 0 };
@@ -32,10 +29,12 @@ protected:
 	std::atomic<int32_t> _front{ 0 };
 	std::atomic<int32_t> _back{ 0 };
 
+	bool isFull() const;
+	bool isEmpty() const;
 	void increaseCapacity();
 protected:
-	const static int INITIAL_CAPACITY = 32;
-	const static int KEEP_CAPACITY = 5;
+	const static int INITIAL_CAPACITY = 2048;
+	const static int KEEP_CAPACITY = 1024;
 	static_assert(INITIAL_CAPACITY > KEEP_CAPACITY && KEEP_CAPACITY >= 1);
 };
 

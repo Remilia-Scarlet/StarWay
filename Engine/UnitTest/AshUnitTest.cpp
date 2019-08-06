@@ -583,35 +583,51 @@ TEST(Ash, RingBufferTest)
 
 TEST(Ash, TaskRingBufferTest)
 {
-	TaskRingBuffer<std::string> ringBuffer;
-	std::vector<std::thread> threads;
-	std::vector<std::string> result;
-	for(int i = 0 ; i < 50; ++i)
 	{
-		threads.emplace_back([&ringBuffer, &result]()
+		const int THREAD_NUM = 16;
+		const size_t ITEM_NUM = 500000;
+		TaskRingBuffer<std::string> ringBuffer;
+		std::vector<std::thread> threads;
+		std::vector<std::string> result{ ITEM_NUM };
+		std::vector<std::string> arr;
+		for (int i = 0; i < ITEM_NUM; ++i)
 		{
-			std::string s = ringBuffer.popFront();
-			result.push_back(std::move(s));
-		});
+			char tmp[10];
+			sprintf(tmp, "%d", i);
+			arr.emplace_back(tmp);
+		}
+		std::vector<std::string> arr_copy{ arr };
+		std::atomic_int current_num{ 0 };
+		for (int i = 0; i < THREAD_NUM; ++i)
+		{
+			threads.emplace_back([i, &current_num, &ringBuffer, &result]()
+			{
+				while (true)
+				{
+					std::string s = ringBuffer.popFront();
+					if (s.empty())
+						return;
+					result[current_num++] =std::move(s);
+				}
+			});
+		}
+		for (int i = 0; i < ITEM_NUM; ++i)
+		{
+			ringBuffer.pushBack(std::move(arr[i]));
+		}
+		while (current_num != ITEM_NUM)std::this_thread::yield();
+		ringBuffer.setExiting();
+		for (auto& th : threads)
+		{
+			th.join();
+		}
+		std::sort(result.begin(), result.end());
+		std::sort(arr_copy.begin(), arr_copy.end());
+		for (int i = 0; i < ITEM_NUM; ++i)
+		{
+			EXPECT_EQ(arr_copy[i], result[i]);
+		}
 	}
-	for(int i = 0 ; i < 50000; ++i)
-	{
-		char tmp[10];
-		sprintf(tmp, "%d", i);
-		ringBuffer.pushBack(tmp);
-	}
-	for(auto& th : threads)
-	{
-		th.join();
-	}
-	std::sort(result.begin(), result.end());
-	for(int i = 0 ; i < 50000; ++i)
-	{
-		char tmp[10];
-		sprintf(tmp, "%d", i);
-		EXPECT_EQ(std::string(tmp), result[i]);
-	}
-	
 }
 
 TEST(Ash, ThreadPoolTest)

@@ -42,16 +42,14 @@ void TaskRingBuffer<T>::pushBack(T elem)
 	{
 		_blockForFull = true;
 		//wait till all popping threads are waiting or already exiting
-		while (_popingThreadNum == _popingWaitingThreadNum) 
+		while (_popingThreadNum != _popingWaitingThreadNum) 
 			std::this_thread::yield();
 		increaseCapacity();
 		_blockForFull = false;
 	}
 	//push back
-	int nextPushPos = _front.load() + 1;
-	nextPushPos %= _capacity;
-	new (_data + nextPushPos)T(std::move(elem));
-	++_front;
+	new (_data + _back)T(std::move(elem));
+	_back = (_back + 1) % _capacity;
 	_waitingForPushCondi.notify_one();
 	--_pushingThreadNum;
 }
@@ -77,16 +75,23 @@ T TaskRingBuffer<T>::popFront()
 			NumGuard popingWaitingThreadNumGuard(_popingWaitingThreadNum);
 			std::unique_lock<std::mutex> lock(_waitingForPushMtx);
 			_waitingForPushCondi.wait(lock, [this]() {return (!isEmpty() && !_blockForFull) || _isExiting; });
+			//while (!((!isEmpty() && !_blockForFull) || _isExiting));
 		}
 		else
 		{
 			//CAS popping the front
-			if(!_front.compare_exchange_strong(currentFront, currentFront + 1))
+			if(!_front.compare_exchange_strong(currentFront, (currentFront + 1) % _capacity))
 				continue;
 			//Now currentFront is mine
 			T ret{ std::move(_data[currentFront]) };
 			_data[currentFront].~T();
-			return std::move(ret);
+
+			//during the construct time, front has moved forward so much. Don't let it catch up with _back
+			//If you assert here, add KEEP_CAPACITY.
+			int32_t nowFront = _front;
+			TinyAssert((nowFront >= currentFront ? nowFront - currentFront : nowFront + _capacity - currentFront) <= KEEP_CAPACITY);
+
+			return ret;
 		}
 	}
 	return T{};
@@ -102,7 +107,9 @@ inline void TaskRingBuffer<T>::setExiting()
 template <class T>
 bool TaskRingBuffer<T>::isFull() const
 {
-	return (_front + _capacity - _back) % _capacity <= KEEP_CAPACITY;
+	int back = _back.load();
+	int front = _front.load();
+	return (front <= back ? front + _capacity - back : front - back) <= KEEP_CAPACITY;
 }
 
 template <class T>
@@ -112,28 +119,25 @@ bool TaskRingBuffer<T>::isEmpty() const
 }
 
 template<class T>
-inline int32_t TaskRingBuffer<T>::getSize() const
-{
-	/*if (_back < _front)
-		return _back + _capacity - _front;
-	else
-		return _back - _front;*/
-}
-
-template<class T>
 inline void TaskRingBuffer<T>::increaseCapacity()
 {
+	T* oldData= _data;
+	int32_t oldCapacity = _capacity;
+	int32_t begin = _front;
+	int32_t end = _back;
+
 	//alloc new space
-	T* old = _data;
-	_data = (T*)new uint8_t[int32_t(_capacity * 1.2) * sizeof(T)]; //TODO: aligned?
+	_capacity = int32_t(_capacity * 1.2);
+	_data = (T*)new uint8_t[_capacity * sizeof(T)]; //TODO: aligned?
+	_front = 0;
+	_back = 0;
 
 	//move to new space
-	int end = _back.load();
-	int current = _front.load();
-	while (current != end)
+	while (begin != end)
 	{
-		new (_data + current) T(std::move(old[current]));
-		current = (current + 1) % _capacity;
+		new (_data + _back++) T(std::move(oldData[begin]));
+		oldData[begin].~T();
+		begin = (begin + 1) % oldCapacity;
 	}
-	delete[] (uint8_t*)(old);
+	delete[] (uint8_t*)(oldData);
 }
