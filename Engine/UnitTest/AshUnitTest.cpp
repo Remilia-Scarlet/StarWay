@@ -587,45 +587,67 @@ TEST(Ash, TaskRingBufferTest)
 		const int THREAD_NUM = 16;
 		const size_t ITEM_NUM = 500000;
 		TaskRingBuffer<std::string> ringBuffer;
-		std::vector<std::thread> threads;
-		std::vector<std::string> result{ ITEM_NUM };
-		std::vector<std::string> arr;
+
+		std::vector<std::thread> push_threads;
+		std::vector<std::thread> pop_threads;
+
+		std::vector<std::string> origin_data;
 		for (int i = 0; i < ITEM_NUM; ++i)
 		{
 			char tmp[10];
 			sprintf(tmp, "%d", i);
-			arr.emplace_back(tmp);
+			origin_data.emplace_back(tmp);
 		}
-		std::vector<std::string> arr_copy{ arr };
-		std::atomic_int current_num{ 0 };
+		std::vector<std::string> origin_copy{ origin_data };
+
+		std::vector<std::string> result_data{ ITEM_NUM };
+
+		std::atomic_int push_index{ 0 };
+		std::atomic_int pop_index{ 0 };
+
 		for (int i = 0; i < THREAD_NUM; ++i)
 		{
-			threads.emplace_back([i, &current_num, &ringBuffer, &result]()
+			pop_threads.emplace_back([i, &pop_index, &ringBuffer, &result_data]()
 			{
 				while (true)
 				{
-					std::string s = ringBuffer.popFront();
-					if (s.empty())
+					std::optional<std::string> s = ringBuffer.popFront();
+					if (!s.has_value())
 						return;
-					result[current_num++] =std::move(s);
+					result_data[pop_index++] = std::move(s.value());
 				}
 			});
 		}
-		for (int i = 0; i < ITEM_NUM; ++i)
+
+		for (int i = 0; i < THREAD_NUM; ++i)
 		{
-			ringBuffer.pushBack(std::move(arr[i]));
+			push_threads.emplace_back([i, &push_index, &ringBuffer, &origin_data]()
+			{
+				while (true)
+				{
+					int my_index = push_index++;
+					if (my_index >= origin_data.size())
+						return;
+					ringBuffer.pushBack(std::move(origin_data[my_index]));
+				}
+			});
 		}
-		while (current_num != ITEM_NUM)std::this_thread::yield();
+		
+		while (pop_index != ITEM_NUM)std::this_thread::yield();
 		ringBuffer.setExiting();
-		for (auto& th : threads)
+		for (auto& th : pop_threads)
 		{
 			th.join();
 		}
-		std::sort(result.begin(), result.end());
-		std::sort(arr_copy.begin(), arr_copy.end());
+		for (auto& th : push_threads)
+		{
+			th.join();
+		}
+		std::sort(result_data.begin(), result_data.end());
+		std::sort(origin_copy.begin(), origin_copy.end());
 		for (int i = 0; i < ITEM_NUM; ++i)
 		{
-			EXPECT_EQ(arr_copy[i], result[i]);
+			EXPECT_EQ(origin_copy[i], result_data[i]);
 		}
 	}
 }

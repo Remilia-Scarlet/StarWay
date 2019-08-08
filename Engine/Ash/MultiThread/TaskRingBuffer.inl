@@ -5,7 +5,13 @@ inline TaskRingBuffer<T>::TaskRingBuffer(int32_t capacity/* = INITIAL_CAPACITY*/
 {
 	_capacity = capacity;
 	_data = (T*)new uint8_t[_capacity * sizeof(T)]; //TODO: aligned?
-	_dataFlag.resize(_capacity, Status::UNINITIALIZED);
+
+	std::vector<std::atomic<Status>> tmpv(_capacity); 
+	_dataFlag.swap(tmpv);//unable to use resize and reserve duo to std::atomic uncopyable and unmoveable
+	for (auto& data : _dataFlag)
+	{
+		data = Status::UNINITIALIZED;
+	}
 }
 
 template<class T>
@@ -39,45 +45,28 @@ void TaskRingBuffer<T>::pushBack(T elem)
 		return;
 
 	int32_t back;
-	while (true)
 	{
+		std::unique_lock<std::mutex> lock(_mmmm);
 		back = _back.load();
-		if(back == _front)
+		if (isFull(_front, back) || _dataFlag[back] != Status::UNINITIALIZED)
 		{
-			//full
-			DebugString("TaskRingBuffer 0xzX% too small, performance impacted. Consider add some capacity", (size_t)this);
-			std::this_thread::yield();
-		}
-		else
-		{
-			Status flag = Status::UNINITIALIZED;
-			if (_dataFlag[back].compare_exchange_strong(flag, Status::WRITING))
-				break;
-			if (_back == back)
-			{
-				//last thread not finish using this cell
-				DebugString("TaskRingBuffer 0xzX% too small, performance impacted. Consider add some capacity", (size_t)this);
+			_blockForFull = true;
+			//wait till all popping threads are waiting or already exiting
+			while (_popingThreadNum != _popingWaitingThreadNum) 
 				std::this_thread::yield();
-			}
+			increaseCapacity();
+			_blockForFull = false;
 		}
+		back = _back.load();
+		TinyAssert(!isFull(_front, back) && _dataFlag[back] == Status::UNINITIALIZED);
+		_dataFlag[back] = Status::WRITING;
+		_back = (_back + 1) % _capacity;
 	}
 
-	// now cell is mine
-	TinyAssert(_back.load() == back);
-	_back = (_back + 1) % _capacity;
-
-
-	//if(isFull())
-	//{
-	//	_blockForFull = true;
-	//	//wait till all popping threads are waiting or already exiting
-	//	while (_popingThreadNum != _popingWaitingThreadNum) 
-	//		std::this_thread::yield();
-	//	increaseCapacity();
-	//	_blockForFull = false;
-	//}
 	//push back
 	new (_data + back)T(std::move(elem));
+
+	_dataFlag[back] = Status::FINISH_WRITING;
 	_waitingForPushCondi.notify_one();
 }
 
@@ -102,16 +91,19 @@ std::optional<T> TaskRingBuffer<T>::popFront()
 			//CAS popping the front
 			if(!_front.compare_exchange_strong(currentFront, (currentFront + 1) % _capacity))
 				continue;
+			//wait for writing finish
+			while (_dataFlag[currentFront] != Status::FINISH_WRITING)
+				std::this_thread::yield();
+			
 			//Now currentFront is mine
+			_dataFlag[currentFront] = Status::READING;
+
 			T ret{ std::move(_data[currentFront]) };
 			_data[currentFront].~T();
 
-			//during the construct time, front has moved forward so much. Don't let it catch up with _back
-			//If you assert here, add KEEP_CAPACITY.
-			int32_t nowFront = _front;
-			TinyAssert((nowFront >= currentFront ? nowFront - currentFront : nowFront + _capacity - currentFront) <= KEEP_CAPACITY);
+			_dataFlag[currentFront] = Status::UNINITIALIZED;
 
-			return ret;
+			return std::optional<T>(std::move(ret));
 		}
 	}
 	return {};
@@ -125,11 +117,9 @@ inline void TaskRingBuffer<T>::setExiting()
 }
 
 template <class T>
-bool TaskRingBuffer<T>::isFull() const
+bool TaskRingBuffer<T>::isFull(int32_t front, int32_t back) const
 {
-	int back = _back.load();
-	int front = _front.load();
-	return (front <= back ? front + _capacity - back : front - back) <= KEEP_CAPACITY;
+	return (front <= back ? front + _capacity - back : front - back) <= 1;
 }
 
 template <class T>
@@ -149,15 +139,22 @@ inline void TaskRingBuffer<T>::increaseCapacity()
 	//alloc new space
 	_capacity = int32_t(_capacity * 1.2);
 	_data = (T*)new uint8_t[_capacity * sizeof(T)]; //TODO: aligned?
+	std::vector<std::atomic<Status>> tmpFlag(_capacity);
+	for (auto& flag : tmpFlag) 
+		flag = Status::UNINITIALIZED; 
 	_front = 0;
 	_back = 0;
 
 	//move to new space
 	while (begin != end)
 	{
-		new (_data + _back++) T(std::move(oldData[begin]));
+		int newIndex = _back;
+		new (_data + newIndex) T(std::move(oldData[begin]));
+		tmpFlag[newIndex] = _dataFlag[begin].load();
+
 		oldData[begin].~T();
 		begin = (begin + 1) % oldCapacity;
 	}
 	delete[] (uint8_t*)(oldData);
+	std::swap(_dataFlag, tmpFlag);
 }

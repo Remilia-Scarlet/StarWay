@@ -52,6 +52,6 @@ void ThreadPool::addTask(RefCountPtr<Task> task)
 
 RefCountPtr<Task> ThreadPool::getNextTask()
 {
-	RefCountPtr<Task> task = _waitingTasks.popFront();
-	return task;
+	std::optional<RefCountPtr<Task>> task = _waitingTasks.popFront();
+	return task ? *task : nullptr;
 }

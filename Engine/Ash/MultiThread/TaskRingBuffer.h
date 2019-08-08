@@ -47,11 +47,11 @@ protected:
 	std::atomic<int32_t> _front{ 0 };
 	std::atomic<int32_t> _back{ 0 };
 
-	bool isFull() const;
+	bool isFull(int32_t front, int32_t back) const;
 	bool isEmpty() const;
 	void increaseCapacity();
 
-
+	std::mutex _mmmm;
 };
 
 
