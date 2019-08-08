@@ -5,19 +5,24 @@
 #include <optional>
 #include "Ash/TinyAssert.h"
 
-
 class Task;
-template<class T>
+
+/*
+ * Multi-thread writable and multi-thread readable circle buffer
+ * RESIZE_ON_FULL: If true, when buffer is full, it will resize automatically. Otherwise, it will block pushBack method till an empty slot occurs.
+ */
+template<class T, bool RESIZE_ON_FULL = true>
 class TaskRingBuffer
 {
-protected:
-	const static int INITIAL_CAPACITY = 2048;
 public:
-	TaskRingBuffer(int32_t capacity = INITIAL_CAPACITY);
+	TaskRingBuffer(int32_t capacity = 32);
 	virtual ~TaskRingBuffer();
 
+	// Push an element to a circle queue. If buffer is full, it will block current thread to either resize or just wait for an empty slot to occur based on RESIZE_ON_FULL
 	void pushBack(T elem);
+	// Pop an element from the circle queue. When buffer is empty, it will block current thread till an available element occurs. 
 	std::optional<T> popFront();
+	// Set exiting flag, All waiting popping thread will exit with an invalid optional return value. Will automatically be called when constructing.
 	void setExiting();
 protected:
 	struct NumGuard
@@ -37,9 +42,11 @@ protected:
 	std::atomic<int32_t> _popingThreadNum{ 0 };
 	std::atomic<int32_t> _popingWaitingThreadNum{ 0 };
 	std::atomic<int32_t> _pushingThreadNum{ 0 };
+	std::atomic<int32_t> _workingPushingThreadNum{ 0 };
 	std::atomic<bool> _isExiting{ false };
 	std::atomic<bool> _blockForFull{ false };
 	std::mutex _waitingForPushMtx;
+	std::mutex _resizeMutex;
 	std::condition_variable _waitingForPushCondi;
 	T* _data = nullptr;
 	std::vector<std::atomic<Status>> _dataFlag;
@@ -50,8 +57,6 @@ protected:
 	bool isFull(int32_t front, int32_t back) const;
 	bool isEmpty() const;
 	void increaseCapacity();
-
-	std::mutex _mmmm;
 };
 
 

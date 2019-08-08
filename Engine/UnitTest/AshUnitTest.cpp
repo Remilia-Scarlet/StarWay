@@ -583,24 +583,31 @@ TEST(Ash, RingBufferTest)
 
 TEST(Ash, TaskRingBufferTest)
 {
+	struct Data
+	{
+		Data():num(0), str(""){}
+		Data(int num, const char* str):num(num),str(str){}
+		std::string str;
+		int num;
+	};
 	{
 		const int THREAD_NUM = 16;
 		const size_t ITEM_NUM = 500000;
-		TaskRingBuffer<std::string> ringBuffer;
+		TaskRingBuffer<Data> ringBuffer;
 
 		std::vector<std::thread> push_threads;
 		std::vector<std::thread> pop_threads;
 
-		std::vector<std::string> origin_data;
+		std::vector<Data> origin_data;
 		for (int i = 0; i < ITEM_NUM; ++i)
 		{
 			char tmp[10];
 			sprintf(tmp, "%d", i);
-			origin_data.emplace_back(tmp);
+			origin_data.emplace_back(i, tmp);
 		}
-		std::vector<std::string> origin_copy{ origin_data };
+		std::vector<Data> origin_copy{ origin_data };
 
-		std::vector<std::string> result_data{ ITEM_NUM };
+		std::vector<Data> result_data{ ITEM_NUM };
 
 		std::atomic_int push_index{ 0 };
 		std::atomic_int pop_index{ 0 };
@@ -611,7 +618,7 @@ TEST(Ash, TaskRingBufferTest)
 			{
 				while (true)
 				{
-					std::optional<std::string> s = ringBuffer.popFront();
+					std::optional<Data> s = ringBuffer.popFront();
 					if (!s.has_value())
 						return;
 					result_data[pop_index++] = std::move(s.value());
@@ -626,14 +633,14 @@ TEST(Ash, TaskRingBufferTest)
 				while (true)
 				{
 					int my_index = push_index++;
-					if (my_index >= origin_data.size())
+					if (my_index >= (int)origin_data.size())
 						return;
 					ringBuffer.pushBack(std::move(origin_data[my_index]));
 				}
 			});
 		}
 		
-		while (pop_index != ITEM_NUM)std::this_thread::yield();
+		while (pop_index < ITEM_NUM)std::this_thread::yield();
 		ringBuffer.setExiting();
 		for (auto& th : pop_threads)
 		{
@@ -643,11 +650,10 @@ TEST(Ash, TaskRingBufferTest)
 		{
 			th.join();
 		}
-		std::sort(result_data.begin(), result_data.end());
-		std::sort(origin_copy.begin(), origin_copy.end());
+		std::sort(result_data.begin(), result_data.end(), [](Data& a, Data& b) {return a.num < b.num; });
 		for (int i = 0; i < ITEM_NUM; ++i)
 		{
-			EXPECT_EQ(origin_copy[i], result_data[i]);
+			EXPECT_EQ(origin_copy[i].str, result_data[i].str);
 		}
 	}
 }
