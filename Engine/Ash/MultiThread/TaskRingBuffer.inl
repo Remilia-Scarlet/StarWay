@@ -1,10 +1,11 @@
 #include "TaskRingBuffer.h"
 
 template<class T>
-inline TaskRingBuffer<T>::TaskRingBuffer()
+inline TaskRingBuffer<T>::TaskRingBuffer(int32_t capacity/* = INITIAL_CAPACITY*/)
 {
-	_data = (T*)new uint8_t[INITIAL_CAPACITY * sizeof(T)]; //TODO: aligned?
-	_capacity = INITIAL_CAPACITY;
+	_capacity = capacity;
+	_data = (T*)new uint8_t[_capacity * sizeof(T)]; //TODO: aligned?
+	_dataFlag.resize(_capacity, Status::UNINITIALIZED);
 }
 
 template<class T>
@@ -31,39 +32,58 @@ inline TaskRingBuffer<T>::~TaskRingBuffer()
 template<class T>
 void TaskRingBuffer<T>::pushBack(T elem)
 {
-	++_pushingThreadNum;
-	TinyAssert(_pushingThreadNum.load() == 1, "You can't call pushBack in two threads at the same time");
+	NumGuard pushingThreadNumGuard(_pushingThreadNum);
 
 	TinyAssert(!_isExiting, "You can't call pushBack when you already called setExiting()");
 	if (_isExiting)
 		return;
 
-	if(isFull())
+	int32_t back;
+	while (true)
 	{
-		_blockForFull = true;
-		//wait till all popping threads are waiting or already exiting
-		while (_popingThreadNum != _popingWaitingThreadNum) 
+		back = _back.load();
+		if(back == _front)
+		{
+			//full
+			DebugString("TaskRingBuffer 0xzX% too small, performance impacted. Consider add some capacity", (size_t)this);
 			std::this_thread::yield();
-		increaseCapacity();
-		_blockForFull = false;
+		}
+		else
+		{
+			Status flag = Status::UNINITIALIZED;
+			if (_dataFlag[back].compare_exchange_strong(flag, Status::WRITING))
+				break;
+			if (_back == back)
+			{
+				//last thread not finish using this cell
+				DebugString("TaskRingBuffer 0xzX% too small, performance impacted. Consider add some capacity", (size_t)this);
+				std::this_thread::yield();
+			}
+		}
 	}
-	//push back
-	new (_data + _back)T(std::move(elem));
+
+	// now cell is mine
+	TinyAssert(_back.load() == back);
 	_back = (_back + 1) % _capacity;
+
+
+	//if(isFull())
+	//{
+	//	_blockForFull = true;
+	//	//wait till all popping threads are waiting or already exiting
+	//	while (_popingThreadNum != _popingWaitingThreadNum) 
+	//		std::this_thread::yield();
+	//	increaseCapacity();
+	//	_blockForFull = false;
+	//}
+	//push back
+	new (_data + back)T(std::move(elem));
 	_waitingForPushCondi.notify_one();
-	--_pushingThreadNum;
 }
 
 template<class T>
-T TaskRingBuffer<T>::popFront()
+std::optional<T> TaskRingBuffer<T>::popFront()
 {
-	struct NumGuard
-	{
-		NumGuard(std::atomic<int32_t>& num) :_num(num) { ++_num; }
-		~NumGuard() { --_num; }
-		std::atomic<int32_t>& _num;
-	};
-
 	NumGuard popingThreadNumGuard(_popingThreadNum);
 	TinyAssert(!_isExiting);
 
@@ -94,7 +114,7 @@ T TaskRingBuffer<T>::popFront()
 			return ret;
 		}
 	}
-	return T{};
+	return {};
 }
 
 template<class T>

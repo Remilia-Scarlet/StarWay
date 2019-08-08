@@ -2,6 +2,7 @@
 #include <thread>
 #include <atomic>
 #include <functional>
+#include <optional>
 #include "Ash/TinyAssert.h"
 
 
@@ -9,13 +10,29 @@ class Task;
 template<class T>
 class TaskRingBuffer
 {
+protected:
+	const static int INITIAL_CAPACITY = 2048;
 public:
-	TaskRingBuffer();
+	TaskRingBuffer(int32_t capacity = INITIAL_CAPACITY);
 	virtual ~TaskRingBuffer();
-public:
+
 	void pushBack(T elem);
-	T popFront();
+	std::optional<T> popFront();
 	void setExiting();
+protected:
+	struct NumGuard
+	{
+		NumGuard(std::atomic<int32_t>& num) :_num(num) { ++_num; }
+		~NumGuard() { --_num; }
+		std::atomic<int32_t>& _num;
+	};
+	enum class Status : uint8_t
+	{
+		UNINITIALIZED,
+		WRITING,
+		FINISH_WRITING,
+		READING
+	};
 protected:
 	std::atomic<int32_t> _popingThreadNum{ 0 };
 	std::atomic<int32_t> _popingWaitingThreadNum{ 0 };
@@ -25,6 +42,7 @@ protected:
 	std::mutex _waitingForPushMtx;
 	std::condition_variable _waitingForPushCondi;
 	T* _data = nullptr;
+	std::vector<std::atomic<Status>> _dataFlag;
 	int32_t _capacity = 0;
 	std::atomic<int32_t> _front{ 0 };
 	std::atomic<int32_t> _back{ 0 };
@@ -32,10 +50,8 @@ protected:
 	bool isFull() const;
 	bool isEmpty() const;
 	void increaseCapacity();
-protected:
-	const static int INITIAL_CAPACITY = 2048;
-	const static int KEEP_CAPACITY = 1024;
-	static_assert(INITIAL_CAPACITY > KEEP_CAPACITY && KEEP_CAPACITY >= 1);
+
+
 };
 
 
