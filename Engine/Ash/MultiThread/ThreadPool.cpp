@@ -20,8 +20,7 @@ void ThreadPool::Thread::run()
 		if(!_runningTask.isValid())
 			return;
 
-		Task& task = *_runningTask;
-		task.run(_thread.get_id());
+		_runningTask->run(_thread.get_id());
 		_runningTask.reset();
 	}		
 }

@@ -63,14 +63,20 @@ void Task::run(std::thread::id threadId)
 {
 	TinyAssert(_taskStatus == ADDED_TO_THREAD_POOL);
 	_taskStatus = WORKING;
-	//status
-	//worker
-	//next tasks
-	//if no child
-		//finish
-	//else
-		//status
-		//add children tasks to threadpool
+	if (_worker)
+		_worker(this);
+	for (auto& task : _nextTasks)
+		_threadPool->addTask(std::move(task));
+	_nextTasks.clear();
+	if (_childTasks.empty())
+		finish();
+	else
+	{
+		_taskStatus = WAIT_FOR_CHILDREN_FINISH;
+		for (auto& task : _childTasks)
+			_threadPool->addTask(std::move(task));
+		_childTasks.clear();
+	}
 }
 
 void Task::finish()
