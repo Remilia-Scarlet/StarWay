@@ -41,16 +41,23 @@ std::thread::id Task::getThreadID() const
 
 void Task::addNextTask(RefCountPtr<Task> task)
 {
+	if(!task.isValid())
+		return;
 	_nextTasks.emplace_back(std::move(task));
 }
 
 void Task::addChildTask(RefCountPtr<Task> task)
 {
+	if (!task.isValid())
+		return;
+	task->_parent = this;
 	_childTasks.emplace_back(std::move(task));
 }
 
 void Task::setEndTask(RefCountPtr<Task> endTask)
 {
+	if (!endTask.isValid())
+		return;
 	_endTask.move(std::move(endTask));
 }
 
@@ -73,6 +80,7 @@ void Task::run(std::thread::id threadId)
 	else
 	{
 		_taskStatus = WAIT_FOR_CHILDREN_FINISH;
+		_unfinishChildrenTaskNumber = (int)_childTasks.size();
 		for (auto& task : _childTasks)
 			_threadPool->addTask(std::move(task));
 		_childTasks.clear();
@@ -81,16 +89,21 @@ void Task::run(std::thread::id threadId)
 
 void Task::finish()
 {
-	//status
-	//parent->onchildfinish
+	TinyAssert(_taskStatus == WORKING || _taskStatus == WAIT_FOR_CHILDREN_FINISH);
+	_taskStatus = FINISHED;
+	RefCountPtr<Task> parent = _parent.lock();
+	if(parent.isValid())
+	{
+		parent->onChildFinish(RefCountPtr<Task>(this));
+	}
 }
 
 void Task::onChildFinish(RefCountPtr<Task> child)
 {
-	//--childcount
-	//if childcount == 0
-		//finish
-
+	TinyAssert(_taskStatus == WAIT_FOR_CHILDREN_FINISH);
+	--_unfinishChildrenTaskNumber;
+	if (_unfinishChildrenTaskNumber == 0)
+		finish();
 }
 
 void Task::onAddedToThreadPool(ThreadPool* threadPool)
