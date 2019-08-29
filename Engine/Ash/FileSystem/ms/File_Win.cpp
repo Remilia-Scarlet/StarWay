@@ -1,4 +1,4 @@
-#include "Ash/precomp.h"
+#include "AshCore.h"
 
 #if defined(TINY_PLATFORM_WINDOWS)
 #include "../fs_include.h"

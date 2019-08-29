@@ -1,4 +1,4 @@
-#include "Ash/precomp.h"
+#include "AshCore.h"
 #include "RefCountObj.h"
 #include "TinyEngine/Objects/Object.h"
 

@@ -98,6 +98,7 @@ public:
 protected:
 	void run(std::thread::id threadId);
 	void finish();
+	bool addChildrenTasksToPool();
 	void onChildFinish(RefCountPtr<Task> child);
 	void onAddedToThreadPool(ThreadPool* threadPool);
 	void onAddedToChild(Task* parent);

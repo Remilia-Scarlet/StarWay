@@ -1,4 +1,4 @@
-#include "Ash/precomp.h"
+#include "AshCore.h"
 #include "Task.h"
 #include "Ash/TinyAssert.h"
 #include "ThreadPool.h"
@@ -68,7 +68,8 @@ void Task::addEndTask(RefCountPtr<Task> endTask)
 
 void Task::addFenceTask()
 {
-
+	//use nullptr as fence task
+	_childTasks.push_back(nullptr);
 }
 
 void Task::run(std::thread::id threadId)
@@ -85,15 +86,8 @@ void Task::run(std::thread::id threadId)
 	else
 	{
 		_taskStatus = WAIT_FOR_CHILDREN_FINISH;
-		int i = 0;
-		for(; i < static_cast<int>(_childTasks.size()); ++i)
-		{
-			if(_childTasks[i] != FenceTask)
-		}
-		_unfinishChildrenTaskNumber = (int)_childTasks.size();
-		for (auto& task : _childTasks)
-			_threadPool->addTask(std::move(task));
-		_childTasks.clear();
+		if (!addChildrenTasksToPool())
+			finish();
 	}
 }
 
@@ -101,11 +95,30 @@ void Task::finish()
 {
 	TinyAssert(_taskStatus == WORKING || _taskStatus == WAIT_FOR_CHILDREN_FINISH);
 	_taskStatus = FINISHED;
-	RefCountPtr<Task> parent = _parent.lock();
+	RefCountPtr<Task> parent = _parentOrFormerTask.lock();
 	if(parent.isValid())
 	{
 		parent->onChildFinish(RefCountPtr<Task>(this));
 	}
+}
+
+bool Task::addChildrenTasksToPool()
+{
+	TinyAssert(_taskStatus == TaskStatus::WAIT_FOR_CHILDREN_FINISH);
+	std::vector<RefCountPtr<Task>> tmpChildVec;
+	auto it = _childTasks.begin();
+	for (; it != _childTasks.end(); ++it)
+	{
+		if (it->isValid())
+			tmpChildVec.emplace_back(std::move(*it));
+		else if (tmpChildVec.size())
+			break;
+	}
+	_childTasks.erase(_childTasks.begin(), (it == _childTasks.end() ? it : it + 1));
+	_unfinishChildrenTaskNumber = (int)tmpChildVec.size();
+	for (auto& task : tmpChildVec)
+		_threadPool->addTask(std::move(task));
+	return tmpChildVec.size() > 0;
 }
 
 void Task::onChildFinish(RefCountPtr<Task> child)
@@ -113,7 +126,10 @@ void Task::onChildFinish(RefCountPtr<Task> child)
 	TinyAssert(_taskStatus == WAIT_FOR_CHILDREN_FINISH);
 	--_unfinishChildrenTaskNumber;
 	if (_unfinishChildrenTaskNumber == 0)
-		finish();
+	{
+		if (!addChildrenTasksToPool())
+			finish();
+	}
 }
 
 void Task::onAddedToThreadPool(ThreadPool* threadPool)
@@ -125,8 +141,8 @@ void Task::onAddedToThreadPool(ThreadPool* threadPool)
 
 void Task::onAddedToChild(Task* parent)
 {
-	TinyAssert(task->_taskStatus == TaskStatus::NEW);
-	TinyAssert(!task->_parentOrFormerTask.isValid(), "A task can only have one parent");
+	TinyAssert(_taskStatus == TaskStatus::NEW);
+	TinyAssert(!_parentOrFormerTask.isValid(), "A task can only have one parent");
 	_parentOrFormerTask = parent;
 	_iAmChildOfOtherTask = true;
 }
