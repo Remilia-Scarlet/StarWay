@@ -43,6 +43,8 @@ void Task::addNextTask(RefCountPtr<Task> task)
 {
 	if(!task.isValid())
 		return;
+	TinyAssert(_taskStatus == TaskStatus::NEW || _taskStatus == TaskStatus::WORKING);
+	task->onAddedToNextOrEnd(this);
 	_nextTasks.emplace_back(std::move(task));
 }
 
@@ -50,18 +52,21 @@ void Task::addChildTask(RefCountPtr<Task> task)
 {
 	if (!task.isValid())
 		return;
-	task->_parent = this;
+	TinyAssert(_taskStatus == TaskStatus::NEW || _taskStatus == TaskStatus::WORKING);
+	task->onAddedToChild(this);
 	_childTasks.emplace_back(std::move(task));
 }
 
-void Task::setEndTask(RefCountPtr<Task> endTask)
+void Task::addEndTask(RefCountPtr<Task> endTask)
 {
 	if (!endTask.isValid())
 		return;
-	_endTask.move(std::move(endTask));
+	TinyAssert(_taskStatus == TaskStatus::NEW || _taskStatus == TaskStatus::WORKING);
+	endTask->onAddedToNextOrEnd(this);
+	_endTasks.emplace_back(std::move(endTask));
 }
 
-void Task::blockTillFinished()
+void Task::addFenceTask()
 {
 
 }
@@ -80,6 +85,11 @@ void Task::run(std::thread::id threadId)
 	else
 	{
 		_taskStatus = WAIT_FOR_CHILDREN_FINISH;
+		int i = 0;
+		for(; i < static_cast<int>(_childTasks.size()); ++i)
+		{
+			if(_childTasks[i] != FenceTask)
+		}
 		_unfinishChildrenTaskNumber = (int)_childTasks.size();
 		for (auto& task : _childTasks)
 			_threadPool->addTask(std::move(task));
@@ -111,4 +121,20 @@ void Task::onAddedToThreadPool(ThreadPool* threadPool)
 	TinyAssert(_taskStatus == Task::NEW, "You can't add a linked task or executing task to thread pool");
 	_taskStatus = Task::ADDED_TO_THREAD_POOL;
 	_threadPool = threadPool;
+}
+
+void Task::onAddedToChild(Task* parent)
+{
+	TinyAssert(task->_taskStatus == TaskStatus::NEW);
+	TinyAssert(!task->_parentOrFormerTask.isValid(), "A task can only have one parent");
+	_parentOrFormerTask = parent;
+	_iAmChildOfOtherTask = true;
+}
+
+void Task::onAddedToNextOrEnd(Task* formerTask)
+{
+	TinyAssert(_taskStatus == TaskStatus::NEW);
+	TinyAssert(!_parentOrFormerTask.isValid(), "A task can not be child task and next task of other tasks at the same time");
+	_parentOrFormerTask = formerTask;
+	_iAmChildOfOtherTask = false;
 }

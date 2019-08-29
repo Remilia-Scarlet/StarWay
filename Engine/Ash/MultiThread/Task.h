@@ -45,7 +45,7 @@ public:
 	std::thread::id getThreadID() const;
 
 	/*
-	* Next tasks will be added to thread pool immediately after this worker function finished.
+	* Next tasks will be added to thread pool immediately after the worker function finished.
 	*
 	* For example:
 	* task1.addNextTask(task2);
@@ -56,8 +56,8 @@ public:
 	void addNextTask(RefCountPtr<Task> task);
 
 	/*
-	 * Children tasks will be added to thread pool immediately after this worker function finished.
-	 * Used together with setEndTask.
+	 * Children tasks will be added to thread pool immediately after the worker function finished.
+	 * Used together with addEndTask.
 	 */
 	void addChildTask(RefCountPtr<Task> task);
 
@@ -66,31 +66,50 @@ public:
 	* For example:
 	* task1.addChildTask(task2);
 	* task1.addChildTask(task3);
-	* task1.setEndTask(task4);
+	* task1.addEndTask(task4);
 	* task1.addNextTask(task5);
 	* threadPool.addTask(task1);
 	* When the worker function of task1 is finished, task2, task3 and task5 will be added to thread pool immediately.
 	* However task4 will be added to thread pool after task2 and task3 are both finished.
+	* You can use addFenceTask synchronize the tasks.
 	*/
-	void setEndTask(RefCountPtr<Task> endTask);
+	void addEndTask(RefCountPtr<Task> endTask);
 
 	/*
-	 * Block the calling thread till all children tasks are finished 
+	 * Add a fence task to children tasks.
+	 * All children tasks that before this task will be finished, and then remaining tasks will be added.
+	 * For example:
+	 * task1.addChildTask(task2);
+	 * task1.addChildTask(task3);
+	 * task1.addFenceTask();
+	 * task1.addChildTask(task4);
+	 * task1.addFenceTask();
+	 * task1.addChildTask(task5);
+	 * task1.addChildTask(task6);
+	 * task1.addChildTask(task7);
+	 * task1.addEndTask(task8);
+	 * threadPool.addTask(task1);
+	 * When the worker function of task1 is finished, task2, task3 will be added to thread pool immediately.
+	 * After both of task2 and task3 are finished, task4 will be added to thread pool.
+	 * After task4 is finished, task5, task6 and task7 will be added to thread pool
+	 * After task5-7 are finished, task8 will be added to thread pool.
 	 */
-	void blockTillFinished();
+	void addFenceTask();
 protected:
 	void run(std::thread::id threadId);
 	void finish();
 	void onChildFinish(RefCountPtr<Task> child);
 	void onAddedToThreadPool(ThreadPool* threadPool);
+	void onAddedToChild(Task* parent);
+	void onAddedToNextOrEnd(Task* formerTask);
 protected:
 	enum TaskStatus
 	{
 		NEW,
-		ADDED_TO_THREAD_POOL,
-		WORKING,
-		WAIT_FOR_CHILDREN_FINISH,
-		FINISHED
+		ADDED_TO_THREAD_POOL,		//Already added to thread pool and wait for executing
+		WORKING,					//Executing
+		WAIT_FOR_CHILDREN_FINISH,	//The worker function of this task is finished, waiting for children tasks finishing
+		FINISHED					//All children tasks are finished
 	};
 	std::shared_ptr<TaskUserData> _userData;
 	std::function<void(Task*)> _worker;
@@ -98,8 +117,9 @@ protected:
 	std::thread::id _threadId;
 	std::vector<RefCountPtr<Task>> _nextTasks;
 	std::vector<RefCountPtr<Task>> _childTasks;
-	RefCountPtr<Task> _endTask;
-	WeakRefPtr<Task> _parent;
+	std::vector<RefCountPtr<Task>> _endTasks;
+	bool _iAmChildOfOtherTask = false;
+	WeakRefPtr<Task> _parentOrFormerTask; //If _iAmChildOfOtherTask is false, _parentOrFormerTask is former task. Otherwise it's parent task
 	std::atomic<int> _unfinishChildrenTaskNumber{ 0 };
 	ThreadPool* _threadPool{ nullptr };
 };
