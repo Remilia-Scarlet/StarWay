@@ -660,90 +660,82 @@ TEST(Ash, TaskRingBufferTest)
 
 TEST(Ash, ThreadPoolTest)
 {
-	constexpr int threadNumber = 12;
+	constexpr int threadNumber = 16;
 	std::vector<int> numbers(2000000);
 	for (auto& i : numbers)
 	{
 		i = (rand() & 0xfff) << 12 | (rand() & 0xfff);
 	}
 
-	////MultiThread quick sort
-	if (1)
+	//task
 	{
-		// Rewrite std::sort to use multithread task
-		typedef int* _RanIt;
-		std::function<void(Task*, _RanIt, _RanIt, std::_Iter_diff_t<_RanIt>)> _Sort_unchecked = [&](Task* self, _RanIt _First, _RanIt _Last, std::_Iter_diff_t<_RanIt> _Ideal)
+		TaskPtr task1 = TaskPtr(new Task());
+		TaskPtr task2 = TaskPtr(new Task()); 
+		TaskPtr task3 = TaskPtr(new Task());
+		TaskPtr task4 = TaskPtr(new Task());
+		TaskPtr task5 = TaskPtr(new Task());
+		TaskPtr task6 = TaskPtr(new Task());
+		task1->addChildTask(task2);
+		task1->setWorkerFunction([&task3](Task* self) {self->addChildTask(task3); });
+		
+	}
+
+	//MultiThread quick sort
+	{
+		std::function<void(Task*, int*, int, int)> quickSort = [&quickSort](Task* task, int* arr, int begin, int end)
 		{
-			std::less<> _Pred;
-			// order [_First, _Last), using _Pred
-			std::_Iter_diff_t<_RanIt> _Count;
-			while (32 < (_Count = _Last - _First) && 0 < _Ideal)
-			{	// divide and conquer by quicksort
-				auto _Mid = std::_Partition_by_median_guess_unchecked(_First, _Last, _Pred);
-				// TRANSITION, VSO#433486
-				_Ideal = (_Ideal >> 1) + (_Ideal >> 2);	// allow 1.5 log2(N) divisions
-
-				if (_Mid.first - _First < _Last - _Mid.second)
-				{	// loop on second half
-					RefCountPtr<Task> task{ new Task([self, &_Sort_unchecked, _First,_Mid,_Ideal](Task*)
-					{
-						_Sort_unchecked(self, _First, _Mid.first, _Ideal);
-					}) };
-					self->addNextTask(task);
-					_First = _Mid.second;
-				}
-				else
-				{	// loop on first half
-					RefCountPtr<Task> task{ new Task([self, &_Sort_unchecked, _Last,_Mid,_Ideal](Task*)
-					{
-						_Sort_unchecked(self, _Mid.second, _Last, _Ideal);
-					}) };
-					self->addNextTask(task);
-					_Last = _Mid.first;
-				}
-			}
-
-			if (32 < _Count)
-			{	// heap sort if too many divisions
-				_Make_heap_unchecked(_First, _Last, _Pred);
-				_Sort_heap_unchecked(_First, _Last, _Pred);
-			}
-			else if (2 <= _Count)
+			if (end - begin < 32)
 			{
-				std::_Insertion_sort_unchecked(_First, _Last, _Pred);	// small
+				std::sort(arr + begin, arr + end);
+				return;
 			}
-		};
-
-		auto quickSort = [&](Task* self, const _RanIt _First, const _RanIt _Last)
-		{	// order [_First, _Last), using _Pred
-			_Sort_unchecked(self, _First, _Last, _Last - _First);
-		};
-
-		//MultiThread quick sort
-		{
-			std::vector<int> data = numbers;
-			ThreadPool threadPool(threadNumber);
-			auto start = std::chrono::system_clock::now();
+			int guard = arr[begin];
+			int left = begin + 1;
+			for (int i = begin + 1; i < end; ++i)
 			{
-				RefCountPtr<Task> sortTask = RefCountPtr<Task>(new Task());
-				sortTask->setWorkerFunction(std::bind(quickSort, std::placeholders::_1, data.data(), data.data() + data.size()));
-				threadPool.addTask(sortTask);
-				sortTask->blockTillFinished();
-			}
-			auto end = std::chrono::system_clock::now();
-			std::chrono::duration<double> diff = end - start;
-			DebugString("Sorted size=%ld random int array, MultiThread cost: %f seconds", data.size(), diff.count());
-			bool orderIsRight = true;
-			for (int i = 1; i < (int)data.size(); ++i)
-			{
-				if (data[i] < data[i - 1])
+				if (arr[i] < guard)
 				{
-					orderIsRight = false;
-					break;
+					std::swap(arr[left], arr[i]);
+					++left;
 				}
 			}
-			EXPECT_TRUE(orderIsRight);
+			std::swap(arr[begin], arr[left - 1]);
+			RefCountPtr<Task> sortLeft = RefCountPtr<Task>(new Task(std::bind(quickSort, std::placeholders::_1, arr, begin, left - 1)));
+			RefCountPtr<Task> sortRight = RefCountPtr<Task>(new Task(std::bind(quickSort, std::placeholders::_1, arr, left, end)));
+			task->addChildTask(std::move(sortLeft));
+			task->addChildTask(std::move(sortRight));
+		};
+
+		std::vector<int> data = numbers;
+		ThreadPool threadPool(threadNumber);
+		auto start = std::chrono::system_clock::now();
+		{
+			std::atomic<bool> finished = false;
+			RefCountPtr<Task> sortTask = RefCountPtr<Task>(new Task());
+			sortTask->setWorkerFunction(std::bind(quickSort, std::placeholders::_1, data.data(), 0, (int)data.size()));
+			std::mutex mu;
+			std::unique_lock<std::mutex> lock(mu);
+			std::condition_variable condi;
+			sortTask->addEndTask(RefCountPtr<Task>(new Task([&finished, &condi](Task*)
+			{
+				finished = true; condi.notify_all();
+			})));
+			threadPool.addTask(sortTask);
+			condi.wait(lock, [&finished]() {return finished.load(); });
 		}
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		DebugString("Sorted size=%ld random int array, MultiThread cost: %f seconds", data.size(), diff.count());
+		bool orderIsRight = true;
+		for (int i = 1; i < (int)data.size(); ++i)
+		{
+			if (data[i] < data[i - 1])
+			{
+				orderIsRight = false;
+				break;
+			}
+		}
+		EXPECT_TRUE(orderIsRight);
 	}
 
 	// MultiThread merge sort
@@ -788,7 +780,7 @@ TEST(Ash, ThreadPoolTest)
 				task->addChildTask(rightTask);
 
 				TaskPtr mergeTask = MakeRefCountPtr<Task>(std::bind(mergeArray, arr, size));
-				task->setEndTask(mergeTask);
+				task->addEndTask(mergeTask);
 			}
 		};
 		//MultiThread merge sort
@@ -799,7 +791,7 @@ TEST(Ash, ThreadPoolTest)
 			{
 				TaskPtr task = MakeRefCountPtr<Task>(std::bind(mergeSort, std::placeholders::_1, data.data(), (int)data.size()));
 				threadPool.addTask(std::move(task));
-				task->blockTillFinished();
+			//	task->blockTillFinished();
 			}
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> diff = end - start;
