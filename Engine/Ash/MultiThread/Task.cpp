@@ -72,10 +72,15 @@ void Task::addFenceTask()
 	_childTasks.push_back(nullptr);
 }
 
+TaskStatus Task::getTaskStatus()
+{
+	return _taskStatus.load();
+}
+
 void Task::run(std::thread::id threadId)
 {
-	TinyAssert(_taskStatus == ADDED_TO_THREAD_POOL);
-	_taskStatus = WORKING;
+	TinyAssert(_taskStatus == TaskStatus::ADDED_TO_THREAD_POOL);
+	_taskStatus = TaskStatus::WORKING;
 	if (_worker)
 		_worker(this);
 	for (auto& task : _nextTasks)
@@ -85,7 +90,7 @@ void Task::run(std::thread::id threadId)
 		finish();
 	else
 	{
-		_taskStatus = WAIT_FOR_CHILDREN_FINISH;
+		_taskStatus = TaskStatus::WAIT_FOR_CHILDREN_FINISH;
 		if (!addChildrenTasksToPool())
 			finish();
 	}
@@ -93,8 +98,10 @@ void Task::run(std::thread::id threadId)
 
 void Task::finish()
 {
-	TinyAssert(_taskStatus == WORKING || _taskStatus == WAIT_FOR_CHILDREN_FINISH);
-	_taskStatus = FINISHED;
+	TinyAssert(_taskStatus == TaskStatus::WORKING || _taskStatus == TaskStatus::WAIT_FOR_CHILDREN_FINISH);
+	for (auto& task : _endTasks)
+		_threadPool->addTask(std::move(task));
+	_taskStatus = TaskStatus::FINISHED;
 	RefCountPtr<Task> parent = _parentOrFormerTask.lock();
 	if(parent.isValid())
 	{
@@ -105,6 +112,8 @@ void Task::finish()
 bool Task::addChildrenTasksToPool()
 {
 	TinyAssert(_taskStatus == TaskStatus::WAIT_FOR_CHILDREN_FINISH);
+	if (_childTasks.size() == 0)
+		return false;
 	std::vector<RefCountPtr<Task>> tmpChildVec;
 	auto it = _childTasks.begin();
 	for (; it != _childTasks.end(); ++it)
@@ -123,7 +132,7 @@ bool Task::addChildrenTasksToPool()
 
 void Task::onChildFinish(RefCountPtr<Task> child)
 {
-	TinyAssert(_taskStatus == WAIT_FOR_CHILDREN_FINISH);
+	TinyAssert(_taskStatus == TaskStatus::WAIT_FOR_CHILDREN_FINISH);
 	--_unfinishChildrenTaskNumber;
 	if (_unfinishChildrenTaskNumber == 0)
 	{
@@ -134,8 +143,8 @@ void Task::onChildFinish(RefCountPtr<Task> child)
 
 void Task::onAddedToThreadPool(ThreadPool* threadPool)
 {
-	TinyAssert(_taskStatus == Task::NEW, "You can't add a linked task or executing task to thread pool");
-	_taskStatus = Task::ADDED_TO_THREAD_POOL;
+	TinyAssert(_taskStatus == TaskStatus::NEW, "You can't add a linked task or executing task to thread pool");
+	_taskStatus = TaskStatus::ADDED_TO_THREAD_POOL;
 	_threadPool = threadPool;
 }
 

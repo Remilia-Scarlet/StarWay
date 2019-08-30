@@ -12,6 +12,14 @@ class TaskUserData
 public:
 	virtual ~TaskUserData() = default;
 };
+enum class TaskStatus
+{
+	NEW,
+	ADDED_TO_THREAD_POOL,		//Already added to thread pool and wait for executing
+	WORKING,					//Executing
+	WAIT_FOR_CHILDREN_FINISH,	//The worker function of this task is finished, waiting for children tasks finishing
+	FINISHED					//All children tasks are finished
+};
 TINY_DEFINE_PTR(Task);
 class Task : public RefCountObj
 {
@@ -95,6 +103,8 @@ public:
 	 * After task5-7 are finished, task8 will be added to thread pool.
 	 */
 	void addFenceTask();
+
+	TaskStatus getTaskStatus();
 protected:
 	void run(std::thread::id threadId);
 	void finish();
@@ -104,17 +114,9 @@ protected:
 	void onAddedToChild(Task* parent);
 	void onAddedToNextOrEnd(Task* formerTask);
 protected:
-	enum TaskStatus
-	{
-		NEW,
-		ADDED_TO_THREAD_POOL,		//Already added to thread pool and wait for executing
-		WORKING,					//Executing
-		WAIT_FOR_CHILDREN_FINISH,	//The worker function of this task is finished, waiting for children tasks finishing
-		FINISHED					//All children tasks are finished
-	};
 	std::shared_ptr<TaskUserData> _userData;
 	std::function<void(Task*)> _worker;
-	TaskStatus _taskStatus = NEW;
+	std::atomic<TaskStatus> _taskStatus = TaskStatus::NEW;
 	std::thread::id _threadId;
 	std::vector<RefCountPtr<Task>> _nextTasks;
 	std::vector<RefCountPtr<Task>> _childTasks;

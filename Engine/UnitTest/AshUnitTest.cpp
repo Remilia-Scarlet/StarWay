@@ -669,15 +669,19 @@ TEST(Ash, ThreadPoolTest)
 
 	//task
 	{
+		std::atomic<int> num = 0;
 		TaskPtr task1 = TaskPtr(new Task());
-		TaskPtr task2 = TaskPtr(new Task()); 
-		TaskPtr task3 = TaskPtr(new Task());
+		TaskPtr task2 = TaskPtr(new Task([&num](Task*) {num++; }));
+		TaskPtr task3 = TaskPtr(new Task([&num](Task*) {num++; }));
 		TaskPtr task4 = TaskPtr(new Task());
 		TaskPtr task5 = TaskPtr(new Task());
 		TaskPtr task6 = TaskPtr(new Task());
 		task1->addChildTask(task2);
 		task1->setWorkerFunction([&task3](Task* self) {self->addChildTask(task3); });
-		
+		ThreadPool threadPool(1);
+		threadPool.addTask(task1);
+		while (task1->getTaskStatus() != TaskStatus::FINISHED)std::this_thread::yield();
+		EXPECT_EQ(num.load(), 2);
 	}
 
 	//MultiThread quick sort
