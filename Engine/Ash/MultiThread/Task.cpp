@@ -86,14 +86,9 @@ void Task::run(std::thread::id threadId)
 	for (auto& task : _nextTasks)
 		_threadPool->addTask(std::move(task));
 	_nextTasks.clear();
-	if (_childTasks.empty())
+	_taskStatus = TaskStatus::WAIT_FOR_CHILDREN_FINISH;
+	if (!addChildrenTasksToPool())
 		finish();
-	else
-	{
-		_taskStatus = TaskStatus::WAIT_FOR_CHILDREN_FINISH;
-		if (!addChildrenTasksToPool())
-			finish();
-	}
 }
 
 void Task::finish()
@@ -102,10 +97,10 @@ void Task::finish()
 	for (auto& task : _endTasks)
 		_threadPool->addTask(std::move(task));
 	_taskStatus = TaskStatus::FINISHED;
-	RefCountPtr<Task> parent = _parentOrFormerTask.lock();
-	if(parent.isValid())
+	if (_parent.isValid())
 	{
-		parent->onChildFinish(RefCountPtr<Task>(this));
+		_parent->onChildFinish(RefCountPtr<Task>(this));
+		_parent.reset();
 	}
 }
 
@@ -119,7 +114,10 @@ bool Task::addChildrenTasksToPool()
 	for (; it != _childTasks.end(); ++it)
 	{
 		if (it->isValid())
+		{
+			it->get()->_parent.reset(this);
 			tmpChildVec.emplace_back(std::move(*it));
+		}
 		else if (tmpChildVec.size())
 			break;
 	}
@@ -133,8 +131,8 @@ bool Task::addChildrenTasksToPool()
 void Task::onChildFinish(RefCountPtr<Task> child)
 {
 	TinyAssert(_taskStatus == TaskStatus::WAIT_FOR_CHILDREN_FINISH);
-	--_unfinishChildrenTaskNumber;
-	if (_unfinishChildrenTaskNumber == 0)
+	int unfinishedChild = --_unfinishChildrenTaskNumber;
+	if (unfinishedChild == 0)
 	{
 		if (!addChildrenTasksToPool())
 			finish();

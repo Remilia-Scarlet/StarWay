@@ -592,13 +592,14 @@ TEST(Ash, TaskRingBufferTest)
 	};
 	{
 		const int THREAD_NUM = 16;
-		const size_t ITEM_NUM = 500000;
-		TaskRingBuffer<Data> ringBuffer;
+		const size_t ITEM_NUM = 5000000;
+		TaskRingBuffer<Data,false> ringBuffer;
 
 		std::vector<std::thread> push_threads;
 		std::vector<std::thread> pop_threads;
 
 		std::vector<Data> origin_data;
+		origin_data.reserve(ITEM_NUM);
 		for (int i = 0; i < ITEM_NUM; ++i)
 		{
 			char tmp[10];
@@ -660,29 +661,85 @@ TEST(Ash, TaskRingBufferTest)
 
 TEST(Ash, ThreadPoolTest)
 {
-	constexpr int threadNumber = 16;
+	//task
+	{
+		constexpr int TASK_NUM = 13;
+		std::atomic_int currentIndex = 0;
+		std::vector<int> result(static_cast<size_t>(TASK_NUM));
+		auto worker = [&currentIndex, &result](Task* task, int myIndex)
+		{
+			int i = currentIndex++;
+			result[i] = myIndex;
+		};
+		std::vector<TaskPtr> tasks;
+		for(int i = 0 ; i < TASK_NUM; ++i)
+		{
+			tasks.emplace_back(new Task(std::bind(worker, std::placeholders::_1, i)));
+		}
+		tasks[1]->setWorkerFunction([&tasks, &worker](Task* self)
+		{
+			self->addChildTask(std::move(tasks[3]));
+			worker(self, 1);
+		});
+		tasks[4]->setWorkerFunction([&tasks, &worker](Task* self)
+		{
+			self->addNextTask(std::move(tasks[11]));
+			self->addChildTask(std::move(tasks[5]));
+			self->addChildTask(std::move(tasks[6]));
+			self->addFenceTask();
+			self->addChildTask(std::move(tasks[10]));
+			self->addEndTask(std::move(tasks[12]));
+			self->addFenceTask();
+			self->addFenceTask();
+			self->addFenceTask();
+			worker(self, 4);
+		});
+		tasks[1]->addChildTask(std::move(tasks[2]));
+		tasks[1]->addEndTask(std::move(tasks[4]));
+		tasks[0]->addNextTask(std::move(tasks[1]));
+
+		tasks[6]->addFenceTask();
+		tasks[6]->addFenceTask();
+		tasks[6]->addChildTask(std::move(tasks[7]));
+		tasks[6]->addChildTask(std::move(tasks[8]));
+		tasks[6]->addFenceTask();
+		tasks[6]->addFenceTask();
+		tasks[6]->addChildTask(std::move(tasks[9]));
+
+		std::atomic_bool finished = false;
+		std::condition_variable condi;
+		tasks[12]->addEndTask(TaskPtr(new Task([&finished, &condi](Task*)
+		{
+			finished = true;
+			condi.notify_all();
+		})));
+		ThreadPool threadPool(12);
+		threadPool.addTask(std::move(tasks[0]));
+		std::mutex mu;
+		std::unique_lock<std::mutex> lock(mu);
+		condi.wait(lock, [&finished]() {return finished.load(); });
+		std::vector<int> resultIndex(static_cast<size_t>(TASK_NUM));
+		for(int i = 0 ; i < result.size(); ++i)
+		{
+			resultIndex[result[i]] = i;
+		}
+		EXPECT_EQ(result[0], 0);
+		EXPECT_EQ(result[1], 1);
+		EXPECT_TRUE((result[2] == 2 && result[3] == 3) || (result[2] == 3 && result[3] == 2));
+		EXPECT_EQ(result[4], 4);
+		EXPECT_TRUE(result[11] == 10 || (result[11] == 11 && result[10] == 10));
+		EXPECT_EQ(result[12], 12);
+		EXPECT_TRUE(resultIndex[6] < resultIndex[7] && resultIndex[6] < resultIndex[8] && resultIndex[6] < resultIndex[9]);
+		EXPECT_TRUE(resultIndex[7] < resultIndex[9] && resultIndex[8] < resultIndex[9]);
+	}
+
+	constexpr int threadNumber = 12;
 	std::vector<int> numbers(2000000);
 	for (auto& i : numbers)
 	{
 		i = (rand() & 0xfff) << 12 | (rand() & 0xfff);
 	}
 
-	//task
-	{
-		std::atomic<int> num = 0;
-		TaskPtr task1 = TaskPtr(new Task());
-		TaskPtr task2 = TaskPtr(new Task([&num](Task*) {num++; }));
-		TaskPtr task3 = TaskPtr(new Task([&num](Task*) {num++; }));
-		TaskPtr task4 = TaskPtr(new Task());
-		TaskPtr task5 = TaskPtr(new Task());
-		TaskPtr task6 = TaskPtr(new Task());
-		task1->addChildTask(task2);
-		task1->setWorkerFunction([&task3](Task* self) {self->addChildTask(task3); });
-		ThreadPool threadPool(1);
-		threadPool.addTask(task1);
-		while (task1->getTaskStatus() != TaskStatus::FINISHED)std::this_thread::yield();
-		EXPECT_EQ(num.load(), 2);
-	}
 
 	//MultiThread quick sort
 	{
@@ -693,6 +750,11 @@ TEST(Ash, ThreadPoolTest)
 				std::sort(arr + begin, arr + end);
 				return;
 			}
+			int mid = (end - begin) / 2;
+			if (arr[begin] > arr[mid])std::swap(arr[begin], arr[mid]);
+			if (arr[mid] > arr[end - 1])std::swap(arr[mid], arr[end - 1]);
+			if (arr[begin] > arr[mid])std::swap(arr[begin], arr[mid]);
+			std::swap(arr[begin], arr[mid]);
 			int guard = arr[begin];
 			int left = begin + 1;
 			for (int i = begin + 1; i < end; ++i)
@@ -722,14 +784,15 @@ TEST(Ash, ThreadPoolTest)
 			std::condition_variable condi;
 			sortTask->addEndTask(RefCountPtr<Task>(new Task([&finished, &condi](Task*)
 			{
-				finished = true; condi.notify_all();
+				finished = true; 
+				condi.notify_all();
 			})));
-			threadPool.addTask(sortTask);
+			threadPool.addTask(std::move(sortTask));
 			condi.wait(lock, [&finished]() {return finished.load(); });
 		}
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> diff = end - start;
-		DebugString("Sorted size=%ld random int array, MultiThread cost: %f seconds", data.size(), diff.count());
+		DebugString("Sorted size=%ld random int array, MultiThread quick sort cost: %f seconds", data.size(), diff.count());
 		bool orderIsRight = true;
 		for (int i = 1; i < (int)data.size(); ++i)
 		{
@@ -773,7 +836,7 @@ TEST(Ash, ThreadPoolTest)
 		{
 			if(size <= 32)
 			{
-				std::_Insertion_sort_unchecked(arr, arr + size, std::less<>());	// small
+				std::sort(arr, arr + size);	// small
 			}
 			else
 			{
@@ -782,9 +845,9 @@ TEST(Ash, ThreadPoolTest)
 				TaskPtr rightTask = MakeRefCountPtr<Task>(std::bind(mergeSort, std::placeholders::_1, arr + mid, size - mid));;
 				task->addChildTask(leftTask);
 				task->addChildTask(rightTask);
-
+				task->addFenceTask();
 				TaskPtr mergeTask = MakeRefCountPtr<Task>(std::bind(mergeArray, arr, size));
-				task->addEndTask(mergeTask);
+				task->addChildTask(mergeTask);
 			}
 		};
 		//MultiThread merge sort
@@ -794,8 +857,18 @@ TEST(Ash, ThreadPoolTest)
 			auto start = std::chrono::system_clock::now();
 			{
 				TaskPtr task = MakeRefCountPtr<Task>(std::bind(mergeSort, std::placeholders::_1, data.data(), (int)data.size()));
+				
+				std::atomic<bool> finished = false;
+				std::mutex mu;
+				std::unique_lock<std::mutex> lock(mu);
+				std::condition_variable condi;
+				task->addEndTask(RefCountPtr<Task>(new Task([&finished, &condi](Task*)
+					{
+						finished = true;
+						condi.notify_all();
+					})));
 				threadPool.addTask(std::move(task));
-			//	task->blockTillFinished();
+				condi.wait(lock, [&finished]() {return finished.load(); });
 			}
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> diff = end - start;

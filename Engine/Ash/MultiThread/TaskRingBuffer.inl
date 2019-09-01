@@ -89,7 +89,8 @@ std::optional<T> TaskRingBuffer<T, RESIZE_ON_FULL>::popFront()
 	while (!_isExiting.load())
 	{
 		int32_t currentFront = _front.load();
-		if (currentFront == _back || _blockForFull.load())//empty or full
+		int32_t currentBack = _back.load();
+		if (currentFront == currentBack || _blockForFull.load())//empty or full resize
 		{
 			NumGuard popingWaitingThreadNumGuard(_popingWaitingThreadNum);
 			std::unique_lock<std::mutex> lock(_waitingForPushMtx);
@@ -99,8 +100,14 @@ std::optional<T> TaskRingBuffer<T, RESIZE_ON_FULL>::popFront()
 		else
 		{
 			//CAS popping the front
-			if(!_front.compare_exchange_strong(currentFront, (currentFront + 1) % _capacity))
+			if(!_front.compare_exchange_weak(currentFront, (currentFront + 1) % _capacity))
 				continue;
+			Status sta = _dataFlag[currentFront];
+			//TinyAssert(sta == Status::WRITING || sta == Status::FINISH_WRITING);
+			if(sta != Status::WRITING && sta != Status::FINISH_WRITING)
+			{
+				int a = 0;
+			}
 			//wait for writing finish
 			while (_dataFlag[currentFront] != Status::FINISH_WRITING)
 				std::this_thread::yield();

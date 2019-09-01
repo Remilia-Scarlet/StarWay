@@ -123,6 +123,7 @@ protected:
 	std::vector<RefCountPtr<Task>> _endTasks;
 	bool _iAmChildOfOtherTask = false;
 	WeakRefPtr<Task> _parentOrFormerTask; //If _iAmChildOfOtherTask is false, _parentOrFormerTask is former task. Otherwise it's parent task
+	RefCountPtr<Task> _parent; //Add strong ref count to parent to keep parent alive
 	std::atomic<int> _unfinishChildrenTaskNumber{ 0 };
 	ThreadPool* _threadPool{ nullptr };
 };
