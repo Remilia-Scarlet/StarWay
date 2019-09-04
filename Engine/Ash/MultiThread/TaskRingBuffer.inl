@@ -50,7 +50,7 @@ void TaskRingBuffer<T, RESIZE_ON_FULL>::pushBack(T elem)
 					_blockForFull = true;
 				}
 				//wait till all popping and pushing threads are waiting or already exiting
-				while (_popingThreadNum != _popingWaitingThreadNum)
+				while (!(_popingThreadNum.load() == _popingWaitingThreadNum.load() || _popingThreadNum.load() == 0))
 					std::this_thread::yield();
 				while (_workingPushingThreadNum != 0)
 					std::this_thread::yield();
@@ -58,6 +58,7 @@ void TaskRingBuffer<T, RESIZE_ON_FULL>::pushBack(T elem)
 				{
 					std::unique_lock<std::mutex> lock(_waitingForPushMtx);
 					_blockForFull = false;
+					_waitingForPushCondi.notify_all();
 				}
 			}
 			else
@@ -66,6 +67,7 @@ void TaskRingBuffer<T, RESIZE_ON_FULL>::pushBack(T elem)
 					std::this_thread::yield();
 			}
 			assert(!isFull());
+			back = _back.load();
 			_dataFlag[back].lock();
 		}
 
@@ -92,14 +94,20 @@ std::optional<T> TaskRingBuffer<T, RESIZE_ON_FULL>::popFront()
 
 	NumGuard popingThreadNumGuard(_popingThreadNum);
 
+	while (_blockForFull.load())//full resize
+	{
+		NumGuard popingWaitingThreadNumGuard(_popingWaitingThreadNum);
+		std::unique_lock<std::mutex> waitingForPushLock(_waitingForPushMtx);
+		_waitingForPushCondi.wait(waitingForPushLock, [this]() {return !_blockForFull; });
+	}
+
 	int32_t front;
 	{
 		std::unique_lock<std::mutex> lock(_popMutex);
-		if(isEmpty() || _blockForFull.load())//empty or full resize
+		while(isEmpty())//empty
 		{
-			NumGuard popingWaitingThreadNumGuard(_popingWaitingThreadNum);
 			std::unique_lock<std::mutex> waitingForPushLock(_waitingForPushMtx);
-			_waitingForPushCondi.wait(waitingForPushLock, [this]() {return (!isEmpty() && !_blockForFull) || _isExiting; });
+			_waitingForPushCondi.wait(waitingForPushLock, [this]() {return !isEmpty() || _isExiting; });
 			if (_isExiting)
 				return {};
 		}

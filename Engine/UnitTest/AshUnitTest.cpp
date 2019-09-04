@@ -593,7 +593,7 @@ TEST(Ash, TaskRingBufferTest)
 	{
 		const int THREAD_NUM = 16;
 		const size_t ITEM_NUM = 5000000;
-		TaskRingBuffer<Data,true> ringBuffer;
+		TaskRingBuffer<Data> ringBuffer;
 
 		std::vector<std::thread> push_threads;
 		std::vector<std::thread> pop_threads;
@@ -613,6 +613,7 @@ TEST(Ash, TaskRingBufferTest)
 		std::atomic_int push_index{ 0 };
 		std::atomic_int pop_index{ 0 };
 
+		auto start = std::chrono::system_clock::now();
 		for (int i = 0; i < THREAD_NUM; ++i)
 		{
 			pop_threads.emplace_back([i, &pop_index, &ringBuffer, &result_data]()
@@ -642,6 +643,9 @@ TEST(Ash, TaskRingBufferTest)
 		}
 		
 		while (pop_index < ITEM_NUM)std::this_thread::yield();
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		DebugString("TaskRingBuffer: %f seconds", diff.count());
 		ringBuffer.setExiting();
 		for (auto& th : pop_threads)
 		{
