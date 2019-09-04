@@ -593,7 +593,7 @@ TEST(Ash, TaskRingBufferTest)
 	{
 		const int THREAD_NUM = 16;
 		const size_t ITEM_NUM = 5000000;
-		TaskRingBuffer<Data,false> ringBuffer;
+		TaskRingBuffer<Data,true> ringBuffer;
 
 		std::vector<std::thread> push_threads;
 		std::vector<std::thread> pop_threads;

@@ -2,16 +2,10 @@
 
 template <class T, bool RESIZE_ON_FULL>
 inline TaskRingBuffer<T, RESIZE_ON_FULL>::TaskRingBuffer(int32_t capacity/* = INITIAL_CAPACITY*/)
+	:_dataFlag(static_cast<size_t>(capacity))
 {
 	_capacity = capacity;
 	_data = (T*)new uint8_t[_capacity * sizeof(T)]; //TODO: aligned?
-
-	std::vector<std::atomic<Status>> tmpv(_capacity); 
-	_dataFlag.swap(tmpv);//unable to use resize and reserve duo to std::atomic uncopyable and unmoveable
-	for (auto& data : _dataFlag)
-	{
-		data = Status::UNINITIALIZED;
-	}
 }
 
 template <class T, bool RESIZE_ON_FULL>
@@ -38,45 +32,54 @@ inline TaskRingBuffer<T, RESIZE_ON_FULL>::~TaskRingBuffer()
 template <class T, bool RESIZE_ON_FULL>
 void TaskRingBuffer<T, RESIZE_ON_FULL>::pushBack(T elem)
 {
-	NumGuard pushingThreadNumGuard(_pushingThreadNum);
-
 	if (_isExiting)
 		return;
 
+	NumGuard pushingThreadNumGuard(_pushingThreadNum);
+
 	int32_t back;
 	{
-		std::unique_lock<std::mutex> lock(_resizeMutex);
+		std::unique_lock<std::mutex> lock(_pushMutex);
 		back = _back.load();
-		if (isFull(_front, back) || _dataFlag[back] != Status::UNINITIALIZED)
+		if (isFull() || !_dataFlag[back].try_lock())
 		{
 			if (RESIZE_ON_FULL)
 			{
-				_blockForFull = true;
+				{
+					std::unique_lock<std::mutex> lock(_waitingForPushMtx);
+					_blockForFull = true;
+				}
 				//wait till all popping and pushing threads are waiting or already exiting
 				while (_popingThreadNum != _popingWaitingThreadNum)
 					std::this_thread::yield();
 				while (_workingPushingThreadNum != 0)
 					std::this_thread::yield();
 				increaseCapacity();
-				_blockForFull = false;
+				{
+					std::unique_lock<std::mutex> lock(_waitingForPushMtx);
+					_blockForFull = false;
+				}
 			}
 			else
 			{
-				while (isFull(_front, back) || _dataFlag[back] != Status::UNINITIALIZED)
+				while (isFull())
 					std::this_thread::yield();
 			}
+			assert(!isFull());
+			_dataFlag[back].lock();
 		}
-		back = _back.load();
-		TinyAssert(!isFull(_front, back) && _dataFlag[back] == Status::UNINITIALIZED);
-		_dataFlag[back] = Status::WRITING;
-		_back = (_back + 1) % _capacity;
+
+		{
+			std::unique_lock<std::mutex> lock(_waitingForPushMtx);
+			_back = (_back + 1) % _capacity;
+		}
 		++_workingPushingThreadNum;
 	}
 
 	//push back
 	new (_data + back)T(std::move(elem));
 
-	_dataFlag[back] = Status::FINISH_WRITING;
+	_dataFlag[back].unlock();
 	_waitingForPushCondi.notify_one();
 	--_workingPushingThreadNum;
 }
@@ -84,58 +87,53 @@ void TaskRingBuffer<T, RESIZE_ON_FULL>::pushBack(T elem)
 template <class T, bool RESIZE_ON_FULL>
 std::optional<T> TaskRingBuffer<T, RESIZE_ON_FULL>::popFront()
 {
+	if (_isExiting)
+		return {};
+
 	NumGuard popingThreadNumGuard(_popingThreadNum);
 
-	while (!_isExiting.load())
+	int32_t front;
 	{
-		int32_t currentFront = _front.load();
-		int32_t currentBack = _back.load();
-		if (currentFront == currentBack || _blockForFull.load())//empty or full resize
+		std::unique_lock<std::mutex> lock(_popMutex);
+		if(isEmpty() || _blockForFull.load())//empty or full resize
 		{
 			NumGuard popingWaitingThreadNumGuard(_popingWaitingThreadNum);
-			std::unique_lock<std::mutex> lock(_waitingForPushMtx);
-			_waitingForPushCondi.wait(lock, [this]() {return (!isEmpty() && !_blockForFull) || _isExiting; });
-			//while (!((!isEmpty() && !_blockForFull) || _isExiting));
+			std::unique_lock<std::mutex> waitingForPushLock(_waitingForPushMtx);
+			_waitingForPushCondi.wait(waitingForPushLock, [this]() {return (!isEmpty() && !_blockForFull) || _isExiting; });
+			if (_isExiting)
+				return {};
 		}
-		else
-		{
-			//CAS popping the front
-			if(!_front.compare_exchange_weak(currentFront, (currentFront + 1) % _capacity))
-				continue;
-			Status sta = _dataFlag[currentFront];
-			//TinyAssert(sta == Status::WRITING || sta == Status::FINISH_WRITING);
-			if(sta != Status::WRITING && sta != Status::FINISH_WRITING)
-			{
-				int a = 0;
-			}
-			//wait for writing finish
-			while (_dataFlag[currentFront] != Status::FINISH_WRITING)
-				std::this_thread::yield();
-			
-			//Now currentFront is mine
-			_dataFlag[currentFront] = Status::READING;
+		assert(!isEmpty());
+		front = _front.load();
 
-			T ret{ std::move(_data[currentFront]) };
-			_data[currentFront].~T();
-
-			_dataFlag[currentFront] = Status::UNINITIALIZED;
-
-			return std::optional<T>(std::move(ret));
-		}
+		_dataFlag[front].lock();
+		_front = (front + 1) % _capacity;
+		
 	}
-	return {};
+
+	T ret{ std::move(_data[front]) };
+	_data[front].~T();
+
+	_dataFlag[front].unlock();
+
+	return std::optional<T>(std::move(ret));
 }
 
 template <class T, bool RESIZE_ON_FULL>
 inline void TaskRingBuffer<T, RESIZE_ON_FULL>::setExiting()
 {
-	_isExiting = true;
+	{
+		std::unique_lock<std::mutex> lock(_waitingForPushMtx);
+		_isExiting = true;
+	}
 	_waitingForPushCondi.notify_all();
 }
 
 template <class T, bool RESIZE_ON_FULL>
-bool TaskRingBuffer<T, RESIZE_ON_FULL>::isFull(int32_t front, int32_t back) const
+bool TaskRingBuffer<T, RESIZE_ON_FULL>::isFull() const
 {
+	const int32_t front = _front.load();
+	const int32_t back = _back.load();
 	return (front <= back ? front + _capacity - back : front - back) <= 1;
 }
 
@@ -156,9 +154,7 @@ inline void TaskRingBuffer<T, RESIZE_ON_FULL>::increaseCapacity()
 	//alloc new space
 	_capacity = int32_t(_capacity * 1.2);
 	_data = (T*)new uint8_t[_capacity * sizeof(T)]; //TODO: aligned?
-	std::vector<std::atomic<Status>> tmpFlag(_capacity);
-	for (auto& flag : tmpFlag) 
-		flag = Status::UNINITIALIZED; 
+	std::vector<std::mutex> tmpVec(static_cast<size_t>(_capacity));
 	_front = 0;
 	_back = 0;
 
@@ -167,12 +163,11 @@ inline void TaskRingBuffer<T, RESIZE_ON_FULL>::increaseCapacity()
 	{
 		int newIndex = _back;
 		new (_data + newIndex) T(std::move(oldData[begin]));
-		tmpFlag[newIndex] = _dataFlag[begin].load();
 
 		oldData[begin].~T();
 		begin = (begin + 1) % oldCapacity;
 		++_back;
 	}
 	delete[] (uint8_t*)(oldData);
-	std::swap(_dataFlag, tmpFlag);
+	_dataFlag.swap(tmpVec);
 }

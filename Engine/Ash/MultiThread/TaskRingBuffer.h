@@ -31,13 +31,6 @@ protected:
 		~NumGuard() { --_num; }
 		std::atomic<int32_t>& _num;
 	};
-	enum class Status : uint8_t
-	{
-		UNINITIALIZED,
-		WRITING,
-		FINISH_WRITING,
-		READING
-	};
 protected:
 	std::atomic<int32_t> _popingThreadNum{ 0 };
 	std::atomic<int32_t> _popingWaitingThreadNum{ 0 };
@@ -46,15 +39,16 @@ protected:
 	std::atomic<bool> _isExiting{ false };
 	std::atomic<bool> _blockForFull{ false };
 	std::mutex _waitingForPushMtx;
-	std::mutex _resizeMutex;
+	std::mutex _pushMutex;
+	std::mutex _popMutex;
 	std::condition_variable _waitingForPushCondi;
 	T* _data = nullptr;
-	std::vector<std::atomic<Status>> _dataFlag;
+	std::vector<std::mutex> _dataFlag;
 	int32_t _capacity = 0;
 	std::atomic<int32_t> _front{ 0 };
 	std::atomic<int32_t> _back{ 0 };
 
-	bool isFull(int32_t front, int32_t back) const;
+	bool isFull() const;
 	bool isEmpty() const;
 	void increaseCapacity();
 };
