@@ -583,30 +583,21 @@ TEST(Ash, RingBufferTest)
 
 TEST(Ash, TaskRingBufferTest)
 {
+	const int THREAD_NUM = 5;
+	constexpr size_t ITEM_NUM = 50000;
 	struct Data
 	{
-		Data():num(0), str(""){}
-		Data(int num, const char* str):num(num),str(str){}
+		Data() :num(0), str("") {}
+		Data(int num, const char* str) :num(num), str(str) {}
 		std::string str;
 		int num;
 	};
+
 	{
-		const int THREAD_NUM = 16;
-		const size_t ITEM_NUM = 5000000;
 		TaskRingBuffer<Data> ringBuffer;
 
 		std::vector<std::thread> push_threads;
 		std::vector<std::thread> pop_threads;
-
-		std::vector<Data> origin_data;
-		origin_data.reserve(ITEM_NUM);
-		for (int i = 0; i < ITEM_NUM; ++i)
-		{
-			char tmp[10];
-			sprintf(tmp, "%d", i);
-			origin_data.emplace_back(i, tmp);
-		}
-		std::vector<Data> origin_copy{ origin_data };
 
 		std::vector<Data> result_data{ ITEM_NUM };
 
@@ -616,7 +607,7 @@ TEST(Ash, TaskRingBufferTest)
 		auto start = std::chrono::system_clock::now();
 		for (int i = 0; i < THREAD_NUM; ++i)
 		{
-			pop_threads.emplace_back([i, &pop_index, &ringBuffer, &result_data]()
+			pop_threads.emplace_back([&pop_index, &ringBuffer, &result_data]()
 			{
 				while (true)
 				{
@@ -630,22 +621,25 @@ TEST(Ash, TaskRingBufferTest)
 
 		for (int i = 0; i < THREAD_NUM; ++i)
 		{
-			push_threads.emplace_back([i, &push_index, &ringBuffer, &origin_data]()
+			push_threads.emplace_back([&push_index, &ringBuffer, &ITEM_NUM]()
 			{
 				while (true)
 				{
 					int my_index = push_index++;
-					if (my_index >= (int)origin_data.size())
+					if (my_index >= ITEM_NUM)
 						return;
-					ringBuffer.pushBack(std::move(origin_data[my_index]));
+
+					char tmp[10];
+					sprintf(tmp, "%d", my_index);
+					ringBuffer.pushBack(std::move(Data(my_index,tmp)));
 				}
 			});
 		}
-		
+
 		while (pop_index < ITEM_NUM)std::this_thread::yield();
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> diff = end - start;
-		DebugString("TaskRingBuffer: %f seconds", diff.count());
+		//DebugString("TaskRingBuffer: %f seconds", diff.count());
 		ringBuffer.setExiting();
 		for (auto& th : pop_threads)
 		{
@@ -655,10 +649,16 @@ TEST(Ash, TaskRingBufferTest)
 		{
 			th.join();
 		}
-		std::sort(result_data.begin(), result_data.end(), [](Data& a, Data& b) {return a.num < b.num; });
+		std::vector<bool> allItems((size_t)ITEM_NUM);
 		for (int i = 0; i < ITEM_NUM; ++i)
 		{
-			EXPECT_EQ(origin_copy[i].str, result_data[i].str);
+			int index = result_data[i].num;
+			EXPECT_EQ(std::to_string(index), result_data[i].str);
+			allItems[index] = true;
+		}
+		for (auto& b : allItems)
+		{
+			EXPECT_TRUE(b);
 		}
 	}
 }
@@ -738,7 +738,7 @@ TEST(Ash, ThreadPoolTest)
 	}
 
 	constexpr int threadNumber = 12;
-	std::vector<int> numbers(2000000);
+	std::vector<int> numbers(20000000);
 	for (auto& i : numbers)
 	{
 		i = (rand() & 0xfff) << 12 | (rand() & 0xfff);
@@ -770,10 +770,12 @@ TEST(Ash, ThreadPoolTest)
 				}
 			}
 			std::swap(arr[begin], arr[left - 1]);
-			RefCountPtr<Task> sortLeft = RefCountPtr<Task>(new Task(std::bind(quickSort, std::placeholders::_1, arr, begin, left - 1)));
-			RefCountPtr<Task> sortRight = RefCountPtr<Task>(new Task(std::bind(quickSort, std::placeholders::_1, arr, left, end)));
-			task->addChildTask(std::move(sortLeft));
-			task->addChildTask(std::move(sortRight));
+			quickSort(nullptr, arr, begin, left - 1);
+			quickSort(nullptr, arr, left, end);
+			//RefCountPtr<Task> sortLeft = RefCountPtr<Task>(new Task(std::bind(quickSort, std::placeholders::_1, arr, begin, left - 1)));
+			//RefCountPtr<Task> sortRight = RefCountPtr<Task>(new Task(std::bind(quickSort, std::placeholders::_1, arr, left, end)));
+			//task->addChildTask(std::move(sortLeft));
+			//task->addChildTask(std::move(sortRight));
 		};
 
 		std::vector<int> data = numbers;

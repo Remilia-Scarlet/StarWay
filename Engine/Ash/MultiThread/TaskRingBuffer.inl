@@ -158,7 +158,7 @@ inline void TaskRingBuffer<T, RESIZE_ON_FULL>::increaseCapacity()
 	int32_t end = _back;
 
 	//alloc new space
-	_capacity = int32_t(_capacity * 1.2);
+	_capacity = int32_t(_capacity + _capacity / 2);
 	_data = (T*)new uint8_t[_capacity * sizeof(T)]; //TODO: aligned?
 	std::vector<std::mutex> tmpVec(static_cast<size_t>(_capacity));
 	_front = 0;
