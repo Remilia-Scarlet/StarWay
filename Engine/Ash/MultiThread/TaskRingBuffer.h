@@ -25,17 +25,23 @@ public:
 	// Set exiting flag, All waiting popping thread will exit with an invalid optional return value. Will automatically be called when constructing.
 	void setExiting();
 protected:
+	template<class NumType>
 	struct NumGuard
 	{
-		NumGuard(std::atomic<int32_t>& num) :_num(num) { ++_num; }
-		~NumGuard() { --_num; }
-		std::atomic<int32_t>& _num;
+		NumGuard(NumType& num) :_num(num) { activeGuard(); }
+		NumGuard(NumType& num, bool deferred) :_num(num) { if (!deferred) activeGuard(); }
+		~NumGuard() { deactiveGuard(); }
+		void activeGuard() { if (!_needClear) { _needClear = true; ++_num; } }
+		void deactiveGuard() { if (_needClear) { _needClear = false;  --_num; } }
+		NumType& _num;
+		bool _needClear{ false };
 	};
 protected:
 	std::atomic<int32_t> _popingThreadNum{ 0 };
 	std::atomic<int32_t> _popingWaitingThreadNum{ 0 };
 	std::atomic<int32_t> _pushingThreadNum{ 0 };
 	std::atomic<int32_t> _workingPushingThreadNum{ 0 };
+	std::atomic<int32_t> _workingPopThreadNum{ 0 };
 	std::atomic<bool> _isExiting{ false };
 	std::atomic<bool> _blockForFull{ false };
 	std::mutex _waitingForPushMtx;

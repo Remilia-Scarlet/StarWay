@@ -32,10 +32,9 @@ inline TaskRingBuffer<T, RESIZE_ON_FULL>::~TaskRingBuffer()
 template <class T, bool RESIZE_ON_FULL>
 void TaskRingBuffer<T, RESIZE_ON_FULL>::pushBack(T elem)
 {
+	NumGuard pushingThreadNumGuard(_pushingThreadNum);
 	if (_isExiting)
 		return;
-
-	NumGuard pushingThreadNumGuard(_pushingThreadNum);
 
 	int32_t back;
 	{
@@ -50,7 +49,7 @@ void TaskRingBuffer<T, RESIZE_ON_FULL>::pushBack(T elem)
 					_blockForFull = true;
 				}
 				//wait till all popping and pushing threads are waiting or already exiting
-				while (!(_popingThreadNum.load() == _popingWaitingThreadNum.load() || _popingThreadNum.load() == 0))
+				while (!(_workingPopThreadNum.load() == _popingWaitingThreadNum.load()))
 					std::this_thread::yield();
 				while (_workingPushingThreadNum != 0)
 					std::this_thread::yield();
@@ -89,25 +88,22 @@ void TaskRingBuffer<T, RESIZE_ON_FULL>::pushBack(T elem)
 template <class T, bool RESIZE_ON_FULL>
 std::optional<T> TaskRingBuffer<T, RESIZE_ON_FULL>::popFront()
 {
+	NumGuard popingThreadNumGuard(_popingThreadNum);
+
 	if (_isExiting)
 		return {};
 
-	NumGuard popingThreadNumGuard(_popingThreadNum);
-
-	while (_blockForFull.load())//full resize
-	{
-		NumGuard popingWaitingThreadNumGuard(_popingWaitingThreadNum);
-		std::unique_lock<std::mutex> waitingForPushLock(_waitingForPushMtx);
-		_waitingForPushCondi.wait(waitingForPushLock, [this]() {return !_blockForFull; });
-	}
-
 	int32_t front;
+	std::unique_lock<std::mutex> lock(_popMutex,std::defer_lock);
+	NumGuard workingPopThreadGuard(_workingPopThreadNum, true);
 	{
-		std::unique_lock<std::mutex> lock(_popMutex);
-		while(isEmpty())//empty
+		lock.lock();
+		workingPopThreadGuard.activeGuard();
+		while(isEmpty() || _blockForFull.load() || _isExiting)//empty
 		{
+			NumGuard popingWaitingThreadNumGuard(_popingWaitingThreadNum);
 			std::unique_lock<std::mutex> waitingForPushLock(_waitingForPushMtx);
-			_waitingForPushCondi.wait(waitingForPushLock, [this]() {return !isEmpty() || _isExiting; });
+			_waitingForPushCondi.wait(waitingForPushLock, [this]() {return (!isEmpty() || _isExiting) && !_blockForFull; });
 			if (_isExiting)
 				return {};
 		}
@@ -123,6 +119,8 @@ std::optional<T> TaskRingBuffer<T, RESIZE_ON_FULL>::popFront()
 	_data[front].~T();
 
 	_dataFlag[front].unlock();
+	lock.unlock();
+	workingPopThreadGuard.deactiveGuard();
 
 	return std::optional<T>(std::move(ret));
 }
