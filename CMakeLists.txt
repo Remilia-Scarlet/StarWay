@@ -12,7 +12,6 @@ endif()
 add_subdirectory (Engine/UnitTest)
 
 #Ash
-#include_directories ("${PROJECT_SOURCE_DIR}/Engine/Ash")
 add_subdirectory (Engine/Ash)
 set (EXTRA_LIBS ${EXTRA_LIBS} Ash)
 

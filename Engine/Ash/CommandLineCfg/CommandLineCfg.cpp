@@ -5,7 +5,7 @@
 #include <cctype>
 #include "Ash/CommonStateMachine/StateMachine.h"
 
-bool CommandLineCfg::init(const char* commandLine)
+bool Ash::CommandLineCfg::init(const char* commandLine)
 {
 	bool result = spliteCommandLine(commandLine);
 	if (!result)
@@ -13,7 +13,7 @@ bool CommandLineCfg::init(const char* commandLine)
 	return _initImp();
 }
 
-std::string CommandLineCfg::generateHelpString() const
+std::string Ash::CommandLineCfg::generateHelpString() const
 {
 	std::string ret;
 	for (const auto& pa : _registedCommandLines)
@@ -24,7 +24,7 @@ std::string CommandLineCfg::generateHelpString() const
 	return ret;
 }
 
-bool CommandLineCfg::_initImp()
+bool Ash::CommandLineCfg::_initImp()
 {
 	for (auto tokenIt = _splitedCommandLine.begin(); tokenIt != _splitedCommandLine.end();++tokenIt)
 	{
@@ -45,7 +45,7 @@ bool CommandLineCfg::_initImp()
 	return true;
 }
 
-bool CommandLineCfg::spliteCommandLine(const char* commandLine)
+bool Ash::CommandLineCfg::spliteCommandLine(const char* commandLine)
 {
 	_splitedCommandLine.clear();
 	TinyAssert(commandLine);

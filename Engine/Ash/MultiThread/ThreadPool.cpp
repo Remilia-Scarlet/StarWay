@@ -2,6 +2,8 @@
 #include "ThreadPool.h"
 #include <algorithm>
 
+#include "Ash/MultiThread/TaskGraph.h"
+
 ThreadPool::Thread::Thread(ThreadPool& threadPool)
 	: _threadPool(threadPool)
 {
@@ -53,4 +55,20 @@ RefCountPtr<Task> ThreadPool::getNextTask()
 {
 	std::optional<RefCountPtr<Task>> task = _waitingTasks.popFront();
 	return task ? *task : nullptr;
+}
+
+void Ash::ThreadPool::runTaskGraph(TaskGraph* taskGraph)
+{
+	if(!taskGraph->getStartTask())
+	{
+		TinyAssert(false, "No start task is set");
+		return;
+	}
+
+	//compile task graph
+
+	//check loop
+
+	//add task
+	
 }

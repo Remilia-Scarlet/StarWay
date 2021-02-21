@@ -19,3 +19,4 @@ ipch/*
 *.db
 *.user
 *runtimedependencies.txt
+/build/
