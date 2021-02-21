@@ -3,18 +3,18 @@
 #include <thread>
 #include <shared_mutex>
 #include <atomic>
-#include "Ash/MultiThread/Task.h"
-#include "Ash/MultiThread/TaskRingBuffer.h"
-#include "Ash/RefCountPointer/RefCountPtr.h"
-#include <set>
 #include <functional>
+
+#include "boost/lockfree/queue.hpp"
 
 namespace Ash
 {
 	class TaskGraph;
+	class Task;
 
 	class ThreadPool
 	{
+		friend class Task;
 	protected:
 		struct Thread
 		{
@@ -26,7 +26,7 @@ namespace Ash
 			~Thread();
 
 			ThreadPool& _threadPool;
-			RefCountPtr<Task> _runningTask;
+			Task* _runningTask = nullptr;
 			std::thread _thread{ std::bind(&Thread::run, this) };
 
 			void run();
@@ -43,9 +43,12 @@ namespace Ash
 		// one task can only be added once
 		void runTaskGraph(TaskGraph* taskGraph);
 	protected:
-		RefCountPtr<Task> getNextTask();
-		TaskRingBuffer<RefCountPtr<Task>> _waitingTasks;
+		void pushTask(Task* task);
+		Task* popTask();
+		
+		boost::lockfree::queue<Task*, boost::lockfree::fixed_sized<false>> _waitingTasks;
 		std::vector<std::unique_ptr<Thread> > _threads;
+		std::atomic_bool _exiting = false;
 	};
 
 }

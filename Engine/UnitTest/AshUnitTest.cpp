@@ -133,7 +133,7 @@ TEST(Ash, ToUpperTest)
 
 TEST(Ash, CommonCommandLineTest)
 {
-	class CommandLineCfgTest : public CommandLineCfg
+	class CommandLineCfgTest : public Ash::CommandLineCfg
 	{
 	public:
 		DEFINE_COMMANDLINE_BOOL(Renderdoc, "/Renderdoc:Enable renderdoc in-app api"); //Add your bool or int or string commandline option here.
@@ -665,78 +665,6 @@ TEST(Ash, TaskRingBufferTest)
 
 TEST(Ash, ThreadPoolTest)
 {
-	//task
-	{
-		constexpr int TASK_NUM = 13;
-		std::atomic_int currentIndex = 0;
-		std::vector<int> result(static_cast<size_t>(TASK_NUM));
-		auto worker = [&currentIndex, &result](Task* task, int myIndex)
-		{
-			int i = currentIndex++;
-			result[i] = myIndex;
-		};
-		std::vector<TaskPtr> tasks;
-		for(int i = 0 ; i < TASK_NUM; ++i)
-		{
-			tasks.emplace_back(new Task(std::bind(worker, std::placeholders::_1, i)));
-		}
-		tasks[1]->setWorkerFunction([&tasks, &worker](Task* self)
-		{
-			self->addChildTask(std::move(tasks[3]));
-			worker(self, 1);
-		});
-		tasks[4]->setWorkerFunction([&tasks, &worker](Task* self)
-		{
-			self->addNextTask(std::move(tasks[11]));
-			self->addChildTask(std::move(tasks[5]));
-			self->addChildTask(std::move(tasks[6]));
-			self->addFenceTask();
-			self->addChildTask(std::move(tasks[10]));
-			self->addEndTask(std::move(tasks[12]));
-			self->addFenceTask();
-			self->addFenceTask();
-			self->addFenceTask();
-			worker(self, 4);
-		});
-		tasks[1]->addChildTask(std::move(tasks[2]));
-		tasks[1]->addEndTask(std::move(tasks[4]));
-		tasks[0]->addNextTask(std::move(tasks[1]));
-
-		tasks[6]->addFenceTask();
-		tasks[6]->addFenceTask();
-		tasks[6]->addChildTask(std::move(tasks[7]));
-		tasks[6]->addChildTask(std::move(tasks[8]));
-		tasks[6]->addFenceTask();
-		tasks[6]->addFenceTask();
-		tasks[6]->addChildTask(std::move(tasks[9]));
-
-		std::atomic_bool finished = false;
-		std::condition_variable condi;
-		tasks[12]->addEndTask(TaskPtr(new Task([&finished, &condi](Task*)
-		{
-			finished = true;
-			condi.notify_all();
-		})));
-		ThreadPool threadPool(12);
-		threadPool.addTask(std::move(tasks[0]));
-		std::mutex mu;
-		std::unique_lock<std::mutex> lock(mu);
-		condi.wait(lock, [&finished]() {return finished.load(); });
-		std::vector<int> resultIndex(static_cast<size_t>(TASK_NUM));
-		for(int i = 0 ; i < result.size(); ++i)
-		{
-			resultIndex[result[i]] = i;
-		}
-		EXPECT_EQ(result[0], 0);
-		EXPECT_EQ(result[1], 1);
-		EXPECT_TRUE((result[2] == 2 && result[3] == 3) || (result[2] == 3 && result[3] == 2));
-		EXPECT_EQ(result[4], 4);
-		EXPECT_TRUE(result[11] == 10 || (result[11] == 11 && result[10] == 10));
-		EXPECT_EQ(result[12], 12);
-		EXPECT_TRUE(resultIndex[6] < resultIndex[7] && resultIndex[6] < resultIndex[8] && resultIndex[6] < resultIndex[9]);
-		EXPECT_TRUE(resultIndex[7] < resultIndex[9] && resultIndex[8] < resultIndex[9]);
-	}
-
 	constexpr int threadNumber = 12;
 	std::vector<int> numbers(20000000);
 	for (auto& i : numbers)

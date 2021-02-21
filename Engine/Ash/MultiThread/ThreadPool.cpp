@@ -2,32 +2,37 @@
 #include "ThreadPool.h"
 #include <algorithm>
 
+
+#include "Ash/TinyAssert.h"
+#include "Ash/MultiThread/Task.h"
 #include "Ash/MultiThread/TaskGraph.h"
 
-ThreadPool::Thread::Thread(ThreadPool& threadPool)
+Ash::ThreadPool::Thread::Thread(ThreadPool& threadPool)
 	: _threadPool(threadPool)
 {
 }
 
-ThreadPool::Thread::~Thread()
+Ash::ThreadPool::Thread::~Thread()
 {
 }
 
 
-void ThreadPool::Thread::run()
+void Ash::ThreadPool::Thread::run()
 {
-	while (true)
+	while (!_threadPool._exiting)
 	{
-		_runningTask = _threadPool.getNextTask();
-		if(!_runningTask.isValid())
-			return;
+		_runningTask = _threadPool.popTask();
+		if(!_runningTask)
+		{
+			std::this_thread::yield();
+			continue;
+		}
 
 		_runningTask->run(_thread.get_id());
-		_runningTask.reset();
 	}		
 }
 
-ThreadPool::ThreadPool(int threadNumber)
+Ash::ThreadPool::ThreadPool(int threadNumber)
 {
 	for (int i = 0; i < threadNumber; ++i)
 	{
@@ -35,26 +40,26 @@ ThreadPool::ThreadPool(int threadNumber)
 	}
 }
 
-ThreadPool::~ThreadPool()
+Ash::ThreadPool::~ThreadPool()
 {
-	_waitingTasks.setExiting();
+	_exiting = true;
 	for (auto& th : _threads)
 	{
 		th->_thread.join();
 	}
 }
 
-void ThreadPool::addTask(RefCountPtr<Task> task)
+void Ash::ThreadPool::pushTask(Task* task)
 {
-	TinyAssert(task.isValid());
-	task->onAddedToThreadPool(this);
-	_waitingTasks.pushBack(std::move(task));
+	bool ret = _waitingTasks.push(task);
+	TinyAssert(ret);
 }
 
-RefCountPtr<Task> ThreadPool::getNextTask()
+Ash::Task* Ash::ThreadPool::popTask()
 {
-	std::optional<RefCountPtr<Task>> task = _waitingTasks.popFront();
-	return task ? *task : nullptr;
+	Task* task;
+	bool ret = _waitingTasks.pop(task);
+	return ret ? task : nullptr;
 }
 
 void Ash::ThreadPool::runTaskGraph(TaskGraph* taskGraph)
@@ -69,6 +74,6 @@ void Ash::ThreadPool::runTaskGraph(TaskGraph* taskGraph)
 
 	//check loop
 
-	//add task
-	
+	//push task
+	pushTask(taskGraph->getStartTask());
 }
