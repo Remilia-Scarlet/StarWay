@@ -22,7 +22,7 @@ enum class ObjectFlag
 	IS_SPOT_LIGHT
 };
 
-class Object : public RefCountObj
+class Object : public Ash::RefCountObj
 {
 public:
 	static ObjectPtr create(const std::string& objName);

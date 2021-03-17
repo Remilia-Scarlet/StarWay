@@ -1,37 +1,16 @@
-#include "AshCore.h"
+#include "Ash/AshCore.h"
 #include "Task.h"
 #include "Ash/TinyAssert.h"
 #include "ThreadPool.h"
-
-Ash::Task::Task()
-{
-}
 
 Ash::Task::Task(std::function<void(Task*)> worker)
 	:_worker(std::move(worker))
 {
 }
 
-Ash::Task::Task(std::function<void(Task*)> worker, std::shared_ptr<TaskUserData> userData)
-	:_userData(std::move(userData))
-	,_worker(std::move(worker))
-{
-}
-
 Ash::Task::~Task()
 {
 
-}
-
-
-const std::function<void(Ash::Task*)>& Ash::Task::getWorkerFunction() const
-{
-	return _worker;
-}
-
-void Ash::Task::setWorkerFunction(std::function<void(Task*)> worker)
-{
-	_worker = std::move(worker);
 }
 
 void Ash::Task::run(std::thread::id threadId)

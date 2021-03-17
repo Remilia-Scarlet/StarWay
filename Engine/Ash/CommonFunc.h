@@ -22,5 +22,3 @@ std::string toUpper(std::string str);
 typedef int64_t ObjectID;
 const static ObjectID INVALID_OBJECT_ID = 0;
 
-
-#define TINY_DEFINE_PTR(CALSSNAME) class CALSSNAME;typedef RefCountPtr<CALSSNAME> CALSSNAME##Ptr;typedef WeakRefPtr<CALSSNAME> CALSSNAME##WeakPtr

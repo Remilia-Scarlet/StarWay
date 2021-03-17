@@ -5,7 +5,7 @@ file(GLOB_RECURSE SOURCE_FILES FOLLOW_SYMLINKS CONFIGURE_DEPENDS *.cpp *.c *.h *
 source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${SOURCE_FILES})
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /YuAshCore.h")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /YuAsh/AshCore.h")
     set_source_files_properties(AshCore.cpp PROPERTIES COMPILE_FLAGS "/Yc")
 endif(MSVC)
 

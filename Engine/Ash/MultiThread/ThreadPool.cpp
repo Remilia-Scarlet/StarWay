@@ -1,11 +1,10 @@
-#include "AshCore.h"
+#include "Ash/AshCore.h"
 #include "ThreadPool.h"
-#include <algorithm>
 
+#include <algorithm>
 
 #include "Ash/TinyAssert.h"
 #include "Ash/MultiThread/Task.h"
-#include "Ash/MultiThread/TaskGraph.h"
 
 Ash::ThreadPool::Thread::Thread(ThreadPool& threadPool)
 	: _threadPool(threadPool)
@@ -49,31 +48,15 @@ Ash::ThreadPool::~ThreadPool()
 	}
 }
 
+Ash::TaskPtr Ash::ThreadPool::dispatchTask(std::function<void(Task*)> worker)
+{
+	TaskPtr task = TaskPtr{ new Task(std::move(worker)) };
+	pushTask(task.get());
+	return task;
+}
+
 void Ash::ThreadPool::pushTask(Task* task)
 {
-	bool ret = _waitingTasks.push(task);
-	TinyAssert(ret);
-}
-
-Ash::Task* Ash::ThreadPool::popTask()
-{
-	Task* task;
-	bool ret = _waitingTasks.pop(task);
-	return ret ? task : nullptr;
-}
-
-void Ash::ThreadPool::runTaskGraph(TaskGraph* taskGraph)
-{
-	if(!taskGraph->getStartTask())
-	{
-		TinyAssert(false, "No start task is set");
-		return;
-	}
-
-	//compile task graph
-
-	//check loop
-
-	//push task
-	pushTask(taskGraph->getStartTask());
+	task->addRef();
+	_waitingTasks.push(task);
 }

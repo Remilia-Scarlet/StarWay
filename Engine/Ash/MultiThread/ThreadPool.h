@@ -1,11 +1,12 @@
 #pragma once
 #include <vector>
 #include <thread>
-#include <shared_mutex>
 #include <atomic>
 #include <functional>
 
 #include "boost/lockfree/queue.hpp"
+
+#include "Ash/MultiThread/Task.h"
 
 namespace Ash
 {
@@ -33,16 +34,16 @@ namespace Ash
 		};
 	public:
 		ThreadPool(int threadNumber);
+		~ThreadPool();
+
+		TaskPtr dispatchTask(std::function<void(TaskPtr)> worker);
+		TaskPtr dispatchTask(std::function<void(TaskPtr)> worker, std::initializer_list<TaskPtr> parents);
+	protected:
 		ThreadPool(const ThreadPool&) = delete;
 		ThreadPool(ThreadPool&&) = delete;
 		ThreadPool& operator=(const ThreadPool&) = delete;
 		ThreadPool& operator=(ThreadPool&&) = delete;
-		~ThreadPool();
-	public:
-		// add a task to pool, if there are any free threads, this task can be executed immediately. Otherwise it will be put into a waiting queue.
-		// one task can only be added once
-		void runTaskGraph(TaskGraph* taskGraph);
-	protected:
+
 		void pushTask(Task* task);
 		Task* popTask();
 		

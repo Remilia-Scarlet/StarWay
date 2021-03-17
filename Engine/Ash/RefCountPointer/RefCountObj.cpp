@@ -1,16 +1,15 @@
-#include "AshCore.h"
+#include "Ash/AshCore.h"
 #include "RefCountObj.h"
-#include "TinyEngine/Objects/Object.h"
 
-ObjectID RefCountObj::s_nextId = INVALID_OBJECT_ID;
+ObjectID Ash::RefCountObj::s_nextId = INVALID_OBJECT_ID;
 
-RefCountObj::RefCountObj()
+Ash::RefCountObj::RefCountObj()
 	:_id(++s_nextId)
 {
 	_refInfo = new _RefInfo(this);
 }
 
-RefCountObj::~RefCountObj()
+Ash::RefCountObj::~RefCountObj()
 {
 	if (_refInfo)
 	{
@@ -19,5 +18,21 @@ RefCountObj::~RefCountObj()
 			TinyAssert(false, "Don't delete RefCountObj when it is managed by RefCountPtr. Your code will crash soon");
 		}
 		delete _refInfo;
+	}
+}
+
+void Ash::RefCountObj::addRef()
+{
+	if(_refInfo)
+	{
+		_refInfo->addStrongRef();
+	}
+}
+
+void Ash::RefCountObj::releaseRef()
+{
+	if(_refInfo)
+	{
+		_refInfo->releaseStrongRef();
 	}
 }
