@@ -1,4 +1,3 @@
-#include "AshCore.h"
 #include "CommonFunc.h"
 #include <fstream>
 #include <memory>

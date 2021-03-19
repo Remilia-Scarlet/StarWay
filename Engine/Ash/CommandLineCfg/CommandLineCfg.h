@@ -6,6 +6,11 @@
 #include <vector>
 #include <locale>
 
+#define DEFINE_COMMANDLINE(COMMAND,TYPE,DEFAULT_VALUE,DESCREPTION,SETTING_FUNCTION) protected: TYPE _##COMMAND = (Ash::CommandLineHelper(_registedCommandLines,#COMMAND,DESCREPTION,SETTING_FUNCTION),DEFAULT_VALUE); public: TYPE get##COMMAND(){return _##COMMAND;}
+#define DEFINE_COMMANDLINE_BOOL(COMMAND,DESCREPTION) DEFINE_COMMANDLINE(COMMAND,bool,false,DESCREPTION, [this](const std::string&){ _##COMMAND = true; return true; })
+#define DEFINE_COMMANDLINE_INT(COMMAND,DEFAULT_VALUE,DESCREPTION) DEFINE_COMMANDLINE(COMMAND,int,DEFAULT_VALUE,DESCREPTION,[this](const std::string& value){ _##COMMAND = std::stoi(value); return true; })
+#define DEFINE_COMMANDLINE_STR(COMMAND,DEFAULT_VALUE,DESCREPTION) DEFINE_COMMANDLINE(COMMAND,std::string,DEFAULT_VALUE,DESCREPTION,[this](const std::string& value){ _##COMMAND = value; return true; })
+
 namespace Ash
 {
 	class CommandLineCfg;
@@ -28,11 +33,6 @@ namespace Ash
 		const char* _description = nullptr;
 		std::function<bool(const std::string&)> _settingFun;
 	};
-
-#define DEFINE_COMMANDLINE(COMMAND,TYPE,DEFAULT_VALUE,DESCREPTION,SETTING_FUNCTION) protected: TYPE _##COMMAND = (CommandLineHelper(_registedCommandLines,#COMMAND,DESCREPTION,SETTING_FUNCTION),DEFAULT_VALUE); public: TYPE get##COMMAND(){return _##COMMAND;}
-#define DEFINE_COMMANDLINE_BOOL(COMMAND,DESCREPTION) DEFINE_COMMANDLINE(COMMAND,bool,false,DESCREPTION, [this](const std::string&){ _##COMMAND = true; return true; })
-#define DEFINE_COMMANDLINE_INT(COMMAND,DEFAULT_VALUE,DESCREPTION) DEFINE_COMMANDLINE(COMMAND,int,DEFAULT_VALUE,DESCREPTION,[this](const std::string& value){ _##COMMAND = std::stoi(value); return true; })
-#define DEFINE_COMMANDLINE_STR(COMMAND,DEFAULT_VALUE,DESCREPTION) DEFINE_COMMANDLINE(COMMAND,std::string,DEFAULT_VALUE,DESCREPTION,[this](const std::string& value){ _##COMMAND = value; return true; })
 
 	/*
 	Useage : inherite your own cmdline class

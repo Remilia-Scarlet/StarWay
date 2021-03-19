@@ -27,7 +27,7 @@ void Ash::ThreadPool::Thread::run()
 			continue;
 		}
 
-		_runningTask->run(_thread.get_id());
+		_runningTask->onRun(_thread.get_id());
 	}		
 }
 
@@ -48,9 +48,17 @@ Ash::ThreadPool::~ThreadPool()
 	}
 }
 
-Ash::TaskPtr Ash::ThreadPool::dispatchTask(std::function<void(Task*)> worker)
+Ash::TaskPtr Ash::ThreadPool::dispatchTask(std::function<void(TaskPtr)> worker)
 {
 	TaskPtr task = TaskPtr{ new Task(std::move(worker)) };
+	pushTask(task.get());
+	return task;
+}
+
+Ash::TaskPtr Ash::ThreadPool::dispatchTask(std::function<void(TaskPtr)> worker, std::initializer_list<TaskPtr> parents,
+    std::initializer_list<TaskPtr> preposedTask)
+{
+	TaskPtr task = TaskPtr{ new Task(std::move(worker), parents, preposedTask) };
 	pushTask(task.get());
 	return task;
 }

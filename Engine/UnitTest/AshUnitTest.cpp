@@ -1,8 +1,9 @@
 #include "precomp.h"
 #define _CRT_SECURE_NO_WARNINGS
 #include <vector>
+#include <Windows.h>
+
 #include "gtest/gtest.h"
-#include "Ash/CommonFunc.h"
 #include "Ash/CommandLineCfg/CommandLineCfg.h"
 #include "Ash/FileSystem/fs_include.h"
 #include "Ash/RefCountPointer/RefCountObj.h"
@@ -160,7 +161,7 @@ TEST(Ash, CommonCommandLineTest)
 		EXPECT_EQ(cmdLine.getName(), "dff dg g fsda");
 	}
 }
-
+/*
 TEST(Ash, PathTest)
 {
 	char* exePath = new char[255];
@@ -173,7 +174,7 @@ TEST(Ash, PathTest)
 	char* exeExt = new char[20];
 	_splitpath(fullPath, exeDriver, exeFolder, exeName, exeExt);
 	{
-		Path path(exePath);
+		Ash::Path path(exePath);
 		EXPECT_FALSE(path.isDirectory());
 		EXPECT_TRUE(path.isFile());
 		EXPECT_TRUE(path.isValid());
@@ -185,12 +186,12 @@ TEST(Ash, PathTest)
 		EXPECT_EQ(ab, fullPath);
 	}
 	{
-		Path path(exePath);
-		Path pa = path.getParentDirectory();
+		Ash::Path path(exePath);
+		Ash::Path pa = path.getParentDirectory();
 		EXPECT_EQ(pa.getRelativePath(), "..\\..\\..\\output\\_temp\\unittest\\");
 	}
 	{
-		Path path2("game:");
+		Ash::Path path2("game:");
 		EXPECT_TRUE(path2.isDirectory());
 		EXPECT_FALSE(path2.isFile());
 		EXPECT_TRUE(path2.isValid());
@@ -200,7 +201,7 @@ TEST(Ash, PathTest)
 		EXPECT_EQ(re, "..\\..\\..\\output\\_temp\\unittest\\");
 		auto ab = path2.getAbsolutePath();
 		EXPECT_EQ(ab, std::string(exeDriver) + std::string(exeFolder));
-		Path pa = path2.getParentDirectory();
+		Ash::Path pa = path2.getParentDirectory();
 		EXPECT_EQ(pa.getRelativePath(), "..\\..\\..\\output\\_temp\\");
 	}
 
@@ -245,8 +246,9 @@ TEST(Ash, PathTest)
 	delete[] exeName;
 	delete[] exeExt;
 }
+*/
 
-class A : public RefCountObj
+class A : public Ash::RefCountObj
 {
 public:
 	A()
@@ -266,46 +268,46 @@ int A::s_instanceNum = 0;
 class B : public A
 {
 public:
-	RefCountPtr<B> _b;
+	Ash::RefCountPtr<B> _b;
 };
 
 TEST(Ash, SmartPtr)
 {
-	RefCountPtr<A> smartPtr = RefCountPtr<A>(new A());
+	Ash::RefCountPtr<A> smartPtr = Ash::RefCountPtr<A>(new A());
 	EXPECT_EQ(smartPtr.getStrongRefCount(), 1);
 	EXPECT_EQ(smartPtr.getWeakRefCount(), 0);
 
-	WeakRefPtr<A> weakPtr = smartPtr;
+	Ash::WeakRefPtr<A> weakPtr = smartPtr;
 	EXPECT_EQ(smartPtr.getStrongRefCount(), 1);
 	EXPECT_EQ(smartPtr.getWeakRefCount(), 1);
 
-	RefCountPtr<A> smartPtr2 = RefCountPtr<A>(new A());
+	Ash::RefCountPtr<A> smartPtr2 = Ash::RefCountPtr<A>(new A());
 	smartPtr2 = nullptr; // should not have memory leak for m_counter
 	EXPECT_EQ(A::s_instanceNum, 1);
 
-	WeakRefPtr<A> weakPtr2 = std::move(weakPtr); // should not crash here
+	Ash::WeakRefPtr<A> weakPtr2 = std::move(weakPtr); // should not crash here
 	EXPECT_EQ(weakPtr.getStrongRefCount(), 0);
 	EXPECT_EQ(weakPtr.getWeakRefCount(), 0);
 	EXPECT_EQ(weakPtr2.getStrongRefCount(), 1);
 	EXPECT_EQ(weakPtr2.getWeakRefCount(), 1);
 
-	RefCountPtr<A> nullA = RefCountPtr<B>(nullptr);// should not crash
+	Ash::RefCountPtr<A> nullA = Ash::RefCountPtr<B>(nullptr);// should not crash
 	smartPtr = smartPtr.get();			// should not crash
-	RefCountPtr<B> bPtr = RefCountPtr<B>(new B);
-	bPtr->_b = RefCountPtr<B>(new B);	// should not crash
+	Ash::RefCountPtr<B> bPtr = Ash::RefCountPtr<B>(new B);
+	bPtr->_b = Ash::RefCountPtr<B>(new B);	// should not crash
 	bPtr = bPtr->_b;					// should not crash
 	EXPECT_EQ(bPtr->getValue(), 233);	// should not crash
 	bPtr.reset();
 	{
-		RefCountPtr<A> smartPtr2;
+		Ash::RefCountPtr<A> smartPtr2;
 		smartPtr2 = smartPtr;
 		EXPECT_EQ(smartPtr.getStrongRefCount(), 2);
 		EXPECT_EQ(smartPtr.getWeakRefCount(), 1);
 
-		WeakRefPtr<A> weakPtr2 = smartPtr;
+		Ash::WeakRefPtr<A> weakPtr2 = smartPtr;
 		EXPECT_EQ(smartPtr.getStrongRefCount(), 2);
 		EXPECT_EQ(smartPtr.getWeakRefCount(), 2);
-		RefCountPtr<A> lockPtr = weakPtr2.lock(); //should not crash here
+		Ash::RefCountPtr<A> lockPtr = weakPtr2.lock(); //should not crash here
 	}
 	EXPECT_EQ(smartPtr.getStrongRefCount(), 1);
 	EXPECT_EQ(smartPtr.getWeakRefCount(), 1);
@@ -663,6 +665,72 @@ TEST(Ash, TaskRingBufferTest)
 	}
 }
 
+
+class RiNiMa : public Ash::RefCountObj
+{
+public:
+	RiNiMa& then(std::function<void(RiNiMa& riNiMa)> worker...)
+	{
+		_data.emplace_back(std::move(worker));
+	}
+	void submit()
+	{
+		sPool.submit(Ash::RefCountPtr<RiNiMa>(this));
+	}
+	void onRun()
+	{
+		auto worker = std::move(_data.front());
+		_data.pop_front();
+		RiNiMa r;
+		r._parent = this;
+		worker(r);
+        if(r.empty() && _data.empty())
+        {
+			_parent->onChildFinished();
+        }
+		else
+		{
+			sPool.submit(r);
+		}
+	}
+	void onChildFinished()
+	{
+		--remaining;
+		if(remaining == 0)
+		{
+			if (_data.empty())
+			{
+				_parent->onChildFinished();
+			}
+			else
+			{
+				ÏÂÒ»¸ö_data
+			}
+		}
+	};
+	std::list<std::function<void(RiNiMa&)>> _data;
+	RiNiMa* _parent;
+};
+
+class TaskPool
+{
+
+public:
+    void submit(Ash::RefCountPtr<RiNiMa> task)
+    {
+		_tasks.push_back(task);
+    }
+    void popTask()
+    {
+		auto task = _tasks.front();
+		_tasks.pop_front();
+		task->onRun();
+    }
+
+	std::list<Ash::RefCountPtr<RiNiMa>> _tasks;
+};
+static TaskPool sPool;
+
 TEST(Ash, ThreadPoolTest)
 {
 	constexpr int threadNumber = 12;
@@ -673,9 +741,31 @@ TEST(Ash, ThreadPoolTest)
 	}
 
 
+    auto B = [](RiNiMa& riNiMa)
+    {
+		riNiMa.then(F);
+	};
+
+    auto C = [](RiNiMa* )
+    {
+        
+	};
+
+	auto WTF = [&B, &C](RiNiMa& riNiMa)->RiNiMa&
+	{
+		riNiMa.then(B, C);
+		riNiMa.then(D);
+	};
+
+	RiNiMa riNiMa;
+	riNiMa.then(WTF);
+	riNiMa.then([](RiNiMa&) {});
+
+	WTF(riNiMa).submit();
+
 	//MultiThread quick sort
 	{
-		std::function<void(Task*, int*, int, int)> quickSort = [&quickSort](Task* task, int* arr, int begin, int end)
+		std::function<void(Ash::TaskPtr, Ash::ThreadPool&, int*, int, int)> quickSort = [&quickSort](Ash::TaskPtr task, Ash::ThreadPool& threadPool, int* arr, int begin, int end)
 		{
 			if (end - begin < 32)
 			{
@@ -698,30 +788,26 @@ TEST(Ash, ThreadPoolTest)
 				}
 			}
 			std::swap(arr[begin], arr[left - 1]);
-			quickSort(nullptr, arr, begin, left - 1);
-			quickSort(nullptr, arr, left, end);
-			//RefCountPtr<Task> sortLeft = RefCountPtr<Task>(new Task(std::bind(quickSort, std::placeholders::_1, arr, begin, left - 1)));
-			//RefCountPtr<Task> sortRight = RefCountPtr<Task>(new Task(std::bind(quickSort, std::placeholders::_1, arr, left, end)));
-			//task->addChildTask(std::move(sortLeft));
-			//task->addChildTask(std::move(sortRight));
+			//quickSort(nullptr, arr, begin, left - 1);
+			//quickSort(nullptr, arr, left, end);
+			threadPool.dispatchTask(std::bind(quickSort, std::placeholders::_1, threadPool, arr, begin, left - 1), { task }, {});
+			threadPool.dispatchTask(std::bind(quickSort, std::placeholders::_1, threadPool, arr, left, end), { task }, {});
 		};
 
 		std::vector<int> data = numbers;
-		ThreadPool threadPool(threadNumber);
+        Ash::ThreadPool threadPool(threadNumber);
 		auto start = std::chrono::system_clock::now();
 		{
 			std::atomic<bool> finished = false;
-			RefCountPtr<Task> sortTask = RefCountPtr<Task>(new Task());
-			sortTask->setWorkerFunction(std::bind(quickSort, std::placeholders::_1, data.data(), 0, (int)data.size()));
+			Ash::TaskPtr sortTask = threadPool.dispatchTask(std::bind(quickSort, std::placeholders::_1, threadPool, data.data(), 0, (int)data.size()));
 			std::mutex mu;
 			std::unique_lock<std::mutex> lock(mu);
 			std::condition_variable condi;
-			sortTask->addEndTask(RefCountPtr<Task>(new Task([&finished, &condi](Task*)
+            Ash::TaskPtr endTask = threadPool.dispatchTask([&finished, &condi](Ash::TaskPtr)
 			{
 				finished = true; 
 				condi.notify_all();
-			})));
-			threadPool.addTask(std::move(sortTask));
+			}, {}, {sortTask});
 			condi.wait(lock, [&finished]() {return finished.load(); });
 		}
 		auto end = std::chrono::system_clock::now();
@@ -766,7 +852,7 @@ TEST(Ash, ThreadPoolTest)
 				mergedArr[curr++] = arr[right++];
 			memcpy(arr, mergedArr, size * sizeof(int));
 		};
-		std::function<void(Task*, int*,int)> mergeSort = [&](Task* task, int* arr, int size)
+		std::function<void(Ash::TaskPtr, Ash::ThreadPool&, int*,int)> mergeSort = [&mergeSort, &mergeArray](Ash::TaskPtr task, Ash::ThreadPool& threadPool, int* arr, int size)
 		{
 			if(size <= 32)
 			{
@@ -775,33 +861,31 @@ TEST(Ash, ThreadPoolTest)
 			else
 			{
 				int mid = size / 2;
-				TaskPtr leftTask = MakeRefCountPtr<Task>(std::bind(mergeSort, std::placeholders::_1, arr, mid));
-				TaskPtr rightTask = MakeRefCountPtr<Task>(std::bind(mergeSort, std::placeholders::_1, arr + mid, size - mid));;
-				task->addChildTask(leftTask);
-				task->addChildTask(rightTask);
-				task->addFenceTask();
-				TaskPtr mergeTask = MakeRefCountPtr<Task>(std::bind(mergeArray, arr, size));
-				task->addChildTask(mergeTask);
+				SomeFucking.Then(std::bind(mergeSort, std::placeholders::_1, threadPool, arr, mid), std::bind(mergeSort, std::placeholders::_1, threadPool, arr + mid, size - mid))
+					.Then(std::bind(mergeArray, arr, size));
+
+                Ash::TaskPtr leftTask = threadPool.dispatchTask(std::bind(mergeSort, std::placeholders::_1, threadPool, arr, mid), {task}, {});
+                Ash::TaskPtr rightTask = threadPool.dispatchTask(std::bind(mergeSort, std::placeholders::_1, threadPool, arr + mid, size - mid), {task}, {});;
+				Ash::TaskPtr mergeTask = threadPool.dispatchTask(std::bind(mergeArray, arr, size), {leftTask, rightTask}, {});
 			}
 		};
 		//MultiThread merge sort
 		{
 			std::vector<int> data = numbers;
-			ThreadPool threadPool(threadNumber);
+            Ash::ThreadPool threadPool(threadNumber);
 			auto start = std::chrono::system_clock::now();
 			{
-				TaskPtr task = MakeRefCountPtr<Task>(std::bind(mergeSort, std::placeholders::_1, data.data(), (int)data.size()));
+				Ash::TaskPtr task = threadPool.dispatchTask(std::bind(mergeSort, std::placeholders::_1, threadPool, data.data(), (int)data.size()));
 				
 				std::atomic<bool> finished = false;
 				std::mutex mu;
 				std::unique_lock<std::mutex> lock(mu);
 				std::condition_variable condi;
-				task->addEndTask(RefCountPtr<Task>(new Task([&finished, &condi](Task*)
+				threadPool.dispatchTask([&finished, &condi](Ash::TaskPtr)
 					{
 						finished = true;
 						condi.notify_all();
-					})));
-				threadPool.addTask(std::move(task));
+					}, {}, {task});
 				condi.wait(lock, [&finished]() {return finished.load(); });
 			}
 			auto end = std::chrono::system_clock::now();

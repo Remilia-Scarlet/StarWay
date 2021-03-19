@@ -1,4 +1,3 @@
-#include "Ash/AshCore.h"
 #include "RefCountObj.h"
 
 ObjectID Ash::RefCountObj::s_nextId = INVALID_OBJECT_ID;

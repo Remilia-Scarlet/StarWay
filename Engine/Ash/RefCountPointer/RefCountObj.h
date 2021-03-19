@@ -2,8 +2,6 @@
 #include "Ash/TinyAssert.h"
 #include <atomic>
 
-#include "Ash/CommonFunc.h"
-
 namespace Ash
 {
 	template <class T> class RefCountPtr;

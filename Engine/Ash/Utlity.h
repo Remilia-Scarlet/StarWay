@@ -1,5 +1,6 @@
 #pragma once
-#define _CRT_SECURE_NO_WARNINGS
+#include "Ash/Settings.h"
+#include "Ash/TinyAssert.h"
 
 constexpr bool NO_LOG_FILE = 1;
 

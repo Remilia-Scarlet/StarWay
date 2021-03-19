@@ -7,13 +7,13 @@
 #include "boost/lockfree/queue.hpp"
 
 #include "Ash/MultiThread/Task.h"
+#include "Ash/Misc/SingleInstance.h"
 
 namespace Ash
 {
-	class TaskGraph;
-	class Task;
+    class Functor;
 
-	class ThreadPool
+    class ThreadPool : public SingleInstance<ThreadPool>
 	{
 		friend class Task;
 	protected:
@@ -33,11 +33,11 @@ namespace Ash
 			void run();
 		};
 	public:
+        static 
 		ThreadPool(int threadNumber);
 		~ThreadPool();
 
-		TaskPtr dispatchTask(std::function<void(TaskPtr)> worker);
-		TaskPtr dispatchTask(std::function<void(TaskPtr)> worker, std::initializer_list<TaskPtr> parents);
+		TaskPtr dispatchFunctor(Functor&& functor);
 	protected:
 		ThreadPool(const ThreadPool&) = delete;
 		ThreadPool(ThreadPool&&) = delete;

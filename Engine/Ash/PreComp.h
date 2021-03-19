@@ -2,4 +2,12 @@
 //In MSVC, it's treated as precompile file
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
-#include "Settings.h"
+
+#include <vector>
+#include <map>
+#include <list>
+#include <algorithm>
+
+#include "Utlity.h"
+
+
