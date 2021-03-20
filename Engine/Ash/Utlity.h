@@ -1,11 +1,12 @@
 #pragma once
+#include <string>
+#include <vector>
 #include "Ash/Settings.h"
 #include "Ash/TinyAssert.h"
 
 constexpr bool NO_LOG_FILE = 1;
 
-#include <string>
-#include <vector>
+
 void DebugString(const char* format, ...);
 std::string FormatString(const char* format, ...);
 std::vector<std::string> split(const std::string& src, const std::string& separator);

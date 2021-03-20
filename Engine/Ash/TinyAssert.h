@@ -4,7 +4,11 @@
 #include <cstdarg>
 #include <memory>
 
-#ifndef TINY_RETAIL
+#ifdef TINY_RETAIL
+#define TinyAssert(...) do{}while(0)
+#define ScopeFlagAssert(...) do{}while(0) 
+
+#else //#ifndef TINY_RETAIL
 
 // Useage:
 // TinyAssert(expression) or TinyAssert(expression,format,...)
@@ -13,8 +17,11 @@
 // TinyAssert(1 + 1 == 3, "%d + %d is not equal %d", 1, 1, 3); //Assert with information
 #define TinyAssert(...) TINY_ASSERT_(MY_FILE, MY_LINE, __VA_ARGS__)
 
+//Ensure when entering the scope, FLAG is false. Then set FLAG to true, and when exiting the scope, set FLAG back to false.
+#define ScopeFlagAssert(FLAG)  ScopeFlagAssert_(MY_LINE, FLAG)
 
 
+//////////////////////////////////////////////////////////IMPLEMENTATION///////////////////////////////////////////////
 //Platform related defines
 #define MY_ASSERT assert
 #define MY_FILE __FILE__
@@ -81,6 +88,21 @@
 #define TINY_ASSERT_ARGS_NUM(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,\
 	_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,...) _30
 
-#else //#ifndef TINY_RETAIL
-#define TinyAssert(...) do{}while(0)
+#define ScopeFlagAssert_(LINE, FLAG) \
+struct TINY_ASSERT_CAT(__ScopeEnsureAssertStruct_,LINE) \
+{\
+	TINY_ASSERT_CAT(__ScopeEnsureAssertStruct_,LINE)(std::atomic_bool& flag) :_flag(flag)\
+	{\
+		TinyAssert(!_flag, "ScopeFlagAssert failed!");\
+		_flag = true;\
+	}\
+	~TINY_ASSERT_CAT(__ScopeEnsureAssertStruct_,LINE)()\
+	{\
+		_flag = false;\
+	}\
+private:\
+	std::atomic_bool& _flag;\
+};\
+TINY_ASSERT_CAT(__ScopeEnsureAssertStruct_,LINE) TINY_ASSERT_CAT(__ScopeEnsureAssertInst_, LINE) {FLAG}
+
 #endif

@@ -1,10 +1,4 @@
-#include "Ash/AshCore.h"
 #include "ThreadPool.h"
-
-#include <algorithm>
-
-#include "Ash/TinyAssert.h"
-#include "Ash/MultiThread/Task.h"
 
 Ash::ThreadPool::Thread::Thread(ThreadPool& threadPool)
 	: _threadPool(threadPool)
@@ -20,20 +14,23 @@ void Ash::ThreadPool::Thread::run()
 {
 	while (!_threadPool._exiting)
 	{
-		_runningTask = _threadPool.popTask();
-		if(!_runningTask)
+		ThreadPoolTaskPtr runningTask = _threadPool.popTask();
+		if(!runningTask.get())
 		{
 			std::this_thread::yield();
 			continue;
 		}
 
-		_runningTask->onRun(_thread.get_id());
+		runningTask->onRun();
 	}		
 }
 
-Ash::ThreadPool::ThreadPool(int threadNumber)
+Ash::ThreadPool::ThreadPool()
 {
-	for (int i = 0; i < threadNumber; ++i)
+	auto threadNumber = std::thread::hardware_concurrency();
+	if (threadNumber == 0)
+		threadNumber = 1;
+	for (int i = 0; i < static_cast<int>(threadNumber); ++i)
 	{
 		_threads.emplace_back(std::make_unique<Thread>(*this));
 	}
@@ -48,23 +45,26 @@ Ash::ThreadPool::~ThreadPool()
 	}
 }
 
-Ash::TaskPtr Ash::ThreadPool::dispatchTask(std::function<void(TaskPtr)> worker)
+void Ash::ThreadPool::dispatchTask(ThreadPoolTaskPtr task)
 {
-	TaskPtr task = TaskPtr{ new Task(std::move(worker)) };
 	pushTask(task.get());
-	return task;
 }
 
-Ash::TaskPtr Ash::ThreadPool::dispatchTask(std::function<void(TaskPtr)> worker, std::initializer_list<TaskPtr> parents,
-    std::initializer_list<TaskPtr> preposedTask)
-{
-	TaskPtr task = TaskPtr{ new Task(std::move(worker), parents, preposedTask) };
-	pushTask(task.get());
-	return task;
-}
-
-void Ash::ThreadPool::pushTask(Task* task)
+void Ash::ThreadPool::pushTask(ThreadPoolTask* task)
 {
 	task->addRef();
 	_waitingTasks.push(task);
+}
+
+Ash::ThreadPoolTaskPtr Ash::ThreadPool::popTask()
+{
+	ThreadPoolTask* task = nullptr;
+	if (_waitingTasks.pop(task))
+	{
+		TinyAssert(task);
+		ThreadPoolTaskPtr ptr{ task };
+		task->releaseRef();
+		return ptr;
+	}
+	return nullptr;
 }

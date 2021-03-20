@@ -1,5 +1,3 @@
-#include "AshCore.h"
-
 #if defined(TINY_PLATFORM_WINDOWS)
 #include "../fs_include.h"
 #include "Ash/TinyAssert.h"

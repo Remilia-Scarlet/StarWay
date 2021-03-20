@@ -6,16 +6,33 @@
 
 #include "boost/lockfree/queue.hpp"
 
-#include "Ash/MultiThread/Task.h"
 #include "Ash/Misc/SingleInstance.h"
+#include "Ash/MultiThread/FunctorSeq.h"
 
 namespace Ash
 {
-    class Functor;
-
+	//Usage:
+	//Inherit ThreadPoolTask, and then dispatch it to threadpool
+	// class MyTask : public ThreadPoolTask
+	// {
+	//    void onRun() override
+	//    {
+	//		//do something
+	//    }
+	// }
+	// RefCountPtr<MyTask> task = Ash::MakeRefCountPtr<MyTask>();
+	// ThreadPool::instance()->dispatchTask(task);
+	ASH_DEFINE_PTR(ThreadPoolTask);
+	class ThreadPoolTask : public RefCountObj
+	{
+	public:
+		virtual ~ThreadPoolTask() = default;
+		virtual void onRun() = 0;
+	};
+	
     class ThreadPool : public SingleInstance<ThreadPool>
 	{
-		friend class Task;
+		friend class SingleInstance<ThreadPool>;
 	protected:
 		struct Thread
 		{
@@ -27,27 +44,24 @@ namespace Ash
 			~Thread();
 
 			ThreadPool& _threadPool;
-			Task* _runningTask = nullptr;
-			std::thread _thread{ std::bind(&Thread::run, this) };
+			std::thread _thread{ [this] { run(); } };
 
 			void run();
 		};
 	public:
-        static 
-		ThreadPool(int threadNumber);
-		~ThreadPool();
-
-		TaskPtr dispatchFunctor(Functor&& functor);
+		void dispatchTask(ThreadPoolTaskPtr task);
 	protected:
+    	ThreadPool();
+		~ThreadPool();
 		ThreadPool(const ThreadPool&) = delete;
 		ThreadPool(ThreadPool&&) = delete;
 		ThreadPool& operator=(const ThreadPool&) = delete;
 		ThreadPool& operator=(ThreadPool&&) = delete;
 
-		void pushTask(Task* task);
-		Task* popTask();
+		void pushTask(ThreadPoolTask* task);
+		ThreadPoolTaskPtr popTask();
 		
-		boost::lockfree::queue<Task*, boost::lockfree::fixed_sized<false>> _waitingTasks;
+		boost::lockfree::queue<ThreadPoolTask*, boost::lockfree::fixed_sized<false>> _waitingTasks{ 20 };
 		std::vector<std::unique_ptr<Thread> > _threads;
 		std::atomic_bool _exiting = false;
 	};

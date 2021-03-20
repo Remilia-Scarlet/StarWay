@@ -2,7 +2,7 @@
 #include <type_traits>
 #include <mutex>
 
-#define TINY_DEFINE_PTR(CALSSNAME) class CALSSNAME;typedef Ash::RefCountPtr<CALSSNAME> CALSSNAME##Ptr;typedef Ash::WeakRefPtr<CALSSNAME> CALSSNAME##WeakPtr
+#define ASH_DEFINE_PTR(CALSSNAME) class CALSSNAME;typedef Ash::RefCountPtr<CALSSNAME> CALSSNAME##Ptr;typedef Ash::WeakRefPtr<CALSSNAME> CALSSNAME##WeakPtr
 
 namespace Ash
 {

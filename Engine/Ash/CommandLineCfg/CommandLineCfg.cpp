@@ -1,7 +1,7 @@
 #include "CommandLineCfg.h"
-#include "Ash/CommonFunc.h"
-#include "Ash/TinyAssert.h"
+
 #include <cctype>
+
 #include "Ash/CommonStateMachine/StateMachine.h"
 
 bool Ash::CommandLineCfg::init(const char* commandLine)

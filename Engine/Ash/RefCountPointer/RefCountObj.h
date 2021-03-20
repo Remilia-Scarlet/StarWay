@@ -43,12 +43,15 @@ namespace Ash
 		int getStrongRefCount()const { return _refInfo->getStrongRefCount(); }
 		int getWeakRefCount()const { return _refInfo->getWeakRefCount(); }
 		virtual ObjectID getObjectId()  const { return _id; }
+
+		//Use them carefully. It's not recommended to manage ref count manually, use RefCountPtr to manage ref count.
+		void addRef();
+		void releaseRef();
 	protected:
 		explicit RefCountObj();
 		virtual ~RefCountObj();
 
-		void addRef();
-		void releaseRef();
+
 	private:
 		_RefInfo* _refInfo;
 		ObjectID _id;

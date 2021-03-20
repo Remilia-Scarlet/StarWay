@@ -1,11 +1,8 @@
-#include "AshCore.h"
-
 #if defined(TINY_PLATFORM_WINDOWS)
 #include "../fs_include.h"
 #include <algorithm>
 #include <windows.h>
 #include <stack>
-#include "Ash/CommonFunc.h"
 #include "Ash/TinyAssert.h"
 #include <boost/filesystem.hpp>
 

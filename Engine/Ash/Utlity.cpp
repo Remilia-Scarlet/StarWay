@@ -1,4 +1,3 @@
-#include "CommonFunc.h"
 #include <fstream>
 #include <memory>
 #include "TinyAssert.h"

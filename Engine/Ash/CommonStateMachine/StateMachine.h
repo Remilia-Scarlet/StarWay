@@ -1,11 +1,10 @@
 #pragma once
+#include <utility>
 #include <vector>
 #include <functional>
 #include <memory>
 #include <optional>
 #include <map>
-#include "Ash/TinyAssert.h"
-#include "Ash/CommonFunc.h"
 
 namespace Ash
 {
@@ -26,8 +25,8 @@ namespace Ash
 		friend struct std::pair;
 	protected:
 		//Do not new a State manually, use StateMachine::createState
-		State(const std::string& stateName)
-			: _name(stateName)
+		State(std::string stateName)
+			: _name(std::move(stateName))
 		{
 		}
 		State(State&& other) = default;
@@ -50,13 +49,13 @@ namespace Ash
 			_handleFun = std::move(handleFun);
 		}
 
-		// When state will enter, onEnterCb will be called. Param is last state. If this state is start state, the param will be itself
+		// When state will enter, onEnterCb will be called. Param is last state. If this state is init state, the param will be itself
 		void onEnter(std::function<void(State<ItemType>&)> onEnterCb)
 		{
 			_onEnterCb = std::move(onEnterCb);
 		}
 
-		// When state will exit, onExitCb will be called. Param is next state.
+		// When state will exit, onExitCb will be called. Param is the next state.
 		void onExit(std::function<void(State<ItemType>&)> onExitCb)
 		{
 			_onEnterCb = std::move(onExitCb);

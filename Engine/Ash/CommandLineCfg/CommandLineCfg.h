@@ -3,7 +3,6 @@
 #include <map>
 #include <functional>
 #include <algorithm>
-#include <vector>
 #include <locale>
 
 #define DEFINE_COMMANDLINE(COMMAND,TYPE,DEFAULT_VALUE,DESCREPTION,SETTING_FUNCTION) protected: TYPE _##COMMAND = (Ash::CommandLineHelper(_registedCommandLines,#COMMAND,DESCREPTION,SETTING_FUNCTION),DEFAULT_VALUE); public: TYPE get##COMMAND(){return _##COMMAND;}
@@ -24,7 +23,7 @@ namespace Ash
 		CommandLineHelper(std::map<std::string, CommandLineHelper>& registedCommandLines, std::string name,
 		                  const char* description, std::function<bool(const std::string&)> settingFun)
 			: _description(description)
-			  , _settingFun(settingFun)
+			  , _settingFun(std::move(settingFun))
 		{
 			std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 			registedCommandLines[name] = *this;

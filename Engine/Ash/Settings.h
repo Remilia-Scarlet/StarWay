@@ -12,3 +12,9 @@
 #else
 #error Unsupport platform
 #endif
+
+#ifndef NDEBUG
+	#define TINY_DEBUG
+#else
+	#define TINY_RETAIL
+#endif
