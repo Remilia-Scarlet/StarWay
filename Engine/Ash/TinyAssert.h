@@ -7,7 +7,7 @@
 #ifdef TINY_RETAIL
 #define TinyAssert(...) do{}while(0)
 #define ScopeFlagAssert(...) do{}while(0) 
-
+#define ForceResetScopeFlag(...) do{}while(0)
 #else //#ifndef TINY_RETAIL
 
 // Useage:
@@ -19,6 +19,7 @@
 
 //Ensure when entering the scope, FLAG is false. Then set FLAG to true, and when exiting the scope, set FLAG back to false.
 #define ScopeFlagAssert(FLAG)  ScopeFlagAssert_(MY_LINE, FLAG)
+#define ForceResetScopeFlag(FLAG) do{(FLAG) = false;}while(false)
 
 
 //////////////////////////////////////////////////////////IMPLEMENTATION///////////////////////////////////////////////

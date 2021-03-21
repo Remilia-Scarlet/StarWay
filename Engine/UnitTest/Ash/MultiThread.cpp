@@ -16,36 +16,44 @@ TEST(Ash, ThreadPoolTest)
 		{
 			int i = index++;
 			result[i] = 'A';
+			seq.setDebugName("A");
 			seq.then([&index, &result](Ash::FunctorSeq& seq)
 			{
 				int i = index++;
 				result[i] = 'B';
+				seq.setDebugName("B");
 				seq.then([&index, &result](Ash::FunctorSeq& seq)
 				{
 					int i = index++;
 					result[i] = 'C';
-					seq.then([&index, &result](Ash::FunctorSeq&)
+					seq.setDebugName("C");
+					seq.then([&index, &result](Ash::FunctorSeq& seq)
 					{
 						int i = index++;
 						result[i] = 'D';
-					}, [&index, &result](Ash::FunctorSeq&)
+						seq.setDebugName("D");
+					}, [&index, &result](Ash::FunctorSeq& seq)
 					{
 						int i = index++;
 						result[i] = 'E';
+						seq.setDebugName("E");
 					});
 				});
 			}, [&index, &result](Ash::FunctorSeq& seq)
 			{
 				int i = index++;
 				result[i] = 'F';
+				seq.setDebugName("F");
 			});
 			seq.then([&index, &result](Ash::FunctorSeq& seq)
 			{
 				int i = index++;
 				result[i] = 'G';
+				seq.setDebugName("G");
 			});
-			seq.then([&mu, &finished, &condi](Ash::FunctorSeq&)
+			seq.then([&mu, &finished, &condi](Ash::FunctorSeq& seq)
 			{
+				seq.setDebugName("send notify");
 				std::unique_lock<std::mutex> lock(mu);
 				finished = true;
 				condi.notify_all();
@@ -68,24 +76,38 @@ TEST(Ash, ThreadPoolTest)
 		EXPECT_TRUE(itC > itB && itD > itC && itE > itC);
 	}
 
-	std::vector<int> numbers(6000000);
-	for (auto& i : numbers)
+	std::vector<int> numbers(2000000);
+	for(int i = 0 ; i < (int)numbers.size(); ++i)
 	{
-		i = (rand() & 0xfff) << 12 | (rand() & 0xfff);
+		numbers[i] = i;
+	}
+	for (int i = (int)numbers.size() - 1; i >= 0; --i)
+	{
+		std::swap(numbers[rand() % (i + 1)], numbers[i]);
+	}
+
+	////std::sort
+	if (1)
+	{
+		std::vector<int> data = numbers;
+		auto start = std::chrono::system_clock::now();
+		std::sort(data.begin(), data.end(), std::less<>());
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> diff = end - start;
+		DebugString("Sorted size=%ld random int array, std::sort cost: %f seconds", data.size(), diff.count());
 	}
 
 
-	//MultiThread quick sort
+	//quick sort
 	{
-		bool useMR = true;
-		const std::function<void(Ash::FunctorSeq&, int*, int, int)> quickSort = [&useMR, &quickSort](Ash::FunctorSeq& seq, int* arr, int begin, int end)
+		const std::function<void(Ash::FunctorSeq&, bool, std::vector<int>&, int, int)> quickSort = [&quickSort](Ash::FunctorSeq& seq, bool isMultiThread, std::vector<int>& arr, int begin, int end)
 		{
 			if (end - begin < 32)
 			{
-				std::sort(arr + begin, arr + end);
+				std::sort(arr.begin() + begin, arr.begin() + end);
 				return;
 			}
-			int mid = (end - begin) / 2;
+			int mid = (end - begin) / 2 + begin;
 			if (arr[begin] > arr[mid])std::swap(arr[begin], arr[mid]);
 			if (arr[mid] > arr[end - 1])std::swap(arr[mid], arr[end - 1]);
 			if (arr[begin] > arr[mid])std::swap(arr[begin], arr[mid]);
@@ -101,40 +123,37 @@ TEST(Ash, ThreadPoolTest)
 				}
 			}
 			std::swap(arr[begin], arr[left - 1]);
-			if(useMR)
+			if(isMultiThread)
 			{
 				seq.then(
-					std::bind(quickSort, std::placeholders::_1, arr, begin, left - 1),
-					std::bind(quickSort, std::placeholders::_1, arr, left, end));
+					std::bind(quickSort, std::placeholders::_1, isMultiThread, std::ref(arr), begin, left - 1),
+					std::bind(quickSort, std::placeholders::_1, isMultiThread, std::ref(arr), left, end));
 			}
 			else
 			{
-				quickSort((Ash::FunctorSeq&)(*((Ash::FunctorSeq*)nullptr)), arr, begin, left - 1);
-				quickSort((Ash::FunctorSeq&)(*((Ash::FunctorSeq*)nullptr)), arr, left, end);
+				quickSort((Ash::FunctorSeq&)(*((Ash::FunctorSeq*)nullptr)), isMultiThread, arr, begin, left - 1);
+				quickSort((Ash::FunctorSeq&)(*((Ash::FunctorSeq*)nullptr)), isMultiThread, arr, left, end);
 			}
 		};
 
-		useMR = false;
+		//No multi thread
+		if (1)
 		{
 			std::vector<int> data = numbers;
 			auto start = std::chrono::system_clock::now();
-			quickSort((Ash::FunctorSeq&)(*((Ash::FunctorSeq*)nullptr)), data.data(), 0, (int)data.size());
+			quickSort((Ash::FunctorSeq&)(*((Ash::FunctorSeq*)nullptr)), false, data, 0, (int)data.size());
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> diff = end - start;
 			DebugString("Sorted size=%ld random int array, No Multithread quick sort cost: %f seconds", data.size(), diff.count());
-			bool orderIsRight = true;
-			for (int i = 1; i < (int)data.size(); ++i)
+
+			for (int i = 0; i < (int)data.size(); ++i)
 			{
-				if (data[i] < data[i - 1])
-				{
-					orderIsRight = false;
-					break;
-				}
+				EXPECT_EQ(data[i], i);
 			}
-			EXPECT_TRUE(orderIsRight);
 		}
-		
-		useMR = true;
+
+		//MR
+		if(1)
 		{
 			std::vector<int> data = numbers;
 			auto start = std::chrono::system_clock::now();
@@ -145,7 +164,7 @@ TEST(Ash, ThreadPoolTest)
 
 				Ash::FunctorSeq::entry([&mu, &quickSort, &data, &finished, &condi](Ash::FunctorSeq& seq)
 				{
-					seq.then(std::bind(quickSort, std::placeholders::_1, data.data(), 0, (int)data.size()));
+					seq.then(std::bind(quickSort, std::placeholders::_1, true, std::ref(data), 0, (int)data.size()));
 					seq.then([&mu, &finished, &condi](Ash::FunctorSeq&)
 					{
 						std::unique_lock<std::mutex> lock(mu);
@@ -160,16 +179,11 @@ TEST(Ash, ThreadPoolTest)
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> diff = end - start;
 			DebugString("Sorted size=%ld random int array, MultiThread quick sort cost: %f seconds", data.size(), diff.count());
-			bool orderIsRight = true;
-			for (int i = 1; i < (int)data.size(); ++i)
+			
+			for (int i = 0; i < (int)data.size(); ++i)
 			{
-				if (data[i] < data[i - 1])
-				{
-					orderIsRight = false;
-					break;
-				}
+				EXPECT_EQ(data[i], i);
 			}
-			EXPECT_TRUE(orderIsRight);
 		}
 	}
 
@@ -238,28 +252,12 @@ TEST(Ash, ThreadPoolTest)
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> diff = end - start;
 			DebugString("Sorted size=%ld random int array, MultiThread merge sort cost: %f seconds", data.size(), diff.count());
-			bool orderIsRight = true;
-			for (int i = 1; i < (int)data.size(); ++i)
+			for (int i = 0; i < (int)data.size(); ++i)
 			{
-				if (data[i] < data[i - 1])
-				{
-					orderIsRight = false;
-					break;
-				}
+				EXPECT_EQ(data[i], i);
 			}
-			EXPECT_TRUE(orderIsRight);
 		}
 	}
 
-	////std::sort
-	if(1)
-	{
-		auto start = std::chrono::system_clock::now();
-		{
-			std::sort(numbers.begin(), numbers.end(), std::less<>());
-		}
-		auto end = std::chrono::system_clock::now();
-		std::chrono::duration<double> diff = end - start;
-		DebugString("Sorted size=%ld random int array, std::sort cost: %f seconds", numbers.size(), diff.count());
-	}
+	
 }

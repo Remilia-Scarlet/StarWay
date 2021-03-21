@@ -1,32 +1,36 @@
-#include "FunctorSeq.h"
+ï»¿#include "FunctorSeq.h"
 
 #include "Ash/MultiThread/ThreadPool.h"
 
-void Ash::FunctorSeq::entry(Functor functor)
+void Ash::FunctorSeq::entry(const Functor& functor)
 {
-	
-	FunctorSeqPtr seq { new FunctorSeq() };
-	functor(*seq);
-	seq->submit();
+	entry(functor, nullptr);
+}
+
+void Ash::FunctorSeq::setDebugName(std::string debugName)
+{
+#ifdef TINY_DEBUG
+	_debugName = std::move(debugName);
+#endif
 }
 
 void Ash::FunctorSeq::submit()
 {
-	//µ¥Ïß³Ì
+	//å•çº¿ç¨‹
 	if (!empty())
 	{
-		doSubmitNextFunctor();
 		addRef();
+		doSubmitNextFunctor();
 	}
 }
 
 void Ash::FunctorSeq::onFinishSeq(FunctorSeq* subSeq)
 {
-	//¿ÉÄÜ¶àÏß³ÌÍ¬Ê±·ÃÎÊ
+	//å¯èƒ½å¤šçº¿ç¨‹åŒæ—¶è®¿é—®
 	
 	if (subSeq && !subSeq->empty())
 	{
-		// ÓĞsubSeq£¬²»¼õÉÙ_runningFunctor£¬ÎÒÃÇÈÏÎªÕâ¸öfunctor»¹Ã»runningÍê£¬Ö±µ½Õâ¸ösubseqÍê³É
+		// æœ‰subSeqï¼Œä¸å‡å°‘_runningFunctorï¼Œæˆ‘ä»¬è®¤ä¸ºè¿™ä¸ªfunctorè¿˜æ²¡runningå®Œï¼Œç›´åˆ°è¿™ä¸ªsubseqå®Œæˆ
 		subSeq->submit();
 	}
 	else
@@ -42,7 +46,7 @@ void Ash::FunctorSeq::onSubSeqFinish()
 
 void Ash::FunctorSeq::trySubmitNextFunctor()
 {
-	//¿ÉÄÜ¶àÏß³Ì½øÀ´
+	//å¯èƒ½å¤šçº¿ç¨‹è¿›æ¥
 	int running = --_runningFunctor;
 	TinyAssert(running >= 0);
 	if (running == 0)
@@ -54,15 +58,15 @@ void Ash::FunctorSeq::trySubmitNextFunctor()
 		else
 		{
 			{
-				//ÕâÀï¿ªÊ¼µ¥Ïß³Ì
+				//è¿™é‡Œå¼€å§‹å•çº¿ç¨‹
 				ScopeFlagAssert(_singleThreadVisitChecker_trySubmitNextFunctor);
-				//±¾seqÍêÈ«Ö´ĞĞÍê±Ï£¬ÏòÉÏ±¨¸æ
+				//æœ¬seqå®Œå…¨æ‰§è¡Œå®Œæ¯•ï¼Œå‘ä¸ŠæŠ¥å‘Š
 				if (_parent)
 				{
 					_parent->onSubSeqFinish();
 				}
 			}
-			releaseRef();//¿ÉÄÜÔÚ´ËÎö¹¹£¬Ö®ºó²»ÄÜÔÙ·ÃÎÊthis
+			releaseRef();//å¯èƒ½åœ¨æ­¤ææ„ï¼Œä¹‹åä¸èƒ½å†è®¿é—®this
 		}
 	}
 }
@@ -73,7 +77,7 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	TinyAssert(_runningFunctor == 0);
 	TinyAssert(!empty());
 
-	//ÕÒµ½ÒªÌá½»µÄ·¶Î§
+	//æ‰¾åˆ°è¦æäº¤çš„èŒƒå›´
 	int start = _currentFunctor;
 	int end = start;
 	for (;end < static_cast<int>(_functors.size()) && _functors[end]; ++end){}
@@ -81,31 +85,40 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	_currentFunctor = end;
 	if(_currentFunctor < static_cast<int>(_functors.size()))
 	{
-		++_currentFunctor;
+		++_currentFunctor; //è·³è¿‡nullptråˆ†éš”ç¬¦
 	}
 
-	//Ìá½»ËüÃÇ
+	//æäº¤å®ƒä»¬
 	_runningFunctor = end - start;
-	for (; start < end; ++start)
-	{
-		class Task : public Ash::ThreadPoolTask
-		{
-		public:
-			Task(Functor functor, FunctorSeq* seq) :_functor(std::move(functor)), _seq(seq) {}
-			void onRun() override
-			{
-				Ash::FunctorSeqPtr subSeq{ new Ash::FunctorSeq() };
-				subSeq->_parent = _seq;
-				_functor(*subSeq);
-				_seq->onFinishSeq(subSeq.get());
-			}
+	
+	//æ¥ä¸‹æ¥ä¸€æ—¦æäº¤äº†taskï¼Œè¿™ä¸ªå‡½æ•°å°±å¯èƒ½å¤šçº¿ç¨‹è®¿é—®äº†ï¼Œé‡ç½®è¿™ä¸ªassert FLAG
+	ForceResetScopeFlag(_singleThreadVisitChecker_doSubmitNextFunctor);
 
-			Functor _functor;
-			FunctorSeq* _seq = nullptr;
-		};
-		RefCountPtr<Task> task = Ash::MakeRefCountPtr<Task>(std::move(_functors[start]), this);
-		ThreadPool::instance()->dispatchTask(task);
-	}	
+	//å¦‚æœåªæœ‰ä¸€ä¸ªfunctorï¼Œç›´æ¥åœ¨æœ¬çº¿ç¨‹æ‰§è¡Œ
+	if (end - start == 1)
+	{
+		entry(_functors[start], this);
+	}
+	else
+	{
+		for (; start < end; ++start)
+		{
+			class Task : public Ash::ThreadPoolTask
+			{
+			public:
+				Task(Functor functor, FunctorSeq* seq) :_functor(std::move(functor)), _seq(seq) {}
+				void onRun() override
+				{
+					entry(_functor, _seq);
+				}
+
+				Functor _functor;
+				FunctorSeq* _seq = nullptr;
+			};
+			RefCountPtr<Task> task = Ash::MakeRefCountPtr<Task>(std::move(_functors[start]), this);
+			ThreadPool::instance()->dispatchTask(task);
+		}
+	}
 }
 
 bool Ash::FunctorSeq::empty() const
@@ -119,5 +132,20 @@ void Ash::FunctorSeq::thenImpl(Functor functor)
 	if (functor)
 	{
 		_functors.emplace_back(std::move(functor));
+	}
+}
+
+void Ash::FunctorSeq::entry(const Functor& functor, FunctorSeq* parent)
+{
+	FunctorSeqPtr seq{ new FunctorSeq() };
+	seq->_parent = parent;
+	functor(*seq);
+	if(parent)
+	{
+		parent->onFinishSeq(seq.get());
+	}
+	else
+	{
+		seq->submit();
 	}
 }

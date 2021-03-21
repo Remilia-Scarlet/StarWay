@@ -14,10 +14,11 @@ namespace Ash
 	class FunctorSeq : public Ash::RefCountObj
 	{
 	public:
-		static void entry(Functor functor);
+		static void entry(const Functor& functor);
 		template<typename ...T>
 		FunctorSeq& then(T ... functor);
 
+		void setDebugName(std::string debugName);
 	public:
 		FunctorSeq& operator=(const FunctorSeq&) = delete;
 	protected:
@@ -30,6 +31,7 @@ namespace Ash
 		template<typename ...T>
 		void thenImpl(Functor functor, T ... rest);
 		void thenImpl(Functor functor);
+		static void entry(const Functor& functor, FunctorSeq* parent);
 		FunctorSeq() = default;
 		~FunctorSeq() override = default;
 		
@@ -41,6 +43,7 @@ namespace Ash
 
 
 #ifdef TINY_DEBUG
+		std::string _debugName;
 		std::atomic_bool _singleThreadVisitChecker_trySubmitNextFunctor = false;
 		std::atomic_bool _singleThreadVisitChecker_doSubmitNextFunctor = false;
 #endif

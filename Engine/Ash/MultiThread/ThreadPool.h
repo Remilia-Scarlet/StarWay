@@ -1,8 +1,7 @@
 #pragma once
-#include <vector>
 #include <thread>
-#include <atomic>
-#include <functional>
+#include <queue>
+
 
 #include "boost/lockfree/queue.hpp"
 
@@ -11,6 +10,7 @@
 
 namespace Ash
 {
+#define USE_LOCKFREE_CONTAINER_FOR_THREADPOOL 0
 	//Usage:
 	//Inherit ThreadPoolTask, and then dispatch it to threadpool
 	// class MyTask : public ThreadPoolTask
@@ -60,8 +60,13 @@ namespace Ash
 
 		void pushTask(ThreadPoolTask* task);
 		ThreadPoolTaskPtr popTask();
-		
+
+#if USE_LOCKFREE_CONTAINER_FOR_THREADPOOL
 		boost::lockfree::queue<ThreadPoolTask*, boost::lockfree::fixed_sized<false>> _waitingTasks{ 20 };
+#else
+		std::mutex _taskMutex;
+		std::queue<ThreadPoolTask*> _waitingTasks;
+#endif
 		std::vector<std::unique_ptr<Thread> > _threads;
 		std::atomic_bool _exiting = false;
 	};

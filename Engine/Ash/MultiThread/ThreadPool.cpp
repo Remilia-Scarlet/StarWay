@@ -53,14 +53,29 @@ void Ash::ThreadPool::dispatchTask(ThreadPoolTaskPtr task)
 void Ash::ThreadPool::pushTask(ThreadPoolTask* task)
 {
 	task->addRef();
+#if USE_LOCKFREE_CONTAINER_FOR_THREADPOOL
 	_waitingTasks.push(task);
+#else
+	std::unique_lock<std::mutex> taskMutexLock(_taskMutex);
+	_waitingTasks.push(task);
+#endif
 }
 
 Ash::ThreadPoolTaskPtr Ash::ThreadPool::popTask()
 {
 	ThreadPoolTask* task = nullptr;
+#if USE_LOCKFREE_CONTAINER_FOR_THREADPOOL
 	if (_waitingTasks.pop(task))
 	{
+#else
+	std::unique_lock<std::mutex> taskMutexLock(_taskMutex);
+	if(!_waitingTasks.empty())
+	{
+		task = _waitingTasks.front();
+		_waitingTasks.pop();
+		taskMutexLock.unlock();
+#endif
+
 		TinyAssert(task);
 		ThreadPoolTaskPtr ptr{ task };
 		task->releaseRef();
