@@ -17,10 +17,5 @@ target_compile_features(UnitTest PUBLIC cxx_std_17)
 
 target_link_libraries (UnitTest Ash)
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-	target_link_libraries (UnitTest gtestd)
-	target_link_libraries (UnitTest gtest_maind)
-else()
-	target_link_libraries (UnitTest gtest)
-	target_link_libraries (UnitTest gtest_main)
-endif()
+target_link_libraries (UnitTest gtest)
+target_link_libraries (UnitTest gtest_main)

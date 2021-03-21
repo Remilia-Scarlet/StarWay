@@ -73,7 +73,7 @@ void Ash::FunctorSeq::trySubmitNextFunctor()
 
 void Ash::FunctorSeq::doSubmitNextFunctor()
 {
-	ScopeFlagAssert(_singleThreadVisitChecker_doSubmitNextFunctor);
+	BeginFlagAssert(_singleThreadVisitChecker_doSubmitNextFunctor);
 	TinyAssert(_runningFunctor == 0);
 	TinyAssert(!empty());
 
@@ -92,11 +92,13 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	_runningFunctor = end - start;
 	
 	//接下来一旦提交了task，这个函数就可能多线程访问了，重置这个assert FLAG
-	ForceResetScopeFlag(_singleThreadVisitChecker_doSubmitNextFunctor);
+	EndpeFlagAssert(_singleThreadVisitChecker_doSubmitNextFunctor);
 
-	//如果只有一个functor，直接在本线程执行
+	//注意接下来一旦提交后，this就可能因为完成了所有functor而被析构，一旦提交后就不能再访问this了
+	
 	if (end - start == 1)
 	{
+		//如果只有一个functor，直接在本线程执行
 		entry(_functors[start], this);
 	}
 	else

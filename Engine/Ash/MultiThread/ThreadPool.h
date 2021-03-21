@@ -10,7 +10,7 @@
 
 namespace Ash
 {
-#define USE_LOCKFREE_CONTAINER_FOR_THREADPOOL 0
+#define USE_LOCKFREE_CONTAINER_FOR_THREADPOOL 1
 	//Usage:
 	//Inherit ThreadPoolTask, and then dispatch it to threadpool
 	// class MyTask : public ThreadPoolTask
@@ -69,6 +69,9 @@ namespace Ash
 #endif
 		std::vector<std::unique_ptr<Thread> > _threads;
 		std::atomic_bool _exiting = false;
+
+		std::mutex _threadWaitingCondiMu;
+		std::condition_variable _threadWaitingCondi;
 	};
 
 }

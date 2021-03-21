@@ -6,8 +6,10 @@
 
 #ifdef TINY_RETAIL
 #define TinyAssert(...) do{}while(0)
+
 #define ScopeFlagAssert(...) do{}while(0) 
-#define ForceResetScopeFlag(...) do{}while(0)
+#define BeginFlagAssert(...) do{}while(0)
+#define EndpeFlagAssert(...) do{}while(0)
 #else //#ifndef TINY_RETAIL
 
 // Useage:
@@ -19,7 +21,8 @@
 
 //Ensure when entering the scope, FLAG is false. Then set FLAG to true, and when exiting the scope, set FLAG back to false.
 #define ScopeFlagAssert(FLAG)  ScopeFlagAssert_(MY_LINE, FLAG)
-#define ForceResetScopeFlag(FLAG) do{(FLAG) = false;}while(false)
+#define BeginFlagAssert(FLAG) do{TinyAssert(!FLAG, "ScopeFlagAssert failed!"); FLAG = true;}while(0)
+#define EndpeFlagAssert(FLAG) do{(FLAG) = false;}while(false)
 
 
 //////////////////////////////////////////////////////////IMPLEMENTATION///////////////////////////////////////////////
@@ -94,12 +97,11 @@ struct TINY_ASSERT_CAT(__ScopeEnsureAssertStruct_,LINE) \
 {\
 	TINY_ASSERT_CAT(__ScopeEnsureAssertStruct_,LINE)(std::atomic_bool& flag) :_flag(flag)\
 	{\
-		TinyAssert(!_flag, "ScopeFlagAssert failed!");\
-		_flag = true;\
+		BeginFlagAssert(_flag); \
 	}\
 	~TINY_ASSERT_CAT(__ScopeEnsureAssertStruct_,LINE)()\
 	{\
-		_flag = false;\
+		EndpeFlagAssert(_flag); \
 	}\
 private:\
 	std::atomic_bool& _flag;\

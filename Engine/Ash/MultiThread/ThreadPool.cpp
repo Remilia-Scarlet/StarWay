@@ -17,7 +17,8 @@ void Ash::ThreadPool::Thread::run()
 		ThreadPoolTaskPtr runningTask = _threadPool.popTask();
 		if(!runningTask.get())
 		{
-			std::this_thread::yield();
+			std::unique_lock<std::mutex> lock(_threadPool._threadWaitingCondiMu);
+			_threadPool._threadWaitingCondi.wait(lock);
 			continue;
 		}
 
@@ -39,6 +40,7 @@ Ash::ThreadPool::ThreadPool()
 Ash::ThreadPool::~ThreadPool()
 {
 	_exiting = true;
+	_threadWaitingCondi.notify_all();
 	for (auto& th : _threads)
 	{
 		th->_thread.join();
@@ -58,7 +60,10 @@ void Ash::ThreadPool::pushTask(ThreadPoolTask* task)
 #else
 	std::unique_lock<std::mutex> taskMutexLock(_taskMutex);
 	_waitingTasks.push(task);
+	taskMutexLock.unlock();
 #endif
+	std::unique_lock<std::mutex> lock(_threadWaitingCondiMu);
+	_threadWaitingCondi.notify_one();
 }
 
 Ash::ThreadPoolTaskPtr Ash::ThreadPool::popTask()
