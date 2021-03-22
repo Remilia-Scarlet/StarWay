@@ -1,34 +1,22 @@
 #pragma once
 #include <thread>
 #include <queue>
-
-
 #include "boost/lockfree/queue.hpp"
 
 #include "Ash/Misc/SingleInstance.h"
 #include "Ash/MultiThread/FunctorSeq.h"
+#include "Ash/MultiThread/Semaphore.h"
 
 namespace Ash
 {
-#define USE_LOCKFREE_CONTAINER_FOR_THREADPOOL 1
 	//Usage:
-	//Inherit ThreadPoolTask, and then dispatch it to threadpool
-	// class MyTask : public ThreadPoolTask
+	//
+	// auto task = []()
 	// {
-	//    void onRun() override
-	//    {
-	//		//do something
-	//    }
-	// }
-	// RefCountPtr<MyTask> task = Ash::MakeRefCountPtr<MyTask>();
+	//    //Do your own stuff
+	// };
 	// ThreadPool::instance()->dispatchTask(task);
-	ASH_DEFINE_PTR(ThreadPoolTask);
-	class ThreadPoolTask : public RefCountObj
-	{
-	public:
-		virtual ~ThreadPoolTask() = default;
-		virtual void onRun() = 0;
-	};
+	using ThreadPoolTask = std::function<void()>;
 	
     class ThreadPool : public SingleInstance<ThreadPool>
 	{
@@ -49,7 +37,7 @@ namespace Ash
 			void run();
 		};
 	public:
-		void dispatchTask(ThreadPoolTaskPtr task);
+		void dispatchTask(ThreadPoolTask task);
 	protected:
     	ThreadPool();
 		~ThreadPool();
@@ -59,19 +47,13 @@ namespace Ash
 		ThreadPool& operator=(ThreadPool&&) = delete;
 
 		void pushTask(ThreadPoolTask* task);
-		ThreadPoolTaskPtr popTask();
+		ThreadPoolTask* popTask();
 
-#if USE_LOCKFREE_CONTAINER_FOR_THREADPOOL
 		boost::lockfree::queue<ThreadPoolTask*, boost::lockfree::fixed_sized<false>> _waitingTasks{ 20 };
-#else
-		std::mutex _taskMutex;
-		std::queue<ThreadPoolTask*> _waitingTasks;
-#endif
 		std::vector<std::unique_ptr<Thread> > _threads;
 		std::atomic_bool _exiting = false;
 
-		std::mutex _threadWaitingCondiMu;
-		std::condition_variable _threadWaitingCondi;
+		Ash::Semaphore _semaphore;
 	};
 
 }

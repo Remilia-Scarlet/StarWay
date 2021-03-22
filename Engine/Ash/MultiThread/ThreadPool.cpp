@@ -14,15 +14,15 @@ void Ash::ThreadPool::Thread::run()
 {
 	while (!_threadPool._exiting)
 	{
-		ThreadPoolTaskPtr runningTask = _threadPool.popTask();
-		if(!runningTask.get())
+		ThreadPoolTask* runningTask = _threadPool.popTask();
+		if(!runningTask)
 		{
-			std::unique_lock<std::mutex> lock(_threadPool._threadWaitingCondiMu);
-			_threadPool._threadWaitingCondi.wait(lock);
 			continue;
 		}
 
-		runningTask->onRun();
+		(*runningTask)();
+        //new in ThreadPool::dispatchTask. boost::lockfree::queue need trivial type
+		delete runningTask;
 	}		
 }
 
@@ -40,51 +40,34 @@ Ash::ThreadPool::ThreadPool()
 Ash::ThreadPool::~ThreadPool()
 {
 	_exiting = true;
-	_threadWaitingCondi.notify_all();
+	_semaphore.release(99999);
 	for (auto& th : _threads)
 	{
 		th->_thread.join();
 	}
 }
 
-void Ash::ThreadPool::dispatchTask(ThreadPoolTaskPtr task)
+void Ash::ThreadPool::dispatchTask(ThreadPoolTask task)
 {
-	pushTask(task.get());
+	// boost::lockfree::queue need trivial type, so we have to make a heap copy here. Deleting in ThreadPool::Thread::run
+	ThreadPoolTask* copyInHeap = new ThreadPoolTask(std::move(task));
+	pushTask(copyInHeap);
 }
 
 void Ash::ThreadPool::pushTask(ThreadPoolTask* task)
 {
-	task->addRef();
-#if USE_LOCKFREE_CONTAINER_FOR_THREADPOOL
 	_waitingTasks.push(task);
-#else
-	std::unique_lock<std::mutex> taskMutexLock(_taskMutex);
-	_waitingTasks.push(task);
-	taskMutexLock.unlock();
-#endif
-	std::unique_lock<std::mutex> lock(_threadWaitingCondiMu);
-	_threadWaitingCondi.notify_one();
+	_semaphore.release();
 }
 
-Ash::ThreadPoolTaskPtr Ash::ThreadPool::popTask()
+Ash::ThreadPoolTask* Ash::ThreadPool::popTask()
 {
+	_semaphore.acquire();
 	ThreadPoolTask* task = nullptr;
-#if USE_LOCKFREE_CONTAINER_FOR_THREADPOOL
 	if (_waitingTasks.pop(task))
 	{
-#else
-	std::unique_lock<std::mutex> taskMutexLock(_taskMutex);
-	if(!_waitingTasks.empty())
-	{
-		task = _waitingTasks.front();
-		_waitingTasks.pop();
-		taskMutexLock.unlock();
-#endif
-
 		TinyAssert(task);
-		ThreadPoolTaskPtr ptr{ task };
-		task->releaseRef();
-		return ptr;
+		return task;
 	}
 	return nullptr;
 }

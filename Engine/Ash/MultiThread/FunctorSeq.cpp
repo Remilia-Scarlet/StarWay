@@ -105,20 +105,10 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	{
 		for (; start < end; ++start)
 		{
-			class Task : public Ash::ThreadPoolTask
+			ThreadPool::instance()->dispatchTask([this, functor = std::move(_functors[start])]()
 			{
-			public:
-				Task(Functor functor, FunctorSeq* seq) :_functor(std::move(functor)), _seq(seq) {}
-				void onRun() override
-				{
-					entry(_functor, _seq);
-				}
-
-				Functor _functor;
-				FunctorSeq* _seq = nullptr;
-			};
-			RefCountPtr<Task> task = Ash::MakeRefCountPtr<Task>(std::move(_functors[start]), this);
-			ThreadPool::instance()->dispatchTask(task);
+				entry(functor, this);
+			});
 		}
 	}
 }
