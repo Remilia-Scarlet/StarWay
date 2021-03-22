@@ -9,14 +9,7 @@
 
 namespace Ash
 {
-	//Usage:
-	//
-	// auto task = []()
-	// {
-	//    //Do your own stuff
-	// };
-	// ThreadPool::instance()->dispatchTask(task);
-	using ThreadPoolTask = std::function<void()>;
+	using FunctorEntry = void(*)(const Functor&, FunctorSeq*);
 	
     class ThreadPool : public SingleInstance<ThreadPool>
 	{
@@ -37,7 +30,7 @@ namespace Ash
 			void run();
 		};
 	public:
-		void dispatchTask(ThreadPoolTask task);
+		void dispatchFunctor(FunctorEntry entry, Functor* functor, FunctorSeq* seq);
 	protected:
     	ThreadPool();
 		~ThreadPool();
@@ -46,10 +39,16 @@ namespace Ash
 		ThreadPool& operator=(const ThreadPool&) = delete;
 		ThreadPool& operator=(ThreadPool&&) = delete;
 
-		void pushTask(ThreadPoolTask* task);
-		ThreadPoolTask* popTask();
-
-		boost::lockfree::queue<ThreadPoolTask*, boost::lockfree::fixed_sized<false>> _waitingTasks{ 20 };
+        struct Task
+        {
+			FunctorEntry entry;
+			Functor* functor;
+			FunctorSeq* seq;
+        };
+		void pushTask(Task task);
+		Task popTask();
+       
+		boost::lockfree::queue<Task, boost::lockfree::fixed_sized<false>> _waitingTasks{ 20 };
 		std::vector<std::unique_ptr<Thread> > _threads;
 		std::atomic_bool _exiting = false;
 

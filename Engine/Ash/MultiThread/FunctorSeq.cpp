@@ -88,7 +88,7 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 		++_currentFunctor; //跳过nullptr分隔符
 	}
 
-	//提交它们
+	//通过修改_runningFunctor，使得仅当最后一个functor执行完毕时，this才会被删除
 	_runningFunctor = end - start;
 	
 	//接下来一旦提交了task，这个函数就可能多线程访问了，重置这个assert FLAG
@@ -105,10 +105,8 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	{
 		for (; start < end; ++start)
 		{
-			ThreadPool::instance()->dispatchTask([this, functor = std::move(_functors[start])]()
-			{
-				entry(functor, this);
-			});
+            //注意ThreadPool不负责_functors的生命周期
+			ThreadPool::instance()->dispatchFunctor(&FunctorSeq::entry, &_functors[start], this);
 		}
 	}
 }

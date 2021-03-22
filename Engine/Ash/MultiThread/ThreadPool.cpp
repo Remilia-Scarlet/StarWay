@@ -14,15 +14,13 @@ void Ash::ThreadPool::Thread::run()
 {
 	while (!_threadPool._exiting)
 	{
-		ThreadPoolTask* runningTask = _threadPool.popTask();
-		if(!runningTask)
+		Task task = _threadPool.popTask();
+		if(!task.entry)
 		{
 			continue;
 		}
 
-		(*runningTask)();
-        //new in ThreadPool::dispatchTask. boost::lockfree::queue need trivial type
-		delete runningTask;
+		(*task.entry)(*task.functor, task.seq);
 	}		
 }
 
@@ -47,27 +45,24 @@ Ash::ThreadPool::~ThreadPool()
 	}
 }
 
-void Ash::ThreadPool::dispatchTask(ThreadPoolTask task)
+void Ash::ThreadPool::dispatchFunctor(FunctorEntry entry, Functor* functor, FunctorSeq* seq)
 {
-	// boost::lockfree::queue need trivial type, so we have to make a heap copy here. Deleting in ThreadPool::Thread::run
-	ThreadPoolTask* copyInHeap = new ThreadPoolTask(std::move(task));
-	pushTask(copyInHeap);
+	pushTask(Task{ entry, functor, seq });
 }
 
-void Ash::ThreadPool::pushTask(ThreadPoolTask* task)
+void Ash::ThreadPool::pushTask(Task task)
 {
 	_waitingTasks.push(task);
 	_semaphore.release();
 }
 
-Ash::ThreadPoolTask* Ash::ThreadPool::popTask()
+Ash::ThreadPool::Task Ash::ThreadPool::popTask()
 {
 	_semaphore.acquire();
-	ThreadPoolTask* task = nullptr;
+	Task task{ nullptr, nullptr, nullptr };
 	if (_waitingTasks.pop(task))
 	{
-		TinyAssert(task);
 		return task;
 	}
-	return nullptr;
+	return { nullptr, nullptr, nullptr };
 }
