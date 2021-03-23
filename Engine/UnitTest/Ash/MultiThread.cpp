@@ -86,7 +86,12 @@ TEST(Ash, ThreadPoolTest)
 	if (1)
 	{
         //prepare origin data
-		std::vector<int> numbers(2000000);
+#ifdef TINY_DEBUG
+		constexpr size_t sortNumber = 20000;
+#else
+		constexpr size_t sortNumber = 2000000;
+#endif
+		std::vector<int> numbers(sortNumber);
 		{
 			int i = 0;
             for(int& num : numbers)

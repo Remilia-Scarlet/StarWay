@@ -4,7 +4,7 @@
 
 void Ash::FunctorSeq::entry(const Functor& functor)
 {
-	entry(functor, nullptr);
+	runFunctor(functor, nullptr);
 }
 
 void Ash::FunctorSeq::setDebugName(std::string debugName)
@@ -14,43 +14,53 @@ void Ash::FunctorSeq::setDebugName(std::string debugName)
 #endif
 }
 
+//注意submit可能delete this
 void Ash::FunctorSeq::submit()
 {
-	//单线程
-	if (!empty())
-	{
-		addRef();
-		doSubmitNextFunctor();
-	}
+	//单线程进来
+	submitNextFunctor(true);//注意submitNextFunctor中可能会delete this
 }
 
-void Ash::FunctorSeq::onFinishSeq(FunctorSeq* subSeq)
+void Ash::FunctorSeq::onFinishFunctor(FunctorSeq* subSeq)
 {
-	//可能多线程同时访问
+	//多线程进来，但是每个进来的线程的subSeq一定是当前线程自己new的
 	
 	if (subSeq && !subSeq->empty())
 	{
-		// 有subSeq，不减少_runningFunctor，我们认为这个functor还没running完，直到这个subseq完成
+		// 有subSeq，不减少_runningFunctor，我们认为这个functor还没running完，当这个subseq完成时，回调到onSubSeqFinish中去submitNextFunctor
 		subSeq->submit();
 	}
 	else
 	{
-		trySubmitNextFunctor();
+		submitNextFunctor(false);
 	}
 }
 
 void Ash::FunctorSeq::onSubSeqFinish()
 {
-	trySubmitNextFunctor();
+	submitNextFunctor(false);
 }
 
-void Ash::FunctorSeq::trySubmitNextFunctor()
+//注意submitNextFunctor中可能会delete this
+//isInitialSubmit: 如果是初始submit，则一定是单线程进来，并且无视_runningFunctor强制提交下一个functor
+void Ash::FunctorSeq::submitNextFunctor(bool isInitialSubmit) 
 {
-	//可能多线程进来
-	int running = --_runningFunctor;
-	TinyAssert(running >= 0);
-	if (running == 0)
+	bool shouldSubmitNext = false;
+    if(isInitialSubmit)
+    {
+        //单线程进来，但可能subseq完成后递归进来多次到这
+		shouldSubmitNext = true;//初始submit无视_runningFunctor，直接提交
+    }
+	else 
 	{
+		//多线程进来
+		int running = --_runningFunctor;
+		TinyAssert(running >= 0);
+		shouldSubmitNext = (running == 0); //当_runningFunctor等于0时，本线程就是最后一个跑this的线程，所以接下来可以认为单线程
+	}
+	if (shouldSubmitNext)
+	{
+		//单线程进来，但可能subseq完成后递归进来多次到这
 		if (!empty())
 		{
 			doSubmitNextFunctor();
@@ -66,13 +76,14 @@ void Ash::FunctorSeq::trySubmitNextFunctor()
 					_parent->onSubSeqFinish();
 				}
 			}
-			releaseRef();//可能在此析构，之后不能再访问this
+			delete this; //删除自己，注意接下来不能再访问this
 		}
 	}
 }
 
 void Ash::FunctorSeq::doSubmitNextFunctor()
 {
+    //一定是单线程进来
 	BeginFlagAssert(_singleThreadVisitChecker_doSubmitNextFunctor);
 	TinyAssert(_runningFunctor == 0);
 	TinyAssert(!empty());
@@ -99,14 +110,14 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	if (end - start == 1)
 	{
 		//如果只有一个functor，直接在本线程执行
-		entry(_functors[start], this);
+		runFunctor(_functors[start], this);
 	}
 	else
 	{
 		for (; start < end; ++start)
 		{
             //注意ThreadPool不负责_functors的生命周期
-			ThreadPool::instance()->dispatchFunctor(&FunctorSeq::entry, &_functors[start], this);
+			ThreadPool::instance()->dispatchFunctor(&FunctorSeq::runFunctor, &_functors[start], this);
 		}
 	}
 }
@@ -125,14 +136,14 @@ void Ash::FunctorSeq::thenImpl(Functor functor)
 	}
 }
 
-void Ash::FunctorSeq::entry(const Functor& functor, FunctorSeq* parent)
+void Ash::FunctorSeq::runFunctor(const Functor& functor, FunctorSeq* parent)
 {
-	FunctorSeqPtr seq{ new FunctorSeq() };
+	FunctorSeq* seq = new FunctorSeq();
 	seq->_parent = parent;
 	functor(*seq);
 	if(parent)
 	{
-		parent->onFinishSeq(seq.get());
+		parent->onFinishFunctor(seq);
 	}
 	else
 	{

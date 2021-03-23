@@ -10,8 +10,7 @@ namespace Ash
 	class FunctorSeq;
 	using Functor = std::function<void(FunctorSeq&)>;
 
-	ASH_DEFINE_PTR(FunctorSeq);
-	class FunctorSeq : public Ash::RefCountObj
+	class FunctorSeq
 	{
 	public:
 		static void entry(const Functor& functor);
@@ -23,17 +22,17 @@ namespace Ash
 		FunctorSeq& operator=(const FunctorSeq&) = delete;
 	protected:
 		void submit();
-		void onFinishSeq(FunctorSeq* seq);
+		void onFinishFunctor(FunctorSeq* seq);
 		void onSubSeqFinish();
-		void trySubmitNextFunctor();
+		void submitNextFunctor(bool isInitialSubmit);
 		void doSubmitNextFunctor();
 		bool empty() const;
 		template<typename ...T>
 		void thenImpl(Functor functor, T ... rest);
 		void thenImpl(Functor functor);
-		static void entry(const Functor& functor, FunctorSeq* parent);
+		static void runFunctor(const Functor& functor, FunctorSeq* parent);
 		FunctorSeq() = default;
-		~FunctorSeq() override = default;
+		~FunctorSeq() = default;
 		
 		std::vector<Functor> _functors;
 		int _currentFunctor = 0;
