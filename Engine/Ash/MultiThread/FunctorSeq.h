@@ -10,6 +10,33 @@ namespace Ash
 	class FunctorSeq;
 	using Functor = std::function<void(FunctorSeq&)>;
 
+    //Usage:
+	//Ash::FunctorSeq::entry([](Ash::FunctorSeq& seq)
+	//{
+	//	DebugString("A");
+    //
+	//	seq.then([](Ash::FunctorSeq& seq)
+	//	{
+	//		DebugString("B");
+	//		seq.then([](Ash::FunctorSeq&)
+	//		{
+	//			DebugString("C");
+	//		});
+	//	}, [](Ash::FunctorSeq&)
+	//	{
+	//		DebugString("D");
+	//	});
+    //
+	//	seq.then([](Ash::FunctorSeq&)
+	//	{
+	//		DebugString("E");
+	//	});
+	//});
+    //A print first.
+    //E print last.
+    //B must print after A.
+    //C must print after B.
+    //D must after A and before E
 	class FunctorSeq
 	{
 	public:

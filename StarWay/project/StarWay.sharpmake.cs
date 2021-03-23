@@ -26,7 +26,7 @@ namespace StarWay
 			conf.AddPrivateDependency<Prebuild.PrebuildProject>(target);
 		    conf.AddPrivateDependency<Graphic.GraphicProject>(target);
 			conf.AddPrivateDependency<Math.MathProject>(target);
-			conf.AddPrivateDependency<TinyEngine.TinyEngineProject>(target);	
+			conf.AddPrivateDependency<DangoEngine.TinyEngineProject>(target);	
 			
             conf.PrecompHeader = "precomp.h";
             conf.PrecompSource = "precomp.cpp";			

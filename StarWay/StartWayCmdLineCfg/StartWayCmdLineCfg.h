@@ -1,7 +1,7 @@
 #pragma once
 #include "Ash/CommandLineCfg/CommandLineCfg.h"
 
-class StartWayCmdLineCfg : public CommandLineCfg
+class StartWayCmdLineCfg : public Ash::CommandLineCfg
 {
 public:
 	static bool createInstance(const char* commandLine);

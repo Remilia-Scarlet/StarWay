@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
 project (StarWay)
 
-# treat warnings as errors
 if (MSVC)
-    add_compile_options(/WX)
+    # warning level 4 and all warnings as errors
+    add_compile_options(/W4 /WX)
 else()
-    add_compile_options(-Werror)
+    # lots of warnings and all warnings as errors
+    add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
 #UnitTest
@@ -13,5 +14,17 @@ add_subdirectory (Engine/UnitTest)
 
 #Ash
 add_subdirectory (Engine/Ash)
-set (EXTRA_LIBS ${EXTRA_LIBS} Ash)
 
+#DangoEngine
+add_subdirectory (Engine/DangoEngine)
+
+#WinLauncher
+add_subdirectory (Engine/WinLauncher)
+
+#Math
+add_subdirectory (Engine/DangoMath)
+
+
+
+#StarWay
+add_subdirectory (StarWay)

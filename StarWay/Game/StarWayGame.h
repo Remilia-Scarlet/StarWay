@@ -1,5 +1,5 @@
 #pragma once
-#include "TinyEngine/Engine/Game.h"
+#include "DangoEngine/Engine/Game.h"
 
 class StarWayGame : public Game
 {

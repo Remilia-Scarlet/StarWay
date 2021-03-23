@@ -67,7 +67,7 @@ bool Ash::CommandLineCfg::spliteCommandLine(const char* commandLine)
 	name.DefineChangeTo(value, [](char chr) {return chr == ':'; });
 	name.DefineChangeTo(start
 		,[](char chr) {return chr == ' ' || chr == 0; }
-		, [this,&name](char chr){
+		, [this,&name](char){
 			const std::string& curName = name.getUserData<NameUserData>()._name;
 			if(!curName.empty())
 				_splitedCommandLine.insert(std::pair<std::string, std::string>(curName, ""));
@@ -79,7 +79,7 @@ bool Ash::CommandLineCfg::spliteCommandLine(const char* commandLine)
 			|| (chr >= '0' && chr <= '9')
 			|| chr == '_')
 		{
-			curName.push_back(std::tolower(chr));
+			curName.push_back(static_cast<char>(std::tolower(chr)));
 		}
 		else
 		{
@@ -114,7 +114,7 @@ bool Ash::CommandLineCfg::spliteCommandLine(const char* commandLine)
 		}
 		return false;
 	}
-	,[&name,&value,this](char chr){
+	,[&name,&value,this](char){
 		std::string& curName = name.getUserData<NameUserData>()._name;
 		std::string& curValue = value.getUserData<ValueStateUserData>().curValue;
 		_splitedCommandLine.insert(std::pair<std::string,std::string>(curName, curValue));

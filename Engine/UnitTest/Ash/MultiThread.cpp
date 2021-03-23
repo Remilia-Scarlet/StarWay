@@ -12,7 +12,31 @@ TEST(Ash, ThreadPoolTest)
 		std::atomic<bool> finished = false;
 		std::mutex mu;
 		std::condition_variable condi;
-		
+
+
+        Ash::FunctorSeq::entry([](Ash::FunctorSeq& seq)
+        {
+			DebugString("A");
+
+            seq.then([](Ash::FunctorSeq& seq)
+            {
+				DebugString("B");
+				seq.then([](Ash::FunctorSeq&)
+				{
+					DebugString("C");
+				});
+			}, [](Ash::FunctorSeq&)
+			{
+				DebugString("D");
+			});
+
+			seq.then([](Ash::FunctorSeq&)
+			{
+				DebugString("E");
+			});
+        });
+
+
 		std::vector<char> result( static_cast<size_t>(10) );
 		std::atomic_int index = 0;
 		// A
@@ -93,10 +117,10 @@ TEST(Ash, ThreadPoolTest)
 #endif
 		std::vector<int> numbers(sortNumber);
 		{
-			int i = 0;
+		    int j = 0;
             for(int& num : numbers)
             {
-				num = i++;
+				num = j++;
             }
 			std::random_device rd;
 			std::mt19937 gen(rd());

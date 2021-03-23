@@ -1,7 +1,7 @@
 #pragma once
-#include "TinyEngine/Components/ScriptComponent.h"
-#include "TinyEngine/Components/TransformComponent.h"
-#include "TinyEngine/Input/InputManager.h"
+#include "DangoEngine/Components/ScriptComponent.h"
+#include "DangoEngine/Components/TransformComponent.h"
+#include "DangoEngine/Input/InputManager.h"
 
 class CameraControl : public Script
 {

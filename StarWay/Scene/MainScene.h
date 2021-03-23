@@ -1,6 +1,6 @@
 #pragma once
-#include "TinyEngine/Scene/Scene.h"
-TINY_DEFINE_PTR(MainScene);
+#include "DangoEngine/Scene/Scene.h"
+ASH_DEFINE_PTR(MainScene);
 
 class MainScene : public Scene
 {

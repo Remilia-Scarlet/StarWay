@@ -55,15 +55,15 @@ TEST(Ash, SmartPtr)
 	EXPECT_EQ(bPtr->getValue(), 233);	// should not crash
 	bPtr.reset();
 	{
-		Ash::RefCountPtr<A> smartPtr2;
-		smartPtr2 = smartPtr;
+		Ash::RefCountPtr<A> smartPtr3;
+		smartPtr3 = smartPtr;
 		EXPECT_EQ(smartPtr.getStrongRefCount(), 2);
 		EXPECT_EQ(smartPtr.getWeakRefCount(), 1);
 
-		Ash::WeakRefPtr<A> weakPtr2 = smartPtr;
+		Ash::WeakRefPtr<A> weakPtr3 = smartPtr;
 		EXPECT_EQ(smartPtr.getStrongRefCount(), 2);
 		EXPECT_EQ(smartPtr.getWeakRefCount(), 2);
-		Ash::RefCountPtr<A> lockPtr = weakPtr2.lock(); //should not crash here
+		Ash::RefCountPtr<A> lockPtr = weakPtr3.lock(); //should not crash here
 	}
 	EXPECT_EQ(smartPtr.getStrongRefCount(), 1);
 	EXPECT_EQ(smartPtr.getWeakRefCount(), 1);

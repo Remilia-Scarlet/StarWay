@@ -1,7 +1,7 @@
 #pragma once
-#include "TinyEngine/Components/ScriptComponent.h"
-#include "Math/vector/Vector.h"
-#include "TinyEngine/Components/TransformComponent.h"
+#include "DangoEngine/Components/ScriptComponent.h"
+#include "DangoMath/vector/Vector.h"
+#include "DangoEngine/Components/TransformComponent.h"
 
 class PointLightMovement : public Script
 {
