@@ -1,5 +1,5 @@
 #pragma once
-#include "DangoEngine\Engine\EngineDefs.h"
+#include "DangoEngine/Engine/EngineDefs.h"
 #include <unordered_map>
 #include <type_traits>
 #include "Ash/RefCountPointer/RefCountObj.h"
@@ -7,11 +7,12 @@
 #include <type_traits>
 #include <bitset>
 
+#include "Ash/MultiThread/FunctorSeq.h"
+
 
 ASH_DEFINE_PTR(Object);
 ASH_DEFINE_PTR(BaseComponent);
 class BaseComponent;
-class Task;
 
 enum class ObjectFlag
 {
@@ -37,11 +38,11 @@ public:
 
 	template<class T>
     Ash::RefCountPtr<T> getComponent();
-	BaseComponentPtr getComponent(ObjectID componentId);
+	BaseComponentPtr getComponent(Ash::ObjectID componentId);
 	template<class T> std::vector<Ash::RefCountPtr<T> > getComponents();
 	BaseComponentPtr getComponent(const std::string& name);
 
-	virtual void update(Task* task, float dt);
+	virtual void update(Ash::FunctorSeq& task, float dt);
 	virtual void render();
 
 	virtual void setFlag(ObjectFlag flagType, bool val);
@@ -60,8 +61,8 @@ protected:
 	bool _enable;
 	std::string _name;
 	ObjectWeakPtr _parent;
-	std::unordered_map<ObjectID, ObjectPtr>* _children;
-	std::unordered_map<ObjectID, BaseComponentPtr>* _components;
+	std::unordered_map<Ash::ObjectID, ObjectPtr>* _children;
+	std::unordered_map<Ash::ObjectID, BaseComponentPtr>* _components;
 	std::bitset<32> _flag;
 public:
 	Object();

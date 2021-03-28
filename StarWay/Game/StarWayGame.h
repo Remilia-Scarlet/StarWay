@@ -1,18 +1,21 @@
 #pragma once
 #include "DangoEngine/Engine/Game.h"
+#include "StartWayCmdLineCfg/StartWayCmdLineCfg.h"
 
-class StarWayGame : public Game
+namespace StartWay
 {
-public:
-	StarWayGame();
-	virtual ~StarWayGame() override;
-	virtual bool preInit(const char* cmdLine) override;
-	virtual bool init(int solutionWidth, int solutionHeight, HWND hwnd) override;
-	virtual bool start() override;
-	virtual bool mainLoop(float delta) override;
-	virtual bool cleanUp() override;
-	virtual bool destroy() override;
-
-public:
-	int getDesiredFPS();
-};
+	class StarWayGame : public Dango::Game
+	{
+	public:
+		StarWayGame();
+		virtual ~StarWayGame() override;
+		virtual bool preInit(const std::string& cmdLine) override;
+		virtual bool init(Ash::NativeWindow hwnd) override;
+		virtual bool start() override;
+		virtual bool cleanUp() override;
+		virtual bool destroy() override;
+	protected:
+		StartWayCmdLineCfg _cmdLine;
+	};
+}
+DEFINE_GAME(StartWay::StarWayGame);

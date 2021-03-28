@@ -43,6 +43,7 @@ namespace Ash
 		static void entry(const Functor& functor);
 		template<typename ...T>
 		FunctorSeq& then(T ... functor);
+		FunctorSeq& then(std::vector<Functor> functors);
 
 		void setDebugName(std::string debugName);
 	public:

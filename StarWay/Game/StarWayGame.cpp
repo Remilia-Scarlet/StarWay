@@ -3,52 +3,45 @@
 #include "StartWayCmdLineCfg/StartWayCmdLineCfg.h"
 #include "Scene/MainScene.h"
 
-StarWayGame::StarWayGame()
+StartWay::StarWayGame::StarWayGame()
 {
 }
 
-StarWayGame::~StarWayGame()
+StartWay::StarWayGame::~StarWayGame()
 {
 }
 
-bool StarWayGame::preInit(const char* cmdLine)
+bool StartWay::StarWayGame::preInit(const std::string& cmdLine)
 {
-	return StartWayCmdLineCfg::createInstance(cmdLine);
+	_gameConfig.width = 1024;
+	_gameConfig.height = 768;
+	_gameConfig.fps = 30;
+	do
+	{
+		TINY_BREAK_IF(_cmdLine.init(cmdLine.c_str()));
+		return true;
+	} while (false);
+	return false;
 }
 
-bool StarWayGame::init(int solutionWidth, int solutionHeight, HWND hwnd)
+bool StartWay::StarWayGame::init(Ash::NativeWindow hwnd)
 {
-	return Engine::createInstance(solutionWidth, solutionHeight, hwnd);
-}
-
-bool StarWayGame::start()
-{
-	Engine::instance()->start();
-	MainScenePtr mainScene = MainScene::create();
-	Engine::instance()->startScene(mainScene);
 	return true;
 }
 
-bool StarWayGame::mainLoop(float delta)
+bool StartWay::StarWayGame::start()
 {
-	Engine::instance()->mainLoop(delta);
+	StarWay::MainScenePtr mainScene = StarWay::MainScene::create();
+	Dango::Engine::instance()->startScene(mainScene);
 	return true;
 }
 
-bool StarWayGame::cleanUp()
+bool StartWay::StarWayGame::cleanUp()
 {
-	Engine::instance()->cleanUp();
 	return true;
 }
 
-bool StarWayGame::destroy()
+bool StartWay::StarWayGame::destroy()
 {
-	Engine::destroyInstance();
-	StartWayCmdLineCfg::destroy();
 	return true;
-}
-
-int StarWayGame::getDesiredFPS()
-{
-	return Engine::instance()->getDesiredFPS();
 }

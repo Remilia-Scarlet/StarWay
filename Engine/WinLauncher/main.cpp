@@ -10,9 +10,6 @@
 
 static const bool SHOW_WIN32_CONSOLE_AT_START = true;
 
-static const int SOLUTION_WIDTH = 1024;
-static const int SOLUTION_HEIGHT = 768;
-
 void ShowHideWin32Console()
 {
 	static std::vector<char> s_buffer(1024,'\0');
@@ -128,42 +125,30 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (SHOW_WIN32_CONSOLE_AT_START)
 		ShowHideWin32Console();
 
-	//TODO: Move w2c to somewhere
-	int len = WideCharToMultiByte(CP_ACP, 0, lpCmdLine, -1, NULL, 0, NULL, NULL);
-	char* cmdLine = new char[len];
-	WideCharToMultiByte(CP_ACP, 0, lpCmdLine, -1, cmdLine, len, NULL, NULL);
+	using Engine = Dango::Engine;
 
-	StarWayGame theGame;
-	if(!theGame.preInit(cmdLine))
-	{
-		return 0;
-	}
+	std::string cmd = Ash::wcharToChar(lpCmdLine);
+	std::unique_ptr<Dango::Game> theGame = ::dangoCreateGameInstance();
 
-	delete[] cmdLine;
+	Engine::createInstance(std::move(theGame));
+	
+	bool result = Engine::instance()->preInit(cmd);
+	TinyAssert(result);
 
-	if (StartWayCmdLineCfg::instance()->getRenderdoc())
-	{
-		if (!RenderDoc::createInstance())
-		{
-			return 0;
-		}
-	}
-
-	HWND hwnd = InitWindow(hInstance, nCmdShow, SOLUTION_WIDTH, SOLUTION_HEIGHT);
+	Dango::Game* game = Engine::instance()->getGame();
+	auto [desiredWidth, desiredHeight, fps] = game->getGameConfig();
+	
+	HWND hwnd = InitWindow(hInstance, nCmdShow, desiredWidth, desiredHeight);
 	if (!hwnd)
 	{
 		//(NULL, "Create Window failed.", "Error", MB_OK);
 		return 0;
 	}
 
-	//start
-	if (!theGame.init(SOLUTION_WIDTH,SOLUTION_HEIGHT,hwnd))
-	{
-		//(NULL, "Init Engine failed.", "Error", MB_OK);
-		return 0;
-	}
+	result = Engine::instance()->init(hwnd);
+	TinyAssert(result);
 
-	theGame.start();
+	Engine::instance()->start();
 
 	// Main message loop
 	LARGE_INTEGER freq;
@@ -171,14 +156,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	float frameTime;
 	float remainTime;
 	float desiredFrameTime;
-	double frame = 0;
+	uint64_t frame = 0;
 	double average = 0;
 	MSG msg = { 0 };
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start_t);
 	while (WM_QUIT != msg.message)
 	{
-		desiredFrameTime = 1.0f / theGame.getDesiredFPS();
+		desiredFrameTime = 1.0f / fps;
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
@@ -190,7 +175,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		{
 			start_t = stop_t;
 			++frame;
-			theGame.mainLoop(frameTime);
+			Engine::instance()->mainLoop(frameTime);
 			QueryPerformanceCounter(&stop_t);
 			frameTime = float(stop_t.QuadPart - start_t.QuadPart) / float(freq.QuadPart);
 			average += frameTime;
@@ -204,11 +189,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		}
 	}
 
-	DebugString("Average frame time:%f", average/frame);
+	Ash::DebugString("Average frame time:%f", average/frame);
 
-	theGame.cleanUp();
+	Engine::instance()->cleanUp();
 
-	theGame.destroy();
+	Engine::destroyInstance();
 
 #if 0
 	ID3D11Debug *d3dDebug;
@@ -219,8 +204,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	}
 	if (d3dDebug != nullptr)			d3dDebug->Release();
 #endif // _DEBUG
-
-	RenderDoc::destroy();
 
 	FreeConsole();
 

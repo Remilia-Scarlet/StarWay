@@ -6,49 +6,43 @@
 #include <Windows.h>
 #endif
 
-class Engine
+namespace Dango
 {
-public:
-	static bool createInstance(int solutionWidth, int solutionHeight, HWND hwnd);
-	static void destroyInstance();
-	static Engine* instance();
+	class Game;
 
-	void start();
-	void startScene(const ScenePtr& scene);
-	ScenePtr getCurrentScene();
-	void cleanUp();
+	class Engine
+	{
+	public:
+		static bool createInstance(std::unique_ptr<Game> game);
+		static void destroyInstance();
+		static Engine* instance();
 
-	void mainLoop(float dt);
+		bool preInit(const std::string& cmdLine);
+		bool init(Ash::NativeWindow nativeWindow);
+		
+		void start();
+		void startScene(const ScenePtr& scene);
+		ScenePtr getCurrentScene();
+		void cleanUp();
 
-	int getSolutionWidth() { return _solutionWidth; }
-	int getSolutionHeight() { return _solutionHeight; }
+		void mainLoop(float dt);
 
-	int getDesiredFPS() {return _desiredFPS;}
-	void setDesiredFPS(int desiredFPS) { _desiredFPS = desiredFPS; }
+		Game* getGame() const { return _game.get(); }
 
-	// return time in seconds since game started
-	float getTime() const;
+		bool isExiting() const;
+	protected:
+		Engine();
+		virtual ~Engine();
 
-	bool isExiting() const;
-protected:
-	Engine();
-	virtual ~Engine();
-	bool init(int solutionWidth, int solutionHeight
-#if defined(TINY_PLATFORM_WINDOWS)
-		,HWND hWnd
-#endif
-	);
+		void drawScene(Ash::FunctorSeq& seq, float dt);
+		void updateManager(Ash::FunctorSeq& seq, float dt);
+		void updateWorld(Ash::FunctorSeq& seq, float dt);
+		static Engine* s_instance;
 
-	void drawScene(Task* task, float dt);
-	void updateManager(Task* task, float dt);
-	void updateWorld(Task* task, float dt);
-	static Engine* s_instance;
-	int _solutionWidth;
-	int _solutionHeight;
-	int _desiredFPS;
-	ScenePtr _currentScene;
-	float _currentTime;
-	bool _paused;
-	bool _exit;
-};
+		ScenePtr _currentScene;
+		bool _paused;
+		bool _exit;
+		std::unique_ptr<Game> _game;
+	};
 
+}

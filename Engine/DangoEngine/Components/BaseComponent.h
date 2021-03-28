@@ -1,6 +1,5 @@
 #pragma once
 #include "Ash/RefCountPointer/RefCountObj.h"
-#include "Ash/MultiThread/Task.h"
 
 ASH_DEFINE_PTR(BaseComponent);
 ASH_DEFINE_PTR(Object);

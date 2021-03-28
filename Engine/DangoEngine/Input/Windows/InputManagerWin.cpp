@@ -19,12 +19,12 @@ void InputManagerWin::onLocalKeyUp(int key)
 
 void InputManagerWin::onLocalMouseDown(int btn, int x, int y)
 {
-	onVirtualMouseBtnDown((btn == 1 ? VirtualMouseBtn::L : VirtualMouseBtn::R), Vector2((float)x, (float)y));
+	onVirtualMouseBtnDown((btn == 1 ? VirtualMouseBtn::L : VirtualMouseBtn::R), DangoMath::Vector2((float)x, (float)y));
 }
 
 void InputManagerWin::onLocalMouseUp(int btn, int x, int y)
 {
-	onVirtualMouseBtnUp((btn == 1 ? VirtualMouseBtn::L : VirtualMouseBtn::R), Vector2((float)x, (float)y));
+	onVirtualMouseBtnUp((btn == 1 ? VirtualMouseBtn::L : VirtualMouseBtn::R), DangoMath::Vector2((float)x, (float)y));
 }
 
 void InputManagerWin::update(float dt)

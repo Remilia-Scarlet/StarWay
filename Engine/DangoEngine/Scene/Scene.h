@@ -18,16 +18,16 @@ public:
 
 	virtual void removeObject(ObjectPtr obj);
 
-	virtual void update(Task* task, float dt);
+	virtual void update(Ash::FunctorSeq& seq, float dt);
 	virtual void render();
 
 
 	virtual bool start() { return true; }
 protected:
 	virtual bool init();
-	std::map<ObjectID, ObjectWeakPtr> _cameras;//we need to sort cameras for draw
-	std::unordered_map<ObjectID, ObjectWeakPtr> _lights;
-	std::unordered_map<ObjectID,ObjectPtr> _objects;
+	std::map<Ash::ObjectID, ObjectWeakPtr> _cameras;//we need to sort cameras for draw
+	std::unordered_map<Ash::ObjectID, ObjectWeakPtr> _lights;
+	std::unordered_map<Ash::ObjectID,ObjectPtr> _objects;
 
 };
 

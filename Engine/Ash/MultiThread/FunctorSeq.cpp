@@ -7,6 +7,26 @@ void Ash::FunctorSeq::entry(const Functor& functor)
 	runFunctor(functor, nullptr);
 }
 
+Ash::FunctorSeq& Ash::FunctorSeq::then(std::vector<Functor> functors)
+{
+	if (functors.empty())
+		return *this;
+	
+	_functors.reserve(_functors.size() + functors.size());
+	_functors.emplace_back(nullptr);
+	const auto nowSize = _functors.size();
+	for(Functor& fun : functors)
+	{
+		if (fun)
+			_functors.emplace_back(std::move(fun));
+	}
+	if(nowSize == _functors.size())
+	{
+		_functors.pop_back();
+	}
+	return *this;
+}
+
 void Ash::FunctorSeq::setDebugName(std::string debugName)
 {
 #ifdef TINY_DEBUG

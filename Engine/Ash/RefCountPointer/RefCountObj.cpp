@@ -1,6 +1,6 @@
 #include "RefCountObj.h"
 
-ObjectID Ash::RefCountObj::s_nextId = INVALID_OBJECT_ID;
+Ash::ObjectID Ash::RefCountObj::s_nextId = INVALID_OBJECT_ID;
 
 Ash::RefCountObj::RefCountObj()
 	:_id(++s_nextId)

@@ -1,5 +1,6 @@
 #include "DangoEngine/precomp.h"
 #include "Engine.h"
+#include "DangoEngine/Engine/Game.h"
 #include "Graphic/Manager/GraphicMgr.h"
 #include "Graphic/gfx/GfxMesh.h"
 #include "DangoEngine/Components/MeshComponent.h"
@@ -13,56 +14,54 @@
 #include "DangoEngine/Components/CameraComponent.h"
 #include "Graphic/Manager/LightManager.h"
 #include "Graphic/Manager/DefaultMgr.h"
-#include "Ash/MultiThread/Task.h"
 
-const int DESIRED_FPS = 60;
-const int THREAD_POOL_THREAD_NUMBER = 12;
 
-Engine::Engine()
-	:_solutionWidth(0)
-	,_solutionHeight(0)
-	,_desiredFPS(DESIRED_FPS)
-	, _currentTime(0)
-	, _paused(false)
+Dango::Engine::Engine()
+	: _paused(false)
 	, _exit(false)
-	, _threadPool(THREAD_POOL_THREAD_NUMBER)
 {
 }
 
 
-Engine::~Engine()
+Dango::Engine::~Engine()
 {
 }
 
-bool Engine::createInstance(int solutionWidth, int solutionHeight, HWND hwnd)
+bool Dango::Engine::createInstance(std::unique_ptr<Game> game)
 {
 	TinyAssert(s_instance == nullptr,"Memory leak! Call destroyInstance() first!");
+	TinyAssert(game, "None game set");
 	if (s_instance)
 		return false;
 	s_instance = new Engine();
-	if(!s_instance || !s_instance->init(solutionWidth, solutionHeight, hwnd))
-	{
-		TinyAssert(false, "create Engine failed");
-		TINY_SAFE_DELETE(s_instance);
-		return false;
-	}
+	s_instance->_game = std::move(game);
 	return true;
 }
 
-Engine* Engine::instance()
+Dango::Engine* Dango::Engine::instance()
 {
 	TinyAssert(s_instance != nullptr,"No instance!! Call createInstance() first!");
 	return s_instance;
 }
 
-bool Engine::init(int solutionWidth, int solutionHeight, HWND hWnd)
+bool Dango::Engine::preInit(const std::string& cmdLine)
 {
-	_solutionWidth = solutionWidth;
-	_solutionHeight = solutionHeight;
+	TinyAssert(_game);
+	do
+	{
+		TINY_BREAK_IF(_game->preInit(cmdLine));
+		return true;
+	} while (false);
+	return false;
+}
+
+bool Dango::Engine::init(Ash::NativeWindow nativeWindow)
+{
+	_game->init(nativeWindow);
 	do
 	{
 		TINY_BREAK_IF(!TimerManager::createInstance());
-		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionWidth, _solutionHeight, hWnd));
+		TINY_BREAK_IF(!GraphicMgr::createInstance(_solutionWidth, _solutionHeight, nativeWindow));
 		TINY_BREAK_IF(!ConstantBufferManager::createInstance());
 		TINY_BREAK_IF(!ShaderMgr::createInstance());
 		TINY_BREAK_IF(!LightManager::createInstance());
@@ -73,7 +72,7 @@ bool Engine::init(int solutionWidth, int solutionHeight, HWND hWnd)
 	return false;
 }
 
-void Engine::cleanUp()
+void Dango::Engine::cleanUp()
 {
 	_exit = true;
 	_currentScene = nullptr;
@@ -85,60 +84,52 @@ void Engine::cleanUp()
 	LightManager::destroyInstance();
 	InputManager::destroyInstance();
 }
-void Engine::destroyInstance()
+void Dango::Engine::destroyInstance()
 {
 	TINY_SAFE_DELETE(s_instance);
 }
 
-void Engine::mainLoop(float dt)
+void Dango::Engine::mainLoop(float dt)
 {
 	if (_paused)
 		return;
-	_currentTime += dt;
 
-	//TaskPtr frameBegin = MakeRefCountPtr<Task>();
-
-	//TaskPtr managerUpdate = MakeRefCountPtr<Task>(std::bind(&Engine::updateManager, this, std::placeholders::_1, dt));
-	//frameBegin->linkEndTask(managerUpdate);
-
-	////game logic
-	//TaskPtr updateTask = MakeRefCountPtr<Task>(std::bind(&Engine::updateWorld, this, std::placeholders::_1, dt));
-	//managerUpdate->linkEndTask(updateTask);
-
-	//TaskPtr renderTask = MakeRefCountPtr<Task>(std::bind(&Engine::drawScene, this, std::placeholders::_1, dt));
-	//updateTask->linkEndTask(renderTask);
-
-	//_threadPool.addTask(frameBegin);
-	//_threadPool.waitForAllTasksFinished();
+	Ash::Semaphore sem;
+	Ash::FunctorSeq::entry([this, dt, &sem](Ash::FunctorSeq& seq)
+	{
+		seq.then(std::bind(&Engine::updateManager, std::placeholders::_1, dt));
+		seq.then(std::bind(&Engine::updateWorld, std::placeholders::_1, dt));
+		seq.then(std::bind(&Engine::drawScene, std::placeholders::_1, dt));
+		seq.then([&sem](Ash::FunctorSeq& seq)
+		{
+			sem.release();
+		});
+	});
+	sem.acquire();
 }
 
-
-float Engine::getTime() const
-{
-	return _currentTime;
-}
-
-bool Engine::isExiting() const
+bool Dango::Engine::isExiting() const
 {
 	return _exit;
 }
 
-void Engine::start()
+void Dango::Engine::start()
 {
+	_game->start();
 }
 
-void Engine::startScene(const ScenePtr& scene)
+void Dango::Engine::startScene(const ScenePtr& scene)
 {
 	_currentScene = scene;
 	scene->start();
 }
 
-ScenePtr Engine::getCurrentScene()
+ScenePtr Dango::Engine::getCurrentScene()
 {
 	return _currentScene;
 }
 
-void Engine::drawScene(Task* task, float dt)
+void Dango::Engine::drawScene(Ash::FunctorSeq& seq, float dt)
 {
 	GraphicMgr::instance()->preRender();
 	if (_currentScene.isValid())
@@ -146,18 +137,21 @@ void Engine::drawScene(Task* task, float dt)
 	GraphicMgr::instance()->render();
 }
 
-void Engine::updateManager(Task* task, float dt)
+void Dango::Engine::updateManager(Ash::FunctorSeq& seq, float dt)
 {
 	// input
 	InputManager::instance()->update(dt);
 
 }
 
-void Engine::updateWorld(Task* task, float dt)
+void Dango::Engine::updateWorld(Ash::FunctorSeq& seq, float dt)
 {
-
-	if (_currentScene.isValid())
-		_currentScene->update(task, dt);
+	seq.then([this, dt](Ash::FunctorSeq& seq)
+	{
+		if (_currentScene.isValid())
+			_currentScene->update(seq, dt);
+	});
+	
 }
 
-Engine* Engine::s_instance = nullptr;
+Dango::Engine* Dango::Engine::s_instance = nullptr;

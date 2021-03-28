@@ -9,7 +9,7 @@ public:
 	const float MOVE_SPEED = 0.1f;
 	const float TURN_SPEED = 0.1f;
 	bool _lastLIsDown = false;
-	Vector2 _lastMousePos = {0, 0};
+	DangoMath::Vector2 _lastMousePos = {0, 0};
 public:
 	void update(float dt) override
 	{
@@ -36,10 +36,10 @@ public:
 		{
 			if (_lastLIsDown)
 			{
-				Vector2 currentMousePos = InputManager::instance()->getVirtualMousePos();
+				DangoMath::Vector2 currentMousePos = InputManager::instance()->getVirtualMousePos();
 				float detaX = currentMousePos.X() - _lastMousePos.X();
 				float detaY = currentMousePos.Y() - _lastMousePos.Y();
-				Vector3 euler = transformCom->getEulerRotation();
+				DangoMath::Vector3 euler = transformCom->getEulerRotation();
 				euler.Y() = euler.Y() + detaX * TURN_SPEED;
 				euler.X() = euler.X() + detaY * TURN_SPEED;
 				transformCom->setEulerRotation(euler);
@@ -79,9 +79,9 @@ public:
 			&& !btnLeftStatus.isDown && !btnL1Status.isDown && !btnR1Status.isDown)
 			return;
 
-		Vector3 location = transformCom->getLocation();
-		Vector3 frontDirection = transformCom->getFrontDirection();
-		Vector3 rightDirection = transformCom->getRightDirection();
+		DangoMath::Vector3 location = transformCom->getLocation();
+		DangoMath::Vector3 frontDirection = transformCom->getFrontDirection();
+		DangoMath::Vector3 rightDirection = transformCom->getRightDirection();
 		if (btnUpStatus.isDown)
 		{
 			location.X() = location.X() + frontDirection.X() * MOVE_SPEED;
@@ -110,14 +110,14 @@ public:
 
 		if (btnL1Status.isDown)
 		{
-			Vector3 parentUp = transformCom->parentVectorToLocal(Vector3(0, 1, 0));
+			DangoMath::Vector3 parentUp = transformCom->parentVectorToLocal(DangoMath::Vector3(0, 1, 0));
 			location.X() = location.X() + parentUp.X() * MOVE_SPEED;
 			location.Y() = location.Y() + parentUp.Y() * MOVE_SPEED;
 			location.Z() = location.Z() + parentUp.Z() * MOVE_SPEED;
 		}
 		else if (btnR1Status.isDown)
 		{
-			Vector3 parentUp = transformCom->parentVectorToLocal(Vector3(0, 1, 0));
+			DangoMath::Vector3 parentUp = transformCom->parentVectorToLocal(DangoMath::Vector3(0, 1, 0));
 			location.X() = location.X() - parentUp.X() * MOVE_SPEED;
 			location.Y() = location.Y() - parentUp.Y() * MOVE_SPEED;
 			location.Z() = location.Z() - parentUp.Z() * MOVE_SPEED;
@@ -125,7 +125,7 @@ public:
 
 		if (btnPauseStatus.isDown)
 		{
-			transformCom->setLocation(Vector3(0, 2, -5));
+			transformCom->setLocation(DangoMath::Vector3(0, 2, -5));
 		}
 		else
 		{

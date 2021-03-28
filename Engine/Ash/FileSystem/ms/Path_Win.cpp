@@ -298,11 +298,11 @@ const std::string& Path::getRelativePath() const
 	std::string myPath = _fullpath(path, ".", 1024);
 	delete[] path;
 
-	std::vector<std::string> path1 = split(myPath,"\\");
-	std::vector<std::string> path2 = split(getAbsolutePath(),"\\");
+	std::vector<std::string> path1 = Ash::split(myPath,"\\");
+	std::vector<std::string> path2 = Ash::split(getAbsolutePath(),"\\");
 	int i = 0;
 
-	while (i < (int)min(path1.size(), path2.size()) && toLower(path1[i]) == toLower(path2[i]))
+	while (i < (int)min(path1.size(), path2.size()) && Ash::toLower(path1[i]) == Ash::toLower(path2[i]))
 		++i;
 
 	int j = i;

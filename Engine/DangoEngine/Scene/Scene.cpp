@@ -47,13 +47,15 @@ void Scene::removeObject(ObjectPtr obj)
 	}
 }
 
-void Scene::update(Task* task, float dt)
+void Scene::update(Ash::FunctorSeq& seq, float dt)
 {
-	for(auto& it : _objects)//@@TODO : if in update, _object removed a item, it will crash
+	std::vector<Ash::Functor> funcs;
+	funcs.reserve(_objects.size());
+	for(auto& it : _objects)
 	{
-		TaskPtr objTaskPtr = MakeRefCountPtr<Task>(std::bind(&Object::update, it.second.get(), std::placeholders::_1, dt));
-		task->addNextTask(objTaskPtr);
+		funcs.emplace_back(std::bind(&Object::update, it.second.get(), std::placeholders::_1, dt));
 	}
+	seq.then(std::move(funcs));
 }
 
 void Scene::render()

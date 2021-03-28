@@ -8,7 +8,7 @@ class PointLightMovement : public Script
 public:
 	const float	ROTATE_RANDIUS = 5.0;
 	const float	ROTATE_SPEED = 3;
-	Vector3	_originalPos;
+	DangoMath::Vector3	_originalPos;
 	float _detaTime = 0;
 public:
 	virtual void init() override
