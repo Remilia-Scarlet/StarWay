@@ -1,6 +1,7 @@
 #pragma once
 #include <atomic>
 #include <functional>
+#include <variant>
 
 #include "Ash/RefCountPointer/RefCountObj.h"
 #include "Ash/RefCountPointer/RefCountPtr.h"
@@ -9,10 +10,83 @@ namespace Ash
 {
 	class FunctorSeq;
 	using Functor = std::function<void(FunctorSeq&)>;
-    class Future : public Functor
-    {
-        
-    };
+	class Future
+	{
+	private:
+		FunctorSeq* _seq = nullptr;
+	};
+	struct FunctorSaving
+	{
+		enum class FunctorType : uint8_t
+		{
+			ThenFunctor,
+			FutureFunctor,
+			Future,
+			LoopFunctor,
+			Separator
+		};
+		struct ThenFactorStruct
+		{
+			Functor _functor;
+		};
+		struct FutureFunctorStruct
+		{
+			Functor _functor;
+			FunctorSeq* _seq;
+		};
+		struct FutureStruct
+		{
+			FunctorSeq* _seq;
+		};
+		struct LoopFunctorStruct
+		{
+			Functor _functor;
+			std::function<bool()> _pred;
+		};
+		struct SeparatorStruct
+		{
+		};
+		FunctorSaving(FunctorType type, std::variant<ThenFactorStruct, FutureFunctorStruct, FutureStruct, LoopFunctorStruct, SeparatorStruct> data)
+			:_functorType(type)
+		{
+			switch (_functorType)
+			{
+			case FunctorType::ThenFunctor:
+			{
+				ThenFactorStruct& strc = std::get<ThenFactorStruct>(data);
+				_data = std::move(strc);
+				break;
+			}
+			case FunctorType::FutureFunctor:
+			{
+				FutureFunctorStruct& strc = std::get<FutureFunctorStruct>(data);
+				_data = std::move(strc);
+				break;
+			}
+			case FunctorType::Future: 
+			{
+				FutureStruct& strc = std::get<FutureStruct>(data);
+				_data = std::move(strc);
+				break;
+			}
+			case FunctorType::LoopFunctor: 
+			{
+				LoopFunctorStruct& strc = std::get<LoopFunctorStruct>(data);
+				_data = std::move(strc);
+				break;
+			}
+			case FunctorType::Separator:
+			{
+				SeparatorStruct& strc = std::get<SeparatorStruct>(data);
+				_data = std::move(strc);
+				break;
+			}
+			}
+		}
+		FunctorType _functorType;
+		std::variant<ThenFactorStruct, FutureFunctorStruct, FutureStruct, LoopFunctorStruct, SeparatorStruct> _data;
+	};
+
 
     //Usage:
 	//Ash::FunctorSeq::entry([](Ash::FunctorSeq& seq)
@@ -62,15 +136,14 @@ namespace Ash
 	{
 	public:
 		static void entry(const Functor& functor);
+		
 		template<typename ...Functors>
 		FunctorSeq& then(Functors ... functor);
 		FunctorSeq& then(std::vector<Functor> functors);
 
-		template<typename Functor>
 		Future future(Functor functor);
 
-		template<typename Pred, typename Functor>
-		FunctorSeq& loop(Pred pred, Functor functor);
+		FunctorSeq& loop(std::function<bool()> pred, Functor functor);
 
 		void setDebugName(std::string debugName);
 	public:
@@ -84,16 +157,24 @@ namespace Ash
 		bool empty() const;
 		template<typename ...T>
 		void thenImpl(Functor functor, T ... rest);
+		template<typename ...T>
+		void thenImpl(Future future, T...rest);
 		void thenImpl(Functor functor);
-		static void runFunctor(const Functor& functor, FunctorSeq* parent);
+		void thenImpl(Future future);
 		FunctorSeq() = default;
 		~FunctorSeq() = default;
-		
-		std::vector<Functor> _functors;
+
+		void pushSeparatorFunctor();
+		void pushFutureFunctor(Functor functor);
+		void pushFuture(Future future);
+		void pushThenFunctor(Functor functor);
+		void pushLoopFunctor(Functor functor, std::function<bool()> pred);
+
+		std::vector<FunctorSaving> _functors;
 		int _currentFunctor = 0;
 		std::atomic_int _runningFunctor = 0;
 		FunctorSeq* _parent = nullptr;
-
+		static void runFunctor(const FunctorSaving& functor, FunctorSeq* parent);
 
 
 #ifdef TINY_DEBUG
@@ -106,8 +187,8 @@ namespace Ash
 	template <typename... T>
 	FunctorSeq& FunctorSeq::then(T... functor)
 	{
-		if(!_functors.empty())
-			_functors.emplace_back(nullptr);
+		if (!_functors.empty())
+			pushSeparatorFunctor();
 		thenImpl(std::forward<T>(functor)...);
 		return *this;
 	}
@@ -119,6 +200,10 @@ namespace Ash
 		thenImpl(std::forward<T>(rest)...);
 	}
 
-	
-
+	template <typename ... T>
+	void FunctorSeq::thenImpl(Future future, T... rest)
+	{
+		thenImpl(std::move(future));
+		thenImpl(std::forward<T>(rest)...);
+	}
 }

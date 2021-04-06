@@ -4,7 +4,7 @@
 
 void Ash::FunctorSeq::entry(const Functor& functor)
 {
-	runFunctor(functor, nullptr);
+	runFunctor(FunctorSaving{ functor, nullptr, FunctorType::ThenFunctor }, nullptr);
 }
 
 Ash::FunctorSeq& Ash::FunctorSeq::then(std::vector<Functor> functors)
@@ -13,17 +13,28 @@ Ash::FunctorSeq& Ash::FunctorSeq::then(std::vector<Functor> functors)
 		return *this;
 	
 	_functors.reserve(_functors.size() + functors.size());
-	_functors.emplace_back(nullptr);
+	pushSeparatorFunctor();
 	const auto nowSize = _functors.size();
 	for(Functor& fun : functors)
 	{
 		if (fun)
-			_functors.emplace_back(std::move(fun));
+			pushThenFunctor(std::move(fun));
 	}
 	if(nowSize == _functors.size())
 	{
 		_functors.pop_back();
 	}
+	return *this;
+}
+
+Ash::Future Ash::FunctorSeq::future(Functor functor)
+{
+	pushFutureFunctor(std::move(functor));
+}
+
+Ash::FunctorSeq& Ash::FunctorSeq::loop(std::function<bool()> pred, Functor functor)
+{
+	pushLoopFunctor(std::move(functor), std::move(pred));
 	return *this;
 }
 
@@ -111,12 +122,12 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	//找到要提交的范围
 	int start = _currentFunctor;
 	int end = start;
-	for (;end < static_cast<int>(_functors.size()) && _functors[end]; ++end){}
+	for (;end < static_cast<int>(_functors.size()) && _functors[end]._functorType != FunctorType::Separator; ++end){}
 	TinyAssert(end > start);
 	_currentFunctor = end;
 	if(_currentFunctor < static_cast<int>(_functors.size()))
 	{
-		++_currentFunctor; //跳过nullptr分隔符
+		++_currentFunctor; //跳过分隔符
 	}
 
 	//通过修改_runningFunctor，使得仅当最后一个functor执行完毕时，this才会被删除
@@ -152,12 +163,27 @@ void Ash::FunctorSeq::thenImpl(Functor functor)
 {
 	if (functor)
 	{
-		_functors.emplace_back(std::move(functor));
+		pushThenFunctor(std::move(functor));
 	}
 }
 
-void Ash::FunctorSeq::runFunctor(const Functor& functor, FunctorSeq* parent)
+void Ash::FunctorSeq::thenImpl(Future future)
 {
+	
+}
+
+void Ash::FunctorSeq::runFunctor(const FunctorSaving& functor, FunctorSeq* parent)
+{
+	switch (functor._functorType)
+	{
+	case FunctorSaving::FunctorType::ThenFunctor: break;
+	case FunctorSaving::FunctorType::FutureFunctor: break;
+	case FunctorSaving::FunctorType::LoopFunctor: break;
+	case FunctorSaving::FunctorType::Separator: break;
+	case FunctorSaving::FunctorType::Future: break;
+	default: ;
+	}
+	
 	FunctorSeq* seq = new FunctorSeq();
 	seq->_parent = parent;
 	functor(*seq);
@@ -169,4 +195,29 @@ void Ash::FunctorSeq::runFunctor(const Functor& functor, FunctorSeq* parent)
 	{
 		seq->submit();
 	}
+}
+
+void Ash::FunctorSeq::pushSeparatorFunctor()
+{
+	_functors.emplace_back(nullptr, nullptr, FunctorType::Separator);
+}
+
+void Ash::FunctorSeq::pushFutureFunctor(Functor functor)
+{
+	_functors.emplace_back(std::move(functor), nullptr, FunctorType::FutureFunctor);
+}
+
+void Ash::FunctorSeq::pushFuture(Future future)
+{
+	
+}
+
+void Ash::FunctorSeq::pushThenFunctor(Functor functor)
+{
+	_functors.emplace_back(std::move(functor), nullptr, FunctorType::ThenFunctor);
+}
+
+void Ash::FunctorSeq::pushLoopFunctor(Functor functor, std::function<bool()> pred)
+{
+	_functors.emplace_back(std::move(functor), std::move(pred), FunctorType::LoopFunctor);
 }

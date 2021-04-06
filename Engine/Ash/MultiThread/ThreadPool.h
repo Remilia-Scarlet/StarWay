@@ -9,7 +9,7 @@
 
 namespace Ash
 {
-	using FunctorEntry = void(*)(const Functor&, FunctorSeq*);
+	using FunctorEntry = void(*)(const FunctorSeq::FunctorSaving&, FunctorSeq*);
 	
     class ThreadPool : public SingleInstance<ThreadPool>
 	{
@@ -30,7 +30,7 @@ namespace Ash
 			void run();
 		};
 	public:
-		void dispatchFunctor(FunctorEntry entry, Functor* functor, FunctorSeq* seq);
+		void dispatchFunctor(FunctorEntry entry, FunctorSeq::FunctorSaving* functor, FunctorSeq* seq);
 	protected:
     	ThreadPool();
 		~ThreadPool();
@@ -42,7 +42,7 @@ namespace Ash
         struct Task
         {
 			FunctorEntry entry;
-			Functor* functor;
+			FunctorSeq::FunctorSaving* functor;
 			FunctorSeq* seq;
         };
 		void pushTask(Task task);

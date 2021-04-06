@@ -45,7 +45,7 @@ Ash::ThreadPool::~ThreadPool()
 	}
 }
 
-void Ash::ThreadPool::dispatchFunctor(FunctorEntry entry, Functor* functor, FunctorSeq* seq)
+void Ash::ThreadPool::dispatchFunctor(FunctorEntry entry, FunctorSeq::FunctorSaving* functor, FunctorSeq* seq)
 {
 	pushTask(Task{ entry, functor, seq });
 }
