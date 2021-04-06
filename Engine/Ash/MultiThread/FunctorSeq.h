@@ -9,41 +9,68 @@ namespace Ash
 {
 	class FunctorSeq;
 	using Functor = std::function<void(FunctorSeq&)>;
+    class Future : public Functor
+    {
+        
+    };
 
     //Usage:
 	//Ash::FunctorSeq::entry([](Ash::FunctorSeq& seq)
 	//{
 	//	DebugString("A");
     //
+	//  auto future = seq.future([](Ash::FunctorSeq& seq)
+	//  {
+	//     DebugString("C");
+	//  });
 	//	seq.then([](Ash::FunctorSeq& seq)
 	//	{
-	//		DebugString("B");
+	//		DebugString("D");
 	//		seq.then([](Ash::FunctorSeq&)
 	//		{
-	//			DebugString("C");
+	//			DebugString("F");
 	//		});
 	//	}, [](Ash::FunctorSeq&)
 	//	{
-	//		DebugString("D");
-	//	});
-    //
-	//	seq.then([](Ash::FunctorSeq&)
-	//	{
 	//		DebugString("E");
 	//	});
+    //
+    //  seq.then(future);
+	//
+	//	seq.then([](Ash::FunctorSeq&)
+	//	{
+	//		DebugString("G");
+	//	});
+	//
+	//  seq.loop([int i = 3]()
+	//  {
+	//     return --i >= 0;
+	//  }, [](Ash::FunctorSeq&)
+	//  {
+	//      DebugString("H");
+	//  }); 
+	//
+	//  DebugString("B");
 	//});
-    //A print first.
-    //E print last.
-    //B must print after A.
-    //C must print after B.
-    //D must after A and before E
+    //A prints first.
+    //B prints next. (After the whole recording finishing, sequences start to execute)
+    //C prints after B, and before G. (After calling seq.future(foo), the foo can start. Before G, we use seq.then(future) to ensure future is done.
+    //D prints before F.
+    //C, D, E, F all print before G
+    //The last, print H for 3 times.
 	class FunctorSeq
 	{
 	public:
 		static void entry(const Functor& functor);
-		template<typename ...T>
-		FunctorSeq& then(T ... functor);
+		template<typename ...Functors>
+		FunctorSeq& then(Functors ... functor);
 		FunctorSeq& then(std::vector<Functor> functors);
+
+		template<typename Functor>
+		Future future(Functor functor);
+
+		template<typename Pred, typename Functor>
+		FunctorSeq& loop(Pred pred, Functor functor);
 
 		void setDebugName(std::string debugName);
 	public:
