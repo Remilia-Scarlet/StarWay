@@ -5,6 +5,7 @@
 
 #include "Ash/RefCountPointer/RefCountObj.h"
 #include "Ash/RefCountPointer/RefCountPtr.h"
+#include "Ash/MultiThread/SpinMutex.h"
 
 namespace Ash
 {
@@ -14,8 +15,8 @@ namespace Ash
 	{
 		friend class FunctorSeq;
 	private:
-		Future(FunctorSeq& seq) :_seq(seq) {}
-		FunctorSeq& _seq;
+		Future(RefCountPtr<FunctorSeq> seq) :_seq(std::move(seq)) {}
+		RefCountPtr<FunctorSeq> _seq;
 	};
 	struct FunctorSaving
 	{
@@ -34,7 +35,7 @@ namespace Ash
 		struct FutureFunctorStruct
 		{
 			Functor _functor;
-			FunctorSeq* _seq;
+			RefCountPtr<FunctorSeq> _seq;
 		};
 		struct FutureStruct
 		{
@@ -120,7 +121,7 @@ namespace Ash
 		FunctorSeq& operator=(const FunctorSeq&) = delete;
 	protected:
 		void submit();
-		void onFinishFunctor(FunctorSeq* seq);
+		void onFinishFunctor(FunctorSeq* newRecordedSeq, const FunctorSaving& theFinishedFunctor);
 		void onSubSeqFinish();
 		void submitNextFunctor(bool isInitialSubmit);
 		void doSubmitNextFunctor();
@@ -144,7 +145,9 @@ namespace Ash
 		int _currentFunctor = 0;
 		std::atomic_int _runningFunctor = 0;
 		FunctorSeq* _parent = nullptr;
-		static void runFunctor(const FunctorSaving& functor, FunctorSeq* parent);
+		SpinMutex _futureMutex;
+		bool _futureHasFinished = false;
+		void runFunctor(const FunctorSaving& functor);
 
 
 #ifdef TINY_DEBUG

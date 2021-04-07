@@ -14,37 +14,16 @@ TEST(Ash, ThreadPoolTest)
 		std::condition_variable condi;
 
 
-        Ash::FunctorSeq::entry([](Ash::FunctorSeq& seq)
-        {
-			DebugString("A");
-
-            seq.then([](Ash::FunctorSeq& seq)
-            {
-				DebugString("B");
-				seq.then([](Ash::FunctorSeq&)
-				{
-					DebugString("C");
-				});
-			}, [](Ash::FunctorSeq&)
-			{
-				DebugString("D");
-			});
-
-			seq.then([](Ash::FunctorSeq&)
-			{
-				DebugString("E");
-			});
-        });
-
-
 		std::vector<char> result( static_cast<size_t>(10) );
 		std::atomic_int index = 0;
 		// A
 		// --B
+		// ----H(future submit)
 		// ----C
 		// ------D
 		// ------E
 		// --F
+		// --H(future require)
 		// G
         //A fist, G last. B before C, C before D and E 
 		Ash::FunctorSeq::entry([&mu, &finished, &condi, &index, &result](Ash::FunctorSeq& seq)
@@ -57,6 +36,7 @@ TEST(Ash, ThreadPoolTest)
 				int i = index++;
 				result[i] = 'B';
 				seq.setDebugName("B");
+				seq.future()
 				seq.then([&index, &result](Ash::FunctorSeq& seq)
 				{
 					int i = index++;

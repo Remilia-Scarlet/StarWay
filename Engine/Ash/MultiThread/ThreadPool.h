@@ -9,7 +9,7 @@
 
 namespace Ash
 {
-	using FunctorEntry = void(*)(const FunctorSaving&, FunctorSeq*);
+	using FunctorEntry = void(FunctorSeq::*)(const FunctorSaving&);
 	
     class ThreadPool : public SingleInstance<ThreadPool>
 	{
@@ -30,7 +30,7 @@ namespace Ash
 			void run();
 		};
 	public:
-		void dispatchFunctor(FunctorEntry entry, FunctorSaving* functor, FunctorSeq* seq);
+		void dispatchFunctor(FunctorEntry entry, FunctorSeq* seq, FunctorSaving* functor);
 	protected:
     	ThreadPool();
 		~ThreadPool();

@@ -2,9 +2,13 @@
 
 #include "Ash/MultiThread/ThreadPool.h"
 
+using FunctorSeqPtr = Ash::RefCountPtr<Ash::FunctorSeq>;
+
 void Ash::FunctorSeq::entry(const Functor& functor)
 {
-	runFunctor(FunctorSaving{ FunctorSaving::FunctorType::ThenFunctor, FunctorSaving::ThenFactorStruct{std::move(functor)} }, nullptr);
+	FunctorSeqPtr seq = Ash::MakeRefCountPtr<FunctorSeq>();
+	functor(*seq);
+	seq->submit();
 }
 
 Ash::FunctorSeq& Ash::FunctorSeq::then(std::vector<Functor> functors)
@@ -22,16 +26,16 @@ Ash::FunctorSeq& Ash::FunctorSeq::then(std::vector<Functor> functors)
 	}
 	if(nowSize == _functors.size())
 	{
-		_functors.pop_back();
+		_functors.pop_back();//pop separator
 	}
 	return *this;
 }
 
 Ash::Future Ash::FunctorSeq::future(Functor functor)
 {
-	FunctorSeq* seq = new FunctorSeq;
-	pushFutureFunctor(std::move(functor), seq);
-	return Future{ *seq };
+	FunctorSeqPtr seq = MakeRefCountPtr<FunctorSeq>();
+	pushFutureFunctor(std::move(functor), seq.get());
+	return Future{ std::move(seq) };
 }
 
 Ash::FunctorSeq& Ash::FunctorSeq::loop(std::function<bool()> pred, Functor functor)
@@ -47,26 +51,47 @@ void Ash::FunctorSeq::setDebugName(std::string debugName)
 #endif
 }
 
-//注意submit可能delete this
 void Ash::FunctorSeq::submit()
 {
 	//单线程进来
-	submitNextFunctor(true);//注意submitNextFunctor中可能会delete this
+	addRef();//这里+1，在submitNextFunctor时，如果空了就-1
+	submitNextFunctor(true);//注意submitNextFunctor中可能会releaseRef
 }
 
-void Ash::FunctorSeq::onFinishFunctor(FunctorSeq* subSeq)
+void Ash::FunctorSeq::onFinishFunctor(FunctorSeq* newRecordedSeq, const FunctorSaving& theFinishedFunctor)
 {
-	//多线程进来，但是每个进来的线程的subSeq一定是当前线程自己new的
-	
-	if (subSeq && !subSeq->empty())
+	//多线程进来，但是每个进来的线程的newRecordedSeq一定是当前线程自己new的
+	TinyAssert(newRecordedSeq);
+	switch (theFinishedFunctor._functorType)
+	{
+	case FunctorSaving::FunctorType::ThenFunctor:
 	{
 		// 有subSeq，不减少_runningFunctor，我们认为这个functor还没running完，当这个subseq完成时，回调到onSubSeqFinish中去submitNextFunctor
-		subSeq->submit();
+		newRecordedSeq->submit();
+		break;
 	}
-	else
+	case FunctorSaving::FunctorType::FutureFunctor:
 	{
+		//期货，那么提交它，和自己没啥关系，自己直接submitNextFunctor
+		newRecordedSeq->submit();
+		TinyAssert(newRecordedSeq->_parent == nullptr);
 		submitNextFunctor(false);
+		break;
 	}
+	case FunctorSaving::FunctorType::Future:
+	{
+		std::unique_lock<SpinMutex> lock(newRecordedSeq->_futureMutex); //锁范围：newRecordedSeq->_parent和_futureHasFinished
+		TinyAssert(newRecordedSeq->_parent == nullptr);
+		newRecordedSeq->_parent = this; //修复期货的parent
+		if (newRecordedSeq->_futureHasFinished)
+			onSubSeqFinish(); //本该由newRecordedSeq调用，但是当时它的parent为空，没有调用
+		break;
+	}
+	case FunctorSaving::FunctorType::LoopFunctor: 
+		break;
+	default: ;
+	}
+	
 }
 
 void Ash::FunctorSeq::onSubSeqFinish()
@@ -108,8 +133,21 @@ void Ash::FunctorSeq::submitNextFunctor(bool isInitialSubmit)
 				{
 					_parent->onSubSeqFinish();
 				}
+				else
+				{
+					//parent为空，说明要么是entry()进来的，要么是期货。entry进来的这里无需向上报告，但是如果是期货，我们需要延迟报告的时间知道Future被执行
+					std::unique_lock<SpinMutex> lock(_futureMutex); //锁的目标：newRecordedSeq->_parent和_futureHasFinished这两个变量，为了和onFinishFunctor不冲突
+					if (_parent)
+					{
+						_parent->onSubSeqFinish();
+					}
+					else
+					{
+						_futureHasFinished = true;
+					}
+				}
 			}
-			delete this; //删除自己，注意接下来不能再访问this
+			releaseRef(); //可能删除自己，注意接下来不能再访问this
 		}
 	}
 }
@@ -143,14 +181,14 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	if (end - start == 1)
 	{
 		//如果只有一个functor，直接在本线程执行
-		runFunctor(_functors[start], this);
+		runFunctor(_functors[start]);
 	}
 	else
 	{
 		for (; start < end; ++start)
 		{
             //注意ThreadPool不负责_functors的生命周期
-			ThreadPool::instance()->dispatchFunctor(&FunctorSeq::runFunctor, &_functors[start], this);
+			ThreadPool::instance()->dispatchFunctor(&FunctorSeq::runFunctor,this, &_functors[start]);
 		}
 	}
 }
@@ -174,41 +212,32 @@ void Ash::FunctorSeq::thenImpl(Future future)
 	pushFuture(std::move(future));
 }
 
-void Ash::FunctorSeq::runFunctor(const FunctorSaving& functor, FunctorSeq* parent)
+void Ash::FunctorSeq::runFunctor(const FunctorSaving& functor)
 {
 	switch (functor._functorType)
 	{
 	case FunctorSaving::FunctorType::ThenFunctor: 
 	{
 		const FunctorSaving::ThenFactorStruct& save = std::get<FunctorSaving::ThenFactorStruct>(functor._data);
-		FunctorSeq* seq = new FunctorSeq();
-		seq->_parent = parent;
+		FunctorSeqPtr seq = RefCountPtr<FunctorSeq>();
+		seq->_parent = this;
 		save._functor(*seq);
-		if (parent)
-		{
-			parent->onFinishFunctor(seq);
-		}
-		else
-		{
-			seq->submit();
-		}
+		onFinishFunctor(seq.get(), functor);
 		break;
 	}
 	case FunctorSaving::FunctorType::FutureFunctor:
 	{
 		const FunctorSaving::FutureFunctorStruct& save = std::get<FunctorSaving::FutureFunctorStruct>(functor._data);
-		save._seq
-		save._functor
+		save._functor(*save._seq);
+		onFinishFunctor(save._seq.get(), functor);
 		break;
 	}
-	case FunctorSaving::FunctorType::LoopFunctor: break;
+	case FunctorSaving::FunctorType::LoopFunctor:
+		break;
 	case FunctorSaving::FunctorType::Future:
 	{
 		const FunctorSaving::FutureStruct& save = std::get<FunctorSaving::FutureStruct>(functor._data);
-		if (save._seq->已经结束)
-			parent->onSubSeqFinish(save._seq);
-		else
-			save._seq->_parent = parent; //在结束前锁_parent
+		onFinishFunctor(save._seq, functor);
         break;
 	}
 	default:

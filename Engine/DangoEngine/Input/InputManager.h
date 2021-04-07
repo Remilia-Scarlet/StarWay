@@ -25,7 +25,7 @@ public:
 	virtual ButtonStatus getVitualBtnLastStatus(VirtualButton btn);
 
 	// get mouse position
-	virtual Vector2 getVirtualMousePos();
+	virtual DangoMath::Vector2 getVirtualMousePos();
 
 	// get mouse btn status
 	virtual MouseBtnStatus getVirtualMouseStatus(VirtualMouseBtn btn);

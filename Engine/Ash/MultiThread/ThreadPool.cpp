@@ -20,7 +20,7 @@ void Ash::ThreadPool::Thread::run()
 			continue;
 		}
 
-		(*task.entry)(*task.functor, task.seq);
+		(task.seq->*task.entry)(*task.functor);
 	}		
 }
 
@@ -45,7 +45,7 @@ Ash::ThreadPool::~ThreadPool()
 	}
 }
 
-void Ash::ThreadPool::dispatchFunctor(FunctorEntry entry, FunctorSaving* functor, FunctorSeq* seq)
+void Ash::ThreadPool::dispatchFunctor(FunctorEntry entry, FunctorSeq* seq, FunctorSaving* functor)
 {
 	pushTask(Task{ entry, functor, seq });
 }
