@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Ash/RefCountPointer/RefCountObj.h"
 
 ASH_DEFINE_PTR(BaseComponent);

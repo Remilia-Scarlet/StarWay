@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "BaseComponent.h"
 #include "DangoMath/vector/Vector.h"
 #include "Graphic/Manager/LightManager.h"

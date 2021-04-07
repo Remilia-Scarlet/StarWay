@@ -4,7 +4,7 @@
 
 void Ash::FunctorSeq::entry(const Functor& functor)
 {
-	runFunctor(FunctorSaving{ functor, nullptr, FunctorType::ThenFunctor }, nullptr);
+	runFunctor(FunctorSaving{ FunctorSaving::FunctorType::ThenFunctor, FunctorSaving::ThenFactorStruct{std::move(functor)} }, nullptr);
 }
 
 Ash::FunctorSeq& Ash::FunctorSeq::then(std::vector<Functor> functors)
@@ -29,7 +29,9 @@ Ash::FunctorSeq& Ash::FunctorSeq::then(std::vector<Functor> functors)
 
 Ash::Future Ash::FunctorSeq::future(Functor functor)
 {
-	pushFutureFunctor(std::move(functor));
+	FunctorSeq* seq = new FunctorSeq;
+	pushFutureFunctor(std::move(functor), seq);
+	return Future{ *seq };
 }
 
 Ash::FunctorSeq& Ash::FunctorSeq::loop(std::function<bool()> pred, Functor functor)
@@ -122,7 +124,7 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	//找到要提交的范围
 	int start = _currentFunctor;
 	int end = start;
-	for (;end < static_cast<int>(_functors.size()) && _functors[end]._functorType != FunctorType::Separator; ++end){}
+	for (;end < static_cast<int>(_functors.size()) && _functors[end]._functorType != FunctorSaving::FunctorType::Separator; ++end){}
 	TinyAssert(end > start);
 	_currentFunctor = end;
 	if(_currentFunctor < static_cast<int>(_functors.size()))
@@ -169,55 +171,74 @@ void Ash::FunctorSeq::thenImpl(Functor functor)
 
 void Ash::FunctorSeq::thenImpl(Future future)
 {
-	
+	pushFuture(std::move(future));
 }
 
 void Ash::FunctorSeq::runFunctor(const FunctorSaving& functor, FunctorSeq* parent)
 {
 	switch (functor._functorType)
 	{
-	case FunctorSaving::FunctorType::ThenFunctor: break;
-	case FunctorSaving::FunctorType::FutureFunctor: break;
+	case FunctorSaving::FunctorType::ThenFunctor: 
+	{
+		const FunctorSaving::ThenFactorStruct& save = std::get<FunctorSaving::ThenFactorStruct>(functor._data);
+		FunctorSeq* seq = new FunctorSeq();
+		seq->_parent = parent;
+		save._functor(*seq);
+		if (parent)
+		{
+			parent->onFinishFunctor(seq);
+		}
+		else
+		{
+			seq->submit();
+		}
+		break;
+	}
+	case FunctorSaving::FunctorType::FutureFunctor:
+	{
+		const FunctorSaving::FutureFunctorStruct& save = std::get<FunctorSaving::FutureFunctorStruct>(functor._data);
+		save._seq
+		save._functor
+		break;
+	}
 	case FunctorSaving::FunctorType::LoopFunctor: break;
-	case FunctorSaving::FunctorType::Separator: break;
-	case FunctorSaving::FunctorType::Future: break;
-	default: ;
+	case FunctorSaving::FunctorType::Future:
+	{
+		const FunctorSaving::FutureStruct& save = std::get<FunctorSaving::FutureStruct>(functor._data);
+		if (save._seq->已经结束)
+			parent->onSubSeqFinish(save._seq);
+		else
+			save._seq->_parent = parent; //在结束前锁_parent
+        break;
+	}
+	default:
+		TinyAssert(false);
 	}
 	
-	FunctorSeq* seq = new FunctorSeq();
-	seq->_parent = parent;
-	functor(*seq);
-	if(parent)
-	{
-		parent->onFinishFunctor(seq);
-	}
-	else
-	{
-		seq->submit();
-	}
+	
 }
 
 void Ash::FunctorSeq::pushSeparatorFunctor()
 {
-	_functors.emplace_back(nullptr, nullptr, FunctorType::Separator);
+	_functors.emplace_back(FunctorSaving::FunctorType::Separator, FunctorSaving::SeparatorStruct{});
 }
 
-void Ash::FunctorSeq::pushFutureFunctor(Functor functor)
+void Ash::FunctorSeq::pushFutureFunctor(Functor functor, FunctorSeq* seq)
 {
-	_functors.emplace_back(std::move(functor), nullptr, FunctorType::FutureFunctor);
+	_functors.emplace_back(FunctorSaving::FunctorType::FutureFunctor, FunctorSaving::FutureFunctorStruct{ std::move(functor), seq });
 }
 
 void Ash::FunctorSeq::pushFuture(Future future)
 {
-	
+	_functors.emplace_back(FunctorSaving::FunctorType::Future, FunctorSaving::FutureStruct{ &future._seq });
 }
 
 void Ash::FunctorSeq::pushThenFunctor(Functor functor)
 {
-	_functors.emplace_back(std::move(functor), nullptr, FunctorType::ThenFunctor);
+	_functors.emplace_back(FunctorSaving::FunctorType::ThenFunctor, FunctorSaving::ThenFactorStruct{ std::move(functor) });
 }
 
 void Ash::FunctorSeq::pushLoopFunctor(Functor functor, std::function<bool()> pred)
 {
-	_functors.emplace_back(std::move(functor), std::move(pred), FunctorType::LoopFunctor);
+	_functors.emplace_back(FunctorSaving::FunctorType::LoopFunctor, FunctorSaving::LoopFunctorStruct{ std::move(functor) ,std::move(pred) });
 }

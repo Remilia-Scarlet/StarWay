@@ -12,8 +12,10 @@ namespace Ash
 	using Functor = std::function<void(FunctorSeq&)>;
 	class Future
 	{
+		friend class FunctorSeq;
 	private:
-		FunctorSeq* _seq = nullptr;
+		Future(FunctorSeq& seq) :_seq(seq) {}
+		FunctorSeq& _seq;
 	};
 	struct FunctorSaving
 	{
@@ -47,41 +49,9 @@ namespace Ash
 		{
 		};
 		FunctorSaving(FunctorType type, std::variant<ThenFactorStruct, FutureFunctorStruct, FutureStruct, LoopFunctorStruct, SeparatorStruct> data)
-			:_functorType(type)
+			:_functorType(type), _data(std::move(data))
 		{
-			switch (_functorType)
-			{
-			case FunctorType::ThenFunctor:
-			{
-				ThenFactorStruct& strc = std::get<ThenFactorStruct>(data);
-				_data = std::move(strc);
-				break;
-			}
-			case FunctorType::FutureFunctor:
-			{
-				FutureFunctorStruct& strc = std::get<FutureFunctorStruct>(data);
-				_data = std::move(strc);
-				break;
-			}
-			case FunctorType::Future: 
-			{
-				FutureStruct& strc = std::get<FutureStruct>(data);
-				_data = std::move(strc);
-				break;
-			}
-			case FunctorType::LoopFunctor: 
-			{
-				LoopFunctorStruct& strc = std::get<LoopFunctorStruct>(data);
-				_data = std::move(strc);
-				break;
-			}
-			case FunctorType::Separator:
-			{
-				SeparatorStruct& strc = std::get<SeparatorStruct>(data);
-				_data = std::move(strc);
-				break;
-			}
-			}
+			TinyAssert(_data.index() == static_cast<size_t>(_functorType));
 		}
 		FunctorType _functorType;
 		std::variant<ThenFactorStruct, FutureFunctorStruct, FutureStruct, LoopFunctorStruct, SeparatorStruct> _data;
@@ -132,7 +102,7 @@ namespace Ash
     //D prints before F.
     //C, D, E, F all print before G
     //The last, print H for 3 times.
-	class FunctorSeq
+	class FunctorSeq : Ash::RefCountObj
 	{
 	public:
 		static void entry(const Functor& functor);
@@ -165,7 +135,7 @@ namespace Ash
 		~FunctorSeq() = default;
 
 		void pushSeparatorFunctor();
-		void pushFutureFunctor(Functor functor);
+		void pushFutureFunctor(Functor functor, FunctorSeq* seq);
 		void pushFuture(Future future);
 		void pushThenFunctor(Functor functor);
 		void pushLoopFunctor(Functor functor, std::function<bool()> pred);
