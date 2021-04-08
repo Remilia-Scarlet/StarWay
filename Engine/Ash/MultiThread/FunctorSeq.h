@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <atomic>
 #include <functional>
 #include <variant>
@@ -14,12 +14,19 @@ namespace Ash
 	class Future
 	{
 		friend class FunctorSeq;
+	public:
+		Future() = default;
+		Future(Future&&) = default;
+		Future(const Future&) = default;
+		Future& operator=(Future&&) = default;
+		Future& operator=(const Future&) = default;
 	private:
 		Future(RefCountPtr<FunctorSeq> seq) :_seq(std::move(seq)) {}
 		RefCountPtr<FunctorSeq> _seq;
 	};
 	struct FunctorSaving
 	{
+		FunctorSaving& operator=(const FunctorSaving&) = delete;
 		enum class FunctorType : uint8_t
 		{
 			ThenFunctor,
@@ -39,7 +46,7 @@ namespace Ash
 		};
 		struct FutureStruct
 		{
-			FunctorSeq* _seq;
+			RefCountPtr<FunctorSeq> _seq;
 		};
 		struct LoopFunctorStruct
 		{
@@ -103,8 +110,10 @@ namespace Ash
     //D prints before F.
     //C, D, E, F all print before G
     //The last, print H for 3 times.
-	class FunctorSeq : Ash::RefCountObj
+	class FunctorSeq : public Ash::RefCountObj
 	{
+        template<class T, class ...Param>
+		friend RefCountPtr<T> MakeRefCountPtr(Param&&... param);
 	public:
 		static void entry(const Functor& functor);
 		

@@ -14,30 +14,69 @@ TEST(Ash, ThreadPoolTest)
 		std::condition_variable condi;
 
 
-		std::vector<char> result( static_cast<size_t>(10) );
+		std::vector<char> result( static_cast<size_t>(26) );
 		std::atomic_int index = 0;
-		// A
-		// --B
-		// ----H(future submit)
-		// ----C
-		// ------D
-		// ------E
-		// --F
-		// --H(future require)
-		// G
-        //A fist, G last. B before C, C before D and E 
+
+        // --means child.
+		// ==means then.
+		// ~~means future submit
+		//
+		// -A
+		// ~H(future submit)
+		// ---I
+		// -----J(sleep 0.2s)
+		// =====L
+		// ---B
+		// -----C
+		// -------H(future require)
+		// -------D
+		// -------E
+		// =====M
+		// -----K
+		// ---F
+		// =G
+        //A fist, G last.
+        //H->I->J->L
+        //B->C, C->M, B->K, C->D, C->E, D->M, E->M
+        //M->L
+        //F->L(due to sleep), K->M(due to sleep)
 		Ash::FunctorSeq::entry([&mu, &finished, &condi, &index, &result](Ash::FunctorSeq& seq)
 		{
 			int i = index++;
 			result[i] = 'A';
 			seq.setDebugName("A");
-			seq.then([&index, &result](Ash::FunctorSeq& seq)
+			Ash::Future future = seq.future([&index, &result](Ash::FunctorSeq& seq)
+			{
+				int i = index++;
+				result[i] = 'H';
+				seq.setDebugName("H");
+				seq.then([&index, &result](Ash::FunctorSeq& seq)
+				{
+					int i = index++;
+					result[i] = 'I';
+					seq.setDebugName("I");
+					seq.then([&index, &result](Ash::FunctorSeq& seq)
+					{
+						std::this_thread::sleep_for(std::chrono::milliseconds(100));
+						int i = index++;
+						result[i] = 'J';
+						seq.setDebugName("J");
+					});
+					seq.then([&index, &result](Ash::FunctorSeq& seq)
+					{
+						int i = index++;
+						result[i] = 'L';
+						seq.setDebugName("L");
+					});
+				});
+			});
+
+			seq.then([future, &index, &result](Ash::FunctorSeq& seq)
 			{
 				int i = index++;
 				result[i] = 'B';
 				seq.setDebugName("B");
-				seq.future()
-				seq.then([&index, &result](Ash::FunctorSeq& seq)
+				seq.then([future, &index, &result](Ash::FunctorSeq& seq)
 				{
 					int i = index++;
 					result[i] = 'C';
@@ -52,7 +91,19 @@ TEST(Ash, ThreadPoolTest)
 						int i = index++;
 						result[i] = 'E';
 						seq.setDebugName("E");
+					},
+					future);
+					seq.then([&index, &result](Ash::FunctorSeq& seq)
+					{
+						int i = index++;
+						result[i] = 'M';
+						seq.setDebugName("M");
 					});
+				},[&index, &result](Ash::FunctorSeq& seq)
+				{
+					int i = index++;
+					result[i] = 'K';
+					seq.setDebugName("K");
 				});
 			}, [&index, &result](Ash::FunctorSeq& seq)
 			{
@@ -77,13 +128,30 @@ TEST(Ash, ThreadPoolTest)
 		std::unique_lock<std::mutex> lock(mu);
 		condi.wait(lock, [&finished]() {return finished.load(); });
 
-		EXPECT_TRUE(result[0] == 'A' && result[6] == 'G');
-		auto itB = std::find(result.begin(), result.end(), 'B');
-		auto itC = std::find(result.begin(), result.end(), 'C');
-		auto itD = std::find(result.begin(), result.end(), 'D');
-		auto itE = std::find(result.begin(), result.end(), 'E');
-		auto itF = std::find(result.begin(), result.end(), 'F');
-		EXPECT_TRUE(itC > itB && itD > itC && itE > itC);
+		//A fist, G last.
+        //H->I->J->L
+        //B->C, C->M, B->K, C->D, C->E, D->M, E->M
+        //L->M
+        //F->L(due to sleep), K->M(due to sleep)
+#define CharPos(Char) std::find(result.begin(), result.end(), Char)
+#define CharBefore(A, B) (CharPos(A) < CharPos(B))
+		EXPECT_TRUE(CharPos('A') == result.begin());
+		EXPECT_TRUE(CharPos('G') == result.begin() + index - 1);
+		EXPECT_TRUE(CharBefore('H', 'I'));
+		EXPECT_TRUE(CharBefore('I', 'J'));
+		EXPECT_TRUE(CharBefore('J', 'L'));
+		EXPECT_TRUE(CharBefore('B', 'C'));
+		EXPECT_TRUE(CharBefore('C', 'M'));
+        EXPECT_TRUE(CharBefore('B', 'K'));
+        EXPECT_TRUE(CharBefore('C', 'D'));
+        EXPECT_TRUE(CharBefore('C', 'E'));
+        EXPECT_TRUE(CharBefore('D', 'M'));
+        EXPECT_TRUE(CharBefore('E', 'M'));
+		EXPECT_TRUE(CharBefore('L', 'M'));
+		EXPECT_TRUE(CharBefore('F', 'L'));
+		EXPECT_TRUE(CharBefore('K', 'M'));
+#undef CharPos
+#undef CharBefore
 	}
 
     //multi-thread sort test
@@ -119,7 +187,7 @@ TEST(Ash, ThreadPoolTest)
 			std::sort(data.begin(), data.end(), std::less<>());
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> diff = end - start;
-			DebugString("Sorted size=%ld random int array, std::sort cost: %f seconds", data.size(), diff.count());
+            Ash::DebugString("Sorted size=%ld random int array, std::sort cost: %f seconds", data.size(), diff.count());
 		}
 
 
@@ -169,7 +237,7 @@ TEST(Ash, ThreadPoolTest)
 				quickSort((Ash::FunctorSeq&)(*((Ash::FunctorSeq*)nullptr)), false, data, 0, (int)data.size());
 				auto end = std::chrono::system_clock::now();
 				std::chrono::duration<double> diff = end - start;
-				DebugString("Sorted size=%ld random int array, No Multithread quick sort cost: %f seconds", data.size(), diff.count());
+                Ash::DebugString("Sorted size=%ld random int array, No Multithread quick sort cost: %f seconds", data.size(), diff.count());
 
 				for (int i = 0; i < (int)data.size(); ++i)
 				{
@@ -203,7 +271,7 @@ TEST(Ash, ThreadPoolTest)
 				}
 				auto end = std::chrono::system_clock::now();
 				std::chrono::duration<double> diff = end - start;
-				DebugString("Sorted size=%ld random int array, MultiThread quick sort cost: %f seconds", data.size(), diff.count());
+                Ash::DebugString("Sorted size=%ld random int array, MultiThread quick sort cost: %f seconds", data.size(), diff.count());
 
 				for (int i = 0; i < (int)data.size(); ++i)
 				{
@@ -276,7 +344,7 @@ TEST(Ash, ThreadPoolTest)
 				}
 				auto end = std::chrono::system_clock::now();
 				std::chrono::duration<double> diff = end - start;
-				DebugString("Sorted size=%ld random int array, MultiThread merge sort cost: %f seconds", data.size(), diff.count());
+                Ash::DebugString("Sorted size=%ld random int array, MultiThread merge sort cost: %f seconds", data.size(), diff.count());
 				for (int i = 0; i < (int)data.size(); ++i)
 				{
 					EXPECT_EQ(data[i], i);

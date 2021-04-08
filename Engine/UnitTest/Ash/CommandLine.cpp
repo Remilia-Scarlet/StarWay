@@ -1,4 +1,4 @@
-#include "gtest/gtest.h"
+﻿#include "gtest/gtest.h"
 #include "Ash/CommandLineCfg/CommandLineCfg.h"
 
 TEST(Ash, CommonCommandLineTest)
@@ -17,10 +17,10 @@ TEST(Ash, CommonCommandLineTest)
 		EXPECT_EQ(cmdLine.getName(), "233");
 		EXPECT_EQ(cmdLine.getNumber(), 244);
 		EXPECT_EQ(cmdLine.getRenderdoc(), true);
-		auto it = cmdLine.getSplitedCommandLine().find(toLower("SomeArgThatNotDefined"));
+		auto it = cmdLine.getSplitedCommandLine().find(Ash::toLower("SomeArgThatNotDefined"));
 		EXPECT_NE(it, cmdLine.getSplitedCommandLine().end());
 		EXPECT_EQ(it->second, "good");
-		it = cmdLine.getSplitedCommandLine().find(toLower("SomeArgThatNotDefined2"));
+		it = cmdLine.getSplitedCommandLine().find(Ash::toLower("SomeArgThatNotDefined2"));
 		EXPECT_NE(it, cmdLine.getSplitedCommandLine().end());
 		EXPECT_EQ(it->second, "");
 	}

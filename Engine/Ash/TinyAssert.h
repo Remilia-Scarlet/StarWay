@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <string>
 #include <assert.h>
 #include <cstdarg>
@@ -48,8 +48,8 @@
 		}                                          \
 		else                                       \
 		{                                          \
-			void DebugString(const char*, ...);    \
-			DebugString(                           \
+			void Ash::DebugString(const char*, ...);    \
+			Ash::DebugString(                           \
 				"\n\n"                             \
 				"********************\n"           \
 				"TinyAssert failed!\n"             \
@@ -71,8 +71,8 @@
 		}                                                       \
 		else                                                    \
 		{                                                       \
-			void DebugString(const char*, ...);                 \
-			DebugString(                                        \
+			void Ash::DebugString(const char*, ...);                 \
+			Ash::DebugString(                                        \
 				"\n\n"                                          \
 				"********************\n"                        \
 				"TinyAssert failed!\n"                          \

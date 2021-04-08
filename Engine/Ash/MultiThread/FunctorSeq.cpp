@@ -162,23 +162,38 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	//找到要提交的范围
 	int start = _currentFunctor;
 	int end = start;
-	for (;end < static_cast<int>(_functors.size()) && _functors[end]._functorType != FunctorSaving::FunctorType::Separator; ++end){}
-	TinyAssert(end > start);
-	_currentFunctor = end;
-	if(_currentFunctor < static_cast<int>(_functors.size()))
+
+	int runningFunctor = 0;
+	for (; end < static_cast<int>(_functors.size()); ++end)
 	{
-		++_currentFunctor; //跳过分隔符
+        const FunctorSaving::FunctorType type = _functors[end]._functorType;
+	    if(type == FunctorSaving::FunctorType::FutureFunctor)
+	    {
+			++end; //跳过分隔符
+	    }
+		else if (type == FunctorSaving::FunctorType::Separator)
+		{
+			++end; //跳过分隔符
+			break;
+		}
+		else
+		{
+			++runningFunctor;
+		}
 	}
 
+	TinyAssert(end > start);
+	_currentFunctor = end;
+	
 	//通过修改_runningFunctor，使得仅当最后一个functor执行完毕时，this才会被删除
-	_runningFunctor = end - start;
+	_runningFunctor = runningFunctor;
 	
 	//接下来一旦提交了task，这个函数就可能多线程访问了，重置这个assert FLAG
 	EndpeFlagAssert(_singleThreadVisitChecker_doSubmitNextFunctor);
 
 	//注意接下来一旦提交后，this就可能因为完成了所有functor而被析构，一旦提交后就不能再访问this了
 	
-	if (end - start == 1)
+	if (end - start == 1 && _functors[start]._functorType != FunctorSaving::FunctorType::FutureFunctor)
 	{
 		//如果只有一个functor，直接在本线程执行
 		runFunctor(_functors[start]);
@@ -187,8 +202,12 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	{
 		for (; start < end; ++start)
 		{
-            //注意ThreadPool不负责_functors的生命周期
-			ThreadPool::instance()->dispatchFunctor(&FunctorSeq::runFunctor,this, &_functors[start]);
+			FunctorSaving& save = _functors[start];
+			if (save._functorType != FunctorSaving::FunctorType::Separator)
+			{
+				//注意ThreadPool不负责_functors的生命周期
+				ThreadPool::instance()->dispatchFunctor(&FunctorSeq::runFunctor, this, &save);
+			}
 		}
 	}
 }
@@ -219,7 +238,7 @@ void Ash::FunctorSeq::runFunctor(const FunctorSaving& functor)
 	case FunctorSaving::FunctorType::ThenFunctor: 
 	{
 		const FunctorSaving::ThenFactorStruct& save = std::get<FunctorSaving::ThenFactorStruct>(functor._data);
-		FunctorSeqPtr seq = RefCountPtr<FunctorSeq>();
+		FunctorSeqPtr seq = MakeRefCountPtr<FunctorSeq>();
 		seq->_parent = this;
 		save._functor(*seq);
 		onFinishFunctor(seq.get(), functor);
@@ -237,7 +256,7 @@ void Ash::FunctorSeq::runFunctor(const FunctorSaving& functor)
 	case FunctorSaving::FunctorType::Future:
 	{
 		const FunctorSaving::FutureStruct& save = std::get<FunctorSaving::FutureStruct>(functor._data);
-		onFinishFunctor(save._seq, functor);
+		onFinishFunctor(save._seq.get(), functor);
         break;
 	}
 	default:
@@ -254,12 +273,14 @@ void Ash::FunctorSeq::pushSeparatorFunctor()
 
 void Ash::FunctorSeq::pushFutureFunctor(Functor functor, FunctorSeq* seq)
 {
-	_functors.emplace_back(FunctorSaving::FunctorType::FutureFunctor, FunctorSaving::FutureFunctorStruct{ std::move(functor), seq });
+	_functors.emplace_back(FunctorSaving::FunctorType::FutureFunctor, FunctorSaving::FutureFunctorStruct{ std::move(functor), FunctorSeqPtr{ seq } });
 }
 
 void Ash::FunctorSeq::pushFuture(Future future)
 {
-	_functors.emplace_back(FunctorSaving::FunctorType::Future, FunctorSaving::FutureStruct{ &future._seq });
+	TinyAssert(future._seq.isValid());
+    if(future._seq.isValid())
+	    _functors.emplace_back(FunctorSaving::FunctorType::Future, FunctorSaving::FutureStruct{ std::move(future._seq) });
 }
 
 void Ash::FunctorSeq::pushThenFunctor(Functor functor)
