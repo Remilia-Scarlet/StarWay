@@ -129,11 +129,11 @@ namespace Ash
 	public:
 		FunctorSeq& operator=(const FunctorSeq&) = delete;
 	protected:
-		void submit();
+		void submit(bool forceAsync = false);
 		void onFinishFunctor(FunctorSeq* newRecordedSeq, const FunctorSaving& theFinishedFunctor);
 		void onSubSeqFinish();
-		void submitNextFunctor(bool isInitialSubmit);
-		void doSubmitNextFunctor();
+		void submitNextFunctor(bool isInitialSubmit, bool forceAsync);
+		void doSubmitNextFunctor(bool forceAsync);
 		bool empty() const;
 		template<typename ...T>
 		void thenImpl(Functor functor, T ... rest);

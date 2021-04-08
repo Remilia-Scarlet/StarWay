@@ -8,7 +8,7 @@ void Ash::FunctorSeq::entry(const Functor& functor)
 {
 	FunctorSeqPtr seq = Ash::MakeRefCountPtr<FunctorSeq>();
 	functor(*seq);
-	seq->submit();
+	seq->submit(true);
 }
 
 Ash::FunctorSeq& Ash::FunctorSeq::then(std::vector<Functor> functors)
@@ -51,11 +51,11 @@ void Ash::FunctorSeq::setDebugName(std::string debugName)
 #endif
 }
 
-void Ash::FunctorSeq::submit()
+void Ash::FunctorSeq::submit(bool forceAsync/* = false*/)
 {
 	//单线程进来
 	addRef();//这里+1，在submitNextFunctor时，如果空了就-1
-	submitNextFunctor(true);//注意submitNextFunctor中可能会releaseRef
+	submitNextFunctor(true, forceAsync);//注意submitNextFunctor中可能会releaseRef
 }
 
 void Ash::FunctorSeq::onFinishFunctor(FunctorSeq* newRecordedSeq, const FunctorSaving& theFinishedFunctor)
@@ -73,9 +73,9 @@ void Ash::FunctorSeq::onFinishFunctor(FunctorSeq* newRecordedSeq, const FunctorS
 	case FunctorSaving::FunctorType::FutureFunctor:
 	{
 		//期货，那么提交它，和自己没啥关系，自己直接submitNextFunctor
-		newRecordedSeq->submit();
+		newRecordedSeq->submit(true);
 		TinyAssert(newRecordedSeq->_parent == nullptr);
-		submitNextFunctor(false);
+		submitNextFunctor(false, false);
 		break;
 	}
 	case FunctorSaving::FunctorType::Future:
@@ -87,21 +87,26 @@ void Ash::FunctorSeq::onFinishFunctor(FunctorSeq* newRecordedSeq, const FunctorS
 			onSubSeqFinish(); //本该由newRecordedSeq调用，但是当时它的parent为空，没有调用
 		break;
 	}
-	case FunctorSaving::FunctorType::LoopFunctor: 
+	case FunctorSaving::FunctorType::LoopFunctor:
+	{
+			if(newRecordedSeq)
+
 		break;
-	default: ;
+	}
+	default:
+		TinyAssert(false);
 	}
 	
 }
 
 void Ash::FunctorSeq::onSubSeqFinish()
 {
-	submitNextFunctor(false);
+	submitNextFunctor(false, false);
 }
 
 //注意submitNextFunctor中可能会delete this
 //isInitialSubmit: 如果是初始submit，则一定是单线程进来，并且无视_runningFunctor强制提交下一个functor
-void Ash::FunctorSeq::submitNextFunctor(bool isInitialSubmit) 
+void Ash::FunctorSeq::submitNextFunctor(bool isInitialSubmit, bool forceAsync)
 {
 	bool shouldSubmitNext = false;
     if(isInitialSubmit)
@@ -121,7 +126,7 @@ void Ash::FunctorSeq::submitNextFunctor(bool isInitialSubmit)
 		//单线程进来，但可能subseq完成后递归进来多次到这
 		if (!empty())
 		{
-			doSubmitNextFunctor();
+			doSubmitNextFunctor(forceAsync);
 		}
 		else
 		{
@@ -152,7 +157,7 @@ void Ash::FunctorSeq::submitNextFunctor(bool isInitialSubmit)
 	}
 }
 
-void Ash::FunctorSeq::doSubmitNextFunctor()
+void Ash::FunctorSeq::doSubmitNextFunctor(bool forceAsync)
 {
     //一定是单线程进来
 	BeginFlagAssert(_singleThreadVisitChecker_doSubmitNextFunctor);
@@ -162,37 +167,23 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	//找到要提交的范围
 	int start = _currentFunctor;
 	int end = start;
-
-	int runningFunctor = 0;
-	for (; end < static_cast<int>(_functors.size()); ++end)
-	{
-        const FunctorSaving::FunctorType type = _functors[end]._functorType;
-	    if(type == FunctorSaving::FunctorType::FutureFunctor)
-	    {
-	    	if(end + 1 < static_cast<int>(_functors.size()))
-				++end; //跳过下一个分隔符
-	    }
-		else if (type == FunctorSaving::FunctorType::Separator)
-		{
-			TinyAssert(end + 1 < static_cast<int>(_functors.size())); //最后一个不可能为分隔符
-			++end; //跳过本分隔符
-			break;
-		}
-		++runningFunctor;
-	}
-
+	for (; end < static_cast<int>(_functors.size()) && _functors[end]._functorType != FunctorSaving::FunctorType::Separator; ++end) {}
 	TinyAssert(end > start);
 	_currentFunctor = end;
-	
+	if (_currentFunctor < static_cast<int>(_functors.size()))
+	{
+		++_currentFunctor; //跳过分隔符
+	}
+
 	//通过修改_runningFunctor，使得仅当最后一个functor执行完毕时，this才会被删除
-	_runningFunctor = runningFunctor;
-	
+	_runningFunctor = end - start;
+
 	//接下来一旦提交了task，这个函数就可能多线程访问了，重置这个assert FLAG
 	EndpeFlagAssert(_singleThreadVisitChecker_doSubmitNextFunctor);
 
 	//注意接下来一旦提交后，this就可能因为完成了所有functor而被析构，一旦提交后就不能再访问this了
-	
-	if (end - start == 1 && _functors[start]._functorType != FunctorSaving::FunctorType::FutureFunctor)
+
+	if (end - start == 1 && !forceAsync)
 	{
 		//如果只有一个functor，直接在本线程执行
 		runFunctor(_functors[start]);
@@ -201,12 +192,8 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
 	{
 		for (; start < end; ++start)
 		{
-			FunctorSaving& save = _functors[start];
-			if (save._functorType != FunctorSaving::FunctorType::Separator)
-			{
-				//注意ThreadPool不负责_functors的生命周期
-				ThreadPool::instance()->dispatchFunctor(&FunctorSeq::runFunctor, this, &save);
-			}
+			//注意ThreadPool不负责_functors的生命周期
+			ThreadPool::instance()->dispatchFunctor(&FunctorSeq::runFunctor, this, &_functors[start]);
 		}
 	}
 }
@@ -252,7 +239,18 @@ void Ash::FunctorSeq::runFunctor(const FunctorSaving& functor)
 	}
 	case FunctorSaving::FunctorType::LoopFunctor:
 	{
-			
+		const FunctorSaving::LoopFunctorStruct& save = std::get<FunctorSaving::LoopFunctorStruct>(functor._data);
+		if (save._pred && save._pred())
+		{
+			FunctorSeqPtr seq = MakeRefCountPtr<FunctorSeq>();
+			seq->_parent = this;
+			save._functor(*seq);
+			onFinishFunctor(seq.get(), functor);
+		}
+		else
+		{
+			onFinishFunctor(nullptr, functor);
+		}
 		break;
 	}
 	case FunctorSaving::FunctorType::Future:
