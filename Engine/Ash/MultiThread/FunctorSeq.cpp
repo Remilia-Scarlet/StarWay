@@ -169,17 +169,16 @@ void Ash::FunctorSeq::doSubmitNextFunctor()
         const FunctorSaving::FunctorType type = _functors[end]._functorType;
 	    if(type == FunctorSaving::FunctorType::FutureFunctor)
 	    {
-			++end; //跳过分隔符
+	    	if(end + 1 < static_cast<int>(_functors.size()))
+				++end; //跳过下一个分隔符
 	    }
 		else if (type == FunctorSaving::FunctorType::Separator)
 		{
-			++end; //跳过分隔符
+			TinyAssert(end + 1 < static_cast<int>(_functors.size())); //最后一个不可能为分隔符
+			++end; //跳过本分隔符
 			break;
 		}
-		else
-		{
-			++runningFunctor;
-		}
+		++runningFunctor;
 	}
 
 	TinyAssert(end > start);
@@ -252,7 +251,10 @@ void Ash::FunctorSeq::runFunctor(const FunctorSaving& functor)
 		break;
 	}
 	case FunctorSaving::FunctorType::LoopFunctor:
+	{
+			
 		break;
+	}
 	case FunctorSaving::FunctorType::Future:
 	{
 		const FunctorSaving::FutureStruct& save = std::get<FunctorSaving::FutureStruct>(functor._data);
