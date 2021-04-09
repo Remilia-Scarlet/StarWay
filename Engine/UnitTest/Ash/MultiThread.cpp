@@ -9,113 +9,122 @@ TEST(Ash, ThreadPoolTest)
     // Task test
     if(1)
 	{
-		std::atomic<bool> finished = false;
+		bool finished = false;
 		std::mutex mu;
 		std::condition_variable condi;
 
-
-		std::vector<char> result( static_cast<size_t>(26) );
+		constexpr int loopTime = 10;
+		std::vector<std::vector<char>> resultAll(static_cast<size_t>(loopTime));
 		std::atomic_int index = 0;
+		int resultIndex = 0;
 
-        // --means child.
-		// ==means then.
-		// ~~means future submit
-		//
-		// -A
-		// ~H(future submit)
-		// ---I
-		// -----J(sleep 0.2s)
-		// =====L
-		// ---B
-		// -----C
-		// -------H(future require)
-		// -------D
-		// -------E
-		// =====M
-		// -----K
-		// ---F
-		// =G
-        //A fist, G last.
-        //H->I->J->L
-        //B->C, C->M, B->K, C->D, C->E, D->M, E->M
-        //M->L
-        //F->L(due to sleep), K->M(due to sleep)
-		Ash::FunctorSeq::entry([&mu, &finished, &condi, &index, &result](Ash::FunctorSeq& seq)
+		Ash::FunctorSeq::entry([&resultIndex, &resultAll, &index, &mu, &finished, &condi](Ash::FunctorSeq& seq)
 		{
-			int i = index++;
-			result[i] = 'A';
-			seq.setDebugName("A");
-			Ash::Future future = seq.future([&index, &result](Ash::FunctorSeq& seq)
+			seq.loop([&resultIndex]() mutable {return ++resultIndex < 10; }, [&resultIndex, &resultAll, &index, &mu, &finished, &condi](Ash::FunctorSeq& seq)
 			{
-				int i = index++;
-				result[i] = 'H';
-				seq.setDebugName("H");
-				seq.then([&index, &result](Ash::FunctorSeq& seq)
+				std::vector<char>& result = resultAll[resultIndex];
+				result.resize(26);
+				// --means child.
+				// ==means then.
+				// ~~means future submit
+				//
+				// -A
+				// ~H(future submit)
+				// ---I
+				// -----J(sleep 0.2s)
+				// =====L
+				// ---B
+				// -----C
+				// -------H(future require)
+				// -------D
+				// -------E
+				// =====M
+				// -----K
+				// ---F
+				// =G
+				//A fist, G last.
+				//H->I->J->L
+				//B->C, C->M, B->K, C->D, C->E, D->M, E->M
+				//M->L
+				//F->L(due to sleep), K->M(due to sleep)
+				seq.then([&mu, &finished, &condi, &index, &result](Ash::FunctorSeq& seq)
 				{
 					int i = index++;
-					result[i] = 'I';
-					seq.setDebugName("I");
-					seq.then([&index, &result](Ash::FunctorSeq& seq)
-					{
-						std::this_thread::sleep_for(std::chrono::milliseconds(100));
-						int i = index++;
-						result[i] = 'J';
-						seq.setDebugName("J");
-					});
-					seq.then([&index, &result](Ash::FunctorSeq& seq)
+					result[i] = 'A';
+					seq.setDebugName("A");
+					Ash::Future future = seq.future([&index, &result](Ash::FunctorSeq& seq)
 					{
 						int i = index++;
-						result[i] = 'L';
-						seq.setDebugName("L");
+						result[i] = 'H';
+						seq.setDebugName("H");
+						seq.then([&index, &result](Ash::FunctorSeq& seq)
+						{
+							int i = index++;
+							result[i] = 'I';
+							seq.setDebugName("I");
+							seq.then([&index, &result](Ash::FunctorSeq& seq)
+							{
+								std::this_thread::sleep_for(std::chrono::milliseconds(100));
+								int i = index++;
+								result[i] = 'J';
+								seq.setDebugName("J");
+							});
+							seq.then([&index, &result](Ash::FunctorSeq& seq)
+							{
+								int i = index++;
+								result[i] = 'L';
+								seq.setDebugName("L");
+							});
+						});
 					});
-				});
-			});
 
-			seq.then([future, &index, &result](Ash::FunctorSeq& seq)
-			{
-				int i = index++;
-				result[i] = 'B';
-				seq.setDebugName("B");
-				seq.then([future, &index, &result](Ash::FunctorSeq& seq)
-				{
-					int i = index++;
-					result[i] = 'C';
-					seq.setDebugName("C");
-					seq.then([&index, &result](Ash::FunctorSeq& seq)
+					seq.then([future, &index, &result](Ash::FunctorSeq& seq)
 					{
 						int i = index++;
-						result[i] = 'D';
-						seq.setDebugName("D");
+						result[i] = 'B';
+						seq.setDebugName("B");
+						seq.then([future, &index, &result](Ash::FunctorSeq& seq)
+						{
+							int i = index++;
+							result[i] = 'C';
+							seq.setDebugName("C");
+							seq.then([&index, &result](Ash::FunctorSeq& seq)
+							{
+								int i = index++;
+								result[i] = 'D';
+								seq.setDebugName("D");
+							}, [&index, &result](Ash::FunctorSeq& seq)
+							{
+								int i = index++;
+								result[i] = 'E';
+								seq.setDebugName("E");
+							},
+								future);
+							seq.then([&index, &result](Ash::FunctorSeq& seq)
+							{
+								int i = index++;
+								result[i] = 'M';
+								seq.setDebugName("M");
+							});
+						}, [&index, &result](Ash::FunctorSeq& seq)
+						{
+							int i = index++;
+							result[i] = 'K';
+							seq.setDebugName("K");
+						});
 					}, [&index, &result](Ash::FunctorSeq& seq)
 					{
 						int i = index++;
-						result[i] = 'E';
-						seq.setDebugName("E");
-					},
-					future);
+						result[i] = 'F';
+						seq.setDebugName("F");
+					});
 					seq.then([&index, &result](Ash::FunctorSeq& seq)
 					{
 						int i = index++;
-						result[i] = 'M';
-						seq.setDebugName("M");
+						result[i] = 'G';
+						seq.setDebugName("G");
 					});
-				},[&index, &result](Ash::FunctorSeq& seq)
-				{
-					int i = index++;
-					result[i] = 'K';
-					seq.setDebugName("K");
 				});
-			}, [&index, &result](Ash::FunctorSeq& seq)
-			{
-				int i = index++;
-				result[i] = 'F';
-				seq.setDebugName("F");
-			});
-			seq.then([&index, &result](Ash::FunctorSeq& seq)
-			{
-				int i = index++;
-				result[i] = 'G';
-				seq.setDebugName("G");
 			});
 			seq.then([&mu, &finished, &condi](Ash::FunctorSeq& seq)
 			{
@@ -125,8 +134,9 @@ TEST(Ash, ThreadPoolTest)
 				condi.notify_all();
 			});
 		});
+		
 		std::unique_lock<std::mutex> lock(mu);
-		condi.wait(lock, [&finished]() {return finished.load(); });
+		condi.wait(lock, [&finished]() {return finished; });
 
 		//A fist, G last.
         //H->I->J->L
@@ -135,21 +145,25 @@ TEST(Ash, ThreadPoolTest)
         //F->L(due to sleep), K->M(due to sleep)
 #define CharPos(Char) std::find(result.begin(), result.end(), Char)
 #define CharBefore(A, B) (CharPos(A) < CharPos(B))
-		EXPECT_TRUE(CharPos('A') == result.begin());
-		EXPECT_TRUE(CharPos('G') == result.begin() + index - 1);
-		EXPECT_TRUE(CharBefore('H', 'I'));
-		EXPECT_TRUE(CharBefore('I', 'J'));
-		EXPECT_TRUE(CharBefore('J', 'L'));
-		EXPECT_TRUE(CharBefore('B', 'C'));
-		EXPECT_TRUE(CharBefore('C', 'M'));
-        EXPECT_TRUE(CharBefore('B', 'K'));
-        EXPECT_TRUE(CharBefore('C', 'D'));
-        EXPECT_TRUE(CharBefore('C', 'E'));
-        EXPECT_TRUE(CharBefore('D', 'M'));
-        EXPECT_TRUE(CharBefore('E', 'M'));
-		EXPECT_TRUE(CharBefore('L', 'M'));
-		EXPECT_TRUE(CharBefore('F', 'L'));
-		EXPECT_TRUE(CharBefore('K', 'M'));
+		for (int i = 0; i < loopTime; ++i)
+		{
+			auto& result = resultAll[i];
+			EXPECT_TRUE(CharPos('A') == result.begin());
+			EXPECT_TRUE(CharPos('G') == result.begin() + index - 1);
+			EXPECT_TRUE(CharBefore('H', 'I'));
+			EXPECT_TRUE(CharBefore('I', 'J'));
+			EXPECT_TRUE(CharBefore('J', 'L'));
+			EXPECT_TRUE(CharBefore('B', 'C'));
+			EXPECT_TRUE(CharBefore('C', 'M'));
+			EXPECT_TRUE(CharBefore('B', 'K'));
+			EXPECT_TRUE(CharBefore('C', 'D'));
+			EXPECT_TRUE(CharBefore('C', 'E'));
+			EXPECT_TRUE(CharBefore('D', 'M'));
+			EXPECT_TRUE(CharBefore('E', 'M'));
+			EXPECT_TRUE(CharBefore('L', 'M'));
+			EXPECT_TRUE(CharBefore('F', 'L'));
+			EXPECT_TRUE(CharBefore('K', 'M'));
+		}
 #undef CharPos
 #undef CharBefore
 	}

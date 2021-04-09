@@ -94,7 +94,7 @@ namespace Ash
 	//		DebugString("G");
 	//	});
 	//
-	//  seq.loop([int i = 3]()
+	//  seq.loop([i = 3]() mutable
 	//  {
 	//     return --i >= 0;
 	//  }, [](Ash::FunctorSeq&)

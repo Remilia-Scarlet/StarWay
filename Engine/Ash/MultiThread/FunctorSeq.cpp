@@ -40,6 +40,8 @@ Ash::Future Ash::FunctorSeq::future(Functor functor)
 
 Ash::FunctorSeq& Ash::FunctorSeq::loop(std::function<bool()> pred, Functor functor)
 {
+	if (!_functors.empty())
+	    pushSeparatorFunctor();
 	pushLoopFunctor(std::move(functor), std::move(pred));
 	return *this;
 }
@@ -89,8 +91,17 @@ void Ash::FunctorSeq::onFinishFunctor(FunctorSeq* newRecordedSeq, const FunctorS
 	}
 	case FunctorSaving::FunctorType::LoopFunctor:
 	{
-			if(newRecordedSeq)
-
+		if(newRecordedSeq)
+		{
+		    //pred通过，录制出了新的seq，那么不减少_runningFunctor，直接执行这个seq, 同时回退到上一个loop functor
+			TinyAssert(_runningFunctor == 1);
+			_currentFunctor -= 2; //回退到loop
+			newRecordedSeq->submit();
+		}
+		else
+		{
+			submitNextFunctor(false, false);
+		}
 		break;
 	}
 	default:
@@ -174,6 +185,9 @@ void Ash::FunctorSeq::doSubmitNextFunctor(bool forceAsync)
 	{
 		++_currentFunctor; //跳过分隔符
 	}
+
+    //如果是loop，则必须只有一个running functor
+	TinyAssert(_functors[start]._functorType != FunctorSaving::FunctorType::LoopFunctor || end - start == 1);
 
 	//通过修改_runningFunctor，使得仅当最后一个functor执行完毕时，this才会被删除
 	_runningFunctor = end - start;
