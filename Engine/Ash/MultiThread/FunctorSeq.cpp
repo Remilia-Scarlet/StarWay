@@ -63,17 +63,18 @@ void Ash::FunctorSeq::submit(bool forceAsync/* = false*/)
 void Ash::FunctorSeq::onFinishFunctor(FunctorSeq* newRecordedSeq, const FunctorSaving& theFinishedFunctor)
 {
 	//多线程进来，但是每个进来的线程的newRecordedSeq一定是当前线程自己new的
-	TinyAssert(newRecordedSeq);
 	switch (theFinishedFunctor._functorType)
 	{
 	case FunctorSaving::FunctorType::ThenFunctor:
 	{
+		TinyAssert(newRecordedSeq);
 		// 有subSeq，不减少_runningFunctor，我们认为这个functor还没running完，当这个subseq完成时，回调到onSubSeqFinish中去submitNextFunctor
 		newRecordedSeq->submit();
 		break;
 	}
 	case FunctorSaving::FunctorType::FutureFunctor:
 	{
+		TinyAssert(newRecordedSeq);
 		//期货，那么提交它，和自己没啥关系，自己直接submitNextFunctor
 		newRecordedSeq->submit(true);
 		TinyAssert(newRecordedSeq->_parent == nullptr);
@@ -82,6 +83,7 @@ void Ash::FunctorSeq::onFinishFunctor(FunctorSeq* newRecordedSeq, const FunctorS
 	}
 	case FunctorSaving::FunctorType::Future:
 	{
+		TinyAssert(newRecordedSeq);
 		std::unique_lock<SpinMutex> lock(newRecordedSeq->_futureMutex); //锁范围：newRecordedSeq->_parent和_futureHasFinished
 		TinyAssert(newRecordedSeq->_parent == nullptr);
 		newRecordedSeq->_parent = this; //修复期货的parent

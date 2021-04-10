@@ -16,12 +16,15 @@ TEST(Ash, ThreadPoolTest)
 		constexpr int loopTime = 10;
 		std::vector<std::vector<char>> resultAll(static_cast<size_t>(loopTime));
 		std::atomic_int index = 0;
-		int resultIndex = 0;
+		int resultIndex = -1;
+		int loopedTime = 0;
 
-		Ash::FunctorSeq::entry([&resultIndex, &resultAll, &index, &mu, &finished, &condi](Ash::FunctorSeq& seq)
+		Ash::FunctorSeq::entry([&loopedTime, &resultIndex, &resultAll, &index, &mu, &finished, &condi](Ash::FunctorSeq& seq)
 		{
-			seq.loop([&resultIndex]() mutable {return ++resultIndex < 10; }, [&resultIndex, &resultAll, &index, &mu, &finished, &condi](Ash::FunctorSeq& seq)
+			seq.loop([&resultIndex]() mutable {return ++resultIndex < 10; }, [&loopedTime, &resultIndex, &resultAll, &index, &mu, &finished, &condi](Ash::FunctorSeq& seq)
 			{
+				++loopedTime;
+				index = 0;
 				std::vector<char>& result = resultAll[resultIndex];
 				result.resize(26);
 				// --means child.
@@ -164,6 +167,7 @@ TEST(Ash, ThreadPoolTest)
 			EXPECT_TRUE(CharBefore('F', 'L'));
 			EXPECT_TRUE(CharBefore('K', 'M'));
 		}
+		EXPECT_EQ(loopedTime, loopTime);
 #undef CharPos
 #undef CharBefore
 	}
